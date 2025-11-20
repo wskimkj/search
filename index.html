@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <title>상품 조회</title>
 
-  <!-- 파비콘 (파일명을 상황에 맞게 변경 가능) -->
+  <!-- 파비콘 -->
   <link rel="icon" type="image/png" href="android-chrome-512x512 (1).ico">
 
-  <!-- 예쁜 한글 폰트 -->
+  <!-- 폰트 -->
   <link rel="stylesheet" as="style" crossorigin
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 
-  <!-- PapaParse (CSV 파서) -->
+  <!-- CSV 파서 -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
@@ -26,7 +26,9 @@
       --radius-xl: 18px;
       --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.18);
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -38,6 +40,7 @@
       justify-content: center;
       color: var(--text-main);
     }
+
     .app-shell {
       width: 100%;
       max-width: 1200px;
@@ -48,6 +51,7 @@
       position: relative;
       overflow: hidden;
     }
+
     .app-shell::before {
       content: "";
       position: absolute;
@@ -59,6 +63,7 @@
       right: -80px;
       pointer-events: none;
     }
+
     .header {
       display: flex;
       align-items: center;
@@ -68,11 +73,13 @@
       position: relative;
       z-index: 1;
     }
+
     .header-left {
       display: flex;
       align-items: center;
       gap: 12px;
     }
+
     .logo-pill {
       width: 40px;
       height: 40px;
@@ -85,6 +92,7 @@
       font-size: 20px;
       box-shadow: 0 8px 18px rgba(248, 113, 113, 0.4);
     }
+
     .title-wrap h1 {
       margin: 0;
       font-size: 19px;
@@ -93,6 +101,7 @@
       align-items: center;
       gap: 6px;
     }
+
     .title-tag {
       font-size: 11px;
       padding: 2px 7px;
@@ -101,11 +110,13 @@
       color: #b91c1c;
       border: 1px solid rgba(248, 113, 113, 0.4);
     }
+
     .title-wrap p {
       margin: 3px 0 0;
       font-size: 12px;
       color: var(--text-muted);
     }
+
     .header-right {
       text-align: right;
       font-size: 11px;
@@ -116,6 +127,7 @@
       font-weight: 600;
       color: #0f766e;
     }
+
     .pill-label {
       display: inline-flex;
       align-items: center;
@@ -132,14 +144,16 @@
       border-radius: 50%;
       background: #22c55e;
     }
+
     .content-row {
       display: grid;
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr);
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 2.3fr); /* 검색창 10% 줄이고 결과 10% 늘림 */
       gap: 16px;
       align-items: flex-start;
       position: relative;
       z-index: 1;
     }
+
     @media (max-width: 860px) {
       body { padding: 12px; }
       .app-shell { border-radius: 20px; padding: 16px; }
@@ -147,6 +161,7 @@
       .header { flex-direction: column; align-items: flex-start; }
       .header-right { text-align: left; }
     }
+
     .card {
       background: rgba(255, 255, 255, 0.95);
       border-radius: var(--radius-xl);
@@ -154,6 +169,7 @@
       border: 1px solid var(--border-subtle);
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
+
     .card-title {
       font-size: 13px;
       margin: 0 0 8px;
@@ -162,18 +178,22 @@
       gap: 6px;
     }
     .card-title span.icon { font-size: 15px; }
+
     .card-sub {
       font-size: 11px;
       margin: 0 0 10px;
       color: var(--text-muted);
     }
+
     .search-box {
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 6px;
     }
+
     .input-wrap { position: relative; }
+
     .input-wrap input[type="text"] {
       width: 100%;
       padding: 9px 36px 9px 32px;
@@ -209,12 +229,14 @@
       font-size: 11px;
       color: #9ca3af;
     }
+
     .button-row {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-top: 4px;
     }
+
     button#searchBtn {
       padding: 7px 16px;
       font-size: 13px;
@@ -244,18 +266,21 @@
       box-shadow: none;
     }
     .btn-icon { font-size: 14px; }
+
     .status {
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 4px;
     }
     .status strong { color: #4b5563; }
+
     .result-card {
       max-height: 620px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
+
     .result-table-wrap {
       margin-top: 10px;
       border-radius: 14px;
@@ -263,10 +288,12 @@
       border: 1px solid var(--border-subtle);
       background: #f9fafb;
     }
+
     .result-scroll {
       max-height: 520px;
       overflow: auto;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -288,11 +315,21 @@
     }
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
+
     .no-result {
       margin-top: 12px;
       font-size: 12px;
       color: #9ca3af;
     }
+
+    .text-right { text-align: right; }
+
+    /* 재고 헤더: 너무 오른쪽 치우치지 않게 */
+    .stock-header {
+      text-align: center;
+    }
+
+    /* 기본 초록 (100개 이상) */
     .stock-pill {
       font-size: 11px;
       padding: 2px 7px;
@@ -310,7 +347,26 @@
       border-radius: 50%;
       background: #22c55e;
     }
-    .text-right { text-align: right; }
+
+    /* 노랑 (10~99) */
+    .stock-pill-yellow {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid rgba(250, 204, 21, 0.7);
+    }
+    .stock-pill-yellow .stock-pill-dot {
+      background: #facc15;
+    }
+
+    /* 빨강 (0~9) */
+    .stock-pill-red {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid rgba(239, 68, 68, 0.7);
+    }
+    .stock-pill-red .stock-pill-dot {
+      background: #ef4444;
+    }
   </style>
 </head>
 <body>
@@ -371,7 +427,6 @@
             </label>
           </div>
 
-          <!-- 상태 메시지 -->
           <div class="status" id="status">
             데이터 불러오는 중...
           </div>
@@ -409,7 +464,7 @@
       `https://docs.google.com/spreadsheets/d/${STOCK_SHEET_ID}/export?format=csv&gid=${STOCK_GID}`;
 
     // ===== 2. 전역 데이터 =====
-    let products = [];           // 상품 목록 (원본명+정제명 둘 다 보관)
+    let products = [];           // 상품 목록 (원본 + 정제명)
     let stockByColorCode = {};   // { 상품칼라코드: 재고수량 }
     let sizeByColorCode = {};    // { 상품칼라코드: 사이즈 }
     let stockUpdatedAt = '';     // 재고 기준일시 (B1)
@@ -422,7 +477,7 @@
     const keywordInput = document.getElementById('keyword');
     const toggleMaterialInput = document.getElementById('toggleMaterial');
 
-    // ===== 3. 유틸리티 =====
+    // ===== 3. 유틸 =====
 
     // 상품명 전처리용 정규식
     const regexBracket = /\[[^\]]*\]/g;                // [ ... ] 제거
@@ -431,15 +486,15 @@
     function cleanProductName(name) {
       if (!name) return '';
       return String(name)
-        .replace(/[\r\n]+/g, '')   // 줄바꿈 제거
-        .replace(/\u00A0/g, ' ')   // 특수 공백 → 일반 공백
-        .replace(regexBracket, '') // [괄호] 부분 제거
-        .replace(regexSeason, '')  // 시즌코드 제거
-        .replace(/\s{2,}/g, ' ')   // 공백 2개 이상 → 1개
+        .replace(/[\r\n]+/g, '')      // 줄바꿈 제거
+        .replace(/\u00A0/g, ' ')      // 특수 공백 → 일반 공백
+        .replace(regexBracket, '')    // [괄호] 부분 제거
+        .replace(regexSeason, '')     // 시즌코드 제거
+        .replace(/\([^)]*\)\s*$/, "") // 맨 마지막 괄호(...) 제거
+        .replace(/\s{2,}/g, ' ')      // 공백 2개 이상 → 1개
         .trim();
     }
 
-    // HTML 이스케이프
     function escapeHtml(str) {
       if (!str && str !== 0) return '';
       return String(str)
@@ -450,7 +505,6 @@
         .replace(/'/g, '&#39;');
     }
 
-    // CSV 파서 (PapaParse 사용)
     function parseCSV(text) {
       const parsed = Papa.parse(text, {
         header: false,
@@ -488,8 +542,8 @@
           barcode:     row[idxBarcode]     || '',
           material:    row[idxMaterial]    || '',
           colorCode:   row[idxColorCode]   || '',
-          rawName,                    // 원본 상품명 (시즌/괄호 포함)
-          productName: cleanedName    // 화면에 보여줄 정제된 상품명
+          rawName,                     // 원본 상품명
+          productName: cleanedName     // 정제된 상품명
         };
       }).filter(p => p.productName);
     }
@@ -581,7 +635,7 @@
       if (showMaterial) {
         headerHtml += `<th>소재</th>`;
       }
-      headerHtml += `<th class="text-right">재고</th></tr>`;
+      headerHtml += `<th class="stock-header">재고</th></tr>`;
 
       let bodyHtml = '';
 
@@ -595,6 +649,19 @@
         // 원본명과 정제명이 다를 때만 툴팁 노출
         const needTooltip = p.rawName && p.rawName !== p.productName;
         const titleAttr = needTooltip ? ` title="${rawName}"` : '';
+
+        // 재고 색상 분기
+        let stockClass = 'stock-pill'; // 기본 초록
+        const stockNum = Number(stock);
+        if (!isNaN(stockNum)) {
+          if (stockNum >= 100) {
+            stockClass = 'stock-pill';          // 초록
+          } else if (stockNum >= 10) {
+            stockClass = 'stock-pill-yellow';   // 노랑
+          } else if (stockNum >= 0) {
+            stockClass = 'stock-pill-red';      // 빨강
+          }
+        }
 
         bodyHtml += `
           <tr>
@@ -613,7 +680,9 @@
         bodyHtml += `
             <td class="text-right">
               ${stock !== ''
-                ? `<span class="stock-pill"><span class="stock-pill-dot"></span>${escapeHtml(stock)}</span>`
+                ? `<span class="${stockClass}">
+                     <span class="stock-pill-dot"></span>${escapeHtml(stock)}
+                   </span>`
                 : ''}
             </td>
           </tr>
