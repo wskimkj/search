@@ -399,7 +399,7 @@
     const PRODUCT_SHEET_ID = '1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc';
     const PRODUCT_GID = '885700988';
 
-    // 매장재고 시트
+    // 재고 시트
     const STOCK_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
     const STOCK_GID = '366983013';
 
@@ -460,7 +460,7 @@
       })).filter(p => p.productName);
     }
 
-    // ===== 5. 매장재고 시트 로드 (사이즈: B열, 재고: K열) =====
+    // ===== 5. 재고 시트 로드 (사이즈: B열, 재고: K열) =====
     async function loadStock() {
       const res = await fetch(STOCK_CSV_URL);
       if (!res.ok) {
@@ -611,4 +611,5 @@
   </script>
 </body>
 </html>
+
 
