@@ -40,7 +40,7 @@
     }
     .app-shell {
       width: 100%;
-      max-width: 1200px; /* 🔼 1100 → 1200으로 넓힘 */
+      max-width: 1200px;
       background: var(--card-bg);
       border-radius: 28px;
       box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.7);
@@ -134,7 +134,7 @@
     }
     .content-row {
       display: grid;
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr); /* 🔼 검색 좁게 / 결과 넓게 */
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr);
       gap: 16px;
       align-items: flex-start;
       position: relative;
@@ -212,8 +212,8 @@
     .button-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 2px;
+      gap: 12px;
+      margin-top: 4px;
     }
     button#searchBtn {
       padding: 7px 16px;
@@ -247,22 +247,9 @@
     .status {
       font-size: 11px;
       color: var(--text-muted);
+      margin-top: 4px;
     }
     .status strong { color: #4b5563; }
-    .pill-hint {
-      font-size: 11px;
-      color: #6b7280;
-      background: #f3f4ff;
-      border-radius: 999px;
-      padding: 3px 9px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .pill-hint small {
-      font-size: 10px;
-      opacity: 0.9;
-    }
     .result-card {
       max-height: 620px;
       overflow: hidden;
@@ -376,20 +363,15 @@
               <span class="btn-icon">✨</span>
               검색하기
             </button>
-            <span class="pill-hint">
-              포함 검색
-              <small>입력한 단어가 들어가는 모든 상품</small>
-            </span>
 
             <!-- 소재 보기 토글 -->
-            <span style="margin-left:auto; font-size:11px;">
-              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
-                <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
-                소재 보기
-              </label>
-            </span>
+            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+              <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
+              소재 보기
+            </label>
           </div>
 
+          <!-- 상태 메시지: 예) 볼드린 검색 결과: 4개 -->
           <div class="status" id="status">
             데이터 불러오는 중...
           </div>
@@ -545,7 +527,7 @@
       );
 
       if (!filtered.length) {
-        statusEl.textContent = `"${kw}" 을(를) 포함하는 상품명이 없습니다.`;
+        statusEl.textContent = `"${kw}" 검색 결과: 0개`;
         resultEl.innerHTML = '<div class="no-result">검색 결과 없음</div>';
         return;
       }
