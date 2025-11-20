@@ -443,21 +443,26 @@ async function loadProducts() {
   if (rows.length < 2) return;
 
   // A=0 B=1 C=2 D=3 E=4 F=5 G=6 ... P=15 ... U=20 ... W=22 ... Z=25
-  const idxProductCode = 5;   // F열
-  const idxColorName   = 15;  // P열
-  const idxBarcode     = 20;  // U열
-  const idxMaterial    = 22;  // W열 (소재)
-  const idxColorCode   = 25;  // Z열
-  const idxProductName = 6;   // G열 (상품명)
+  cconst idxProductCode = 5;   // F열
+const idxColorName   = 15;  // P열
+const idxBarcode     = 20;  // U열
+const idxMaterial    = 22;  // W열 (소재)
+const idxColorCode   = 25;  // Z열
+const idxProductName = 6;   // G열 (상품명)
 
-  products = rows.slice(1).map(row => ({
+products = rows.slice(1).map(row => {
+  const rawName = row[idxProductName] || '';
+  const cleanedName = cleanProductName(rawName);
+
+  return {
     productCode: row[idxProductCode] || '',
     colorName:   row[idxColorName]   || '',
     barcode:     row[idxBarcode]     || '',
     material:    row[idxMaterial]    || '',
     colorCode:   row[idxColorCode]   || '',
-    productName: row[idxProductName] || ''
-  })).filter(p => p.productName);
+    productName: cleanedName         // ← 전처리된 이름 사용
+  };
+}).filter(p => p.productName);
 }
 
     // ===== 5. 재고 시트 로드 (사이즈: B열, 재고: K열) =====
@@ -611,6 +616,7 @@ async function loadProducts() {
   </script>
 </body>
 </html>
+
 
 
 
