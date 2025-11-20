@@ -432,33 +432,33 @@
     }
 
     // ===== 4. 상품 시트 로드 (소재: W열) =====
-    async function loadProducts() {
-      const res = await fetch(PRODUCT_CSV_URL);
-      if (!res.ok) {
-        throw new Error('상품 시트 로드 실패: ' + res.status);
-      }
-      const text = await res.text();
-      const rows = parseCSV(text);
+async function loadProducts() {
+  const res = await fetch(PRODUCT_CSV_URL);
+  if (!res.ok) {
+    throw new Error('상품 시트 로드 실패: ' + res.status);
+  }
+  const text = await res.text();
+  const rows = parseCSV(text);
 
-      if (rows.length < 2) return;
+  if (rows.length < 2) return;
 
-      // A=0 B=1 C=2 D=3 E=4 F=5 ... P=15 ... U=20 ... W=22 ... Z=25 ... AA=26
-      const idxProductCode = 5;   // F열
-      const idxColorName   = 15;  // P열
-      const idxBarcode     = 20;  // U열
-      const idxMaterial    = 22;  // W열 (소재)
-      const idxColorCode   = 25;  // Z열
-      const idxProductName = 26;  // AA열
+  // A=0 B=1 C=2 D=3 E=4 F=5 G=6 ... P=15 ... U=20 ... W=22 ... Z=25
+  const idxProductCode = 5;   // F열
+  const idxColorName   = 15;  // P열
+  const idxBarcode     = 20;  // U열
+  const idxMaterial    = 22;  // W열 (소재)
+  const idxColorCode   = 25;  // Z열
+  const idxProductName = 6;   // G열 (상품명)
 
-      products = rows.slice(1).map(row => ({
-        productCode: row[idxProductCode] || '',
-        colorName:   row[idxColorName]   || '',
-        barcode:     row[idxBarcode]     || '',
-        material:    row[idxMaterial]    || '',
-        colorCode:   row[idxColorCode]   || '',
-        productName: row[idxProductName] || ''
-      })).filter(p => p.productName);
-    }
+  products = rows.slice(1).map(row => ({
+    productCode: row[idxProductCode] || '',
+    colorName:   row[idxColorName]   || '',
+    barcode:     row[idxBarcode]     || '',
+    material:    row[idxMaterial]    || '',
+    colorCode:   row[idxColorCode]   || '',
+    productName: row[idxProductName] || ''
+  })).filter(p => p.productName);
+}
 
     // ===== 5. 재고 시트 로드 (사이즈: B열, 재고: K열) =====
     async function loadStock() {
@@ -611,5 +611,6 @@
   </script>
 </body>
 </html>
+
 
 
