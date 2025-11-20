@@ -40,7 +40,7 @@
     }
     .app-shell {
       width: 100%;
-      max-width: 1100px;
+      max-width: 1200px; /* 🔼 1100 → 1200으로 넓힘 */
       background: var(--card-bg);
       border-radius: 28px;
       box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.7);
@@ -134,7 +134,7 @@
     }
     .content-row {
       display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr);
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr); /* 🔼 검색 좁게 / 결과 넓게 */
       gap: 16px;
       align-items: flex-start;
       position: relative;
@@ -357,7 +357,7 @@
       <!-- 검색 카드 -->
       <div class="card">
         <h2 class="card-title">
-          <span class="icon">🔎</span>
+          <span class="icon">🔍</span>
           상품명 검색
         </h2>
         <p class="card-sub">
@@ -629,4 +629,3 @@
   </script>
 </body>
 </html>
-
