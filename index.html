@@ -371,7 +371,7 @@
             </label>
           </div>
 
-          <!-- 상태 메시지: 예) 볼드린 검색 결과: 4개 -->
+          <!-- 상태 메시지 -->
           <div class="status" id="status">
             데이터 불러오는 중...
           </div>
@@ -409,7 +409,7 @@
       `https://docs.google.com/spreadsheets/d/${STOCK_SHEET_ID}/export?format=csv&gid=${STOCK_GID}`;
 
     // ===== 2. 전역 데이터 =====
-    let products = [];           // 상품 목록
+    let products = [];           // 상품 목록 (원본명+정제명 둘 다 보관)
     let stockByColorCode = {};   // { 상품칼라코드: 재고수량 }
     let sizeByColorCode = {};    // { 상품칼라코드: 사이즈 }
     let stockUpdatedAt = '';     // 재고 기준일시 (B1)
@@ -422,7 +422,35 @@
     const keywordInput = document.getElementById('keyword');
     const toggleMaterialInput = document.getElementById('toggleMaterial');
 
-    // ===== 3. CSV 파서 (PapaParse 사용) =====
+    // ===== 3. 유틸리티 =====
+
+    // 상품명 전처리용 정규식
+    const regexBracket = /\[[^\]]*\]/g;                // [ ... ] 제거
+    const regexSeason  = /^\s*[0-9]{2}\s*(FW|SS)\s*/i; // "25FW", "24 SS" 같은 앞부분 제거
+
+    function cleanProductName(name) {
+      if (!name) return '';
+      return String(name)
+        .replace(/[\r\n]+/g, '')   // 줄바꿈 제거
+        .replace(/\u00A0/g, ' ')   // 특수 공백 → 일반 공백
+        .replace(regexBracket, '') // [괄호] 부분 제거
+        .replace(regexSeason, '')  // 시즌코드 제거
+        .replace(/\s{2,}/g, ' ')   // 공백 2개 이상 → 1개
+        .trim();
+    }
+
+    // HTML 이스케이프
+    function escapeHtml(str) {
+      if (!str && str !== 0) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // CSV 파서 (PapaParse 사용)
     function parseCSV(text) {
       const parsed = Papa.parse(text, {
         header: false,
@@ -431,39 +459,40 @@
       return parsed.data;
     }
 
-    // ===== 4. 상품 시트 로드 (소재: W열) =====
-async function loadProducts() {
-  const res = await fetch(PRODUCT_CSV_URL);
-  if (!res.ok) {
-    throw new Error('상품 시트 로드 실패: ' + res.status);
-  }
-  const text = await res.text();
-  const rows = parseCSV(text);
+    // ===== 4. 상품 시트 로드 (상품명: G열, 소재: W열) =====
+    async function loadProducts() {
+      const res = await fetch(PRODUCT_CSV_URL);
+      if (!res.ok) {
+        throw new Error('상품 시트 로드 실패: ' + res.status);
+      }
+      const text = await res.text();
+      const rows = parseCSV(text);
 
-  if (rows.length < 2) return;
+      if (rows.length < 2) return;
 
-  // A=0 B=1 C=2 D=3 E=4 F=5 G=6 ... P=15 ... U=20 ... W=22 ... Z=25
-  cconst idxProductCode = 5;   // F열
-const idxColorName   = 15;  // P열
-const idxBarcode     = 20;  // U열
-const idxMaterial    = 22;  // W열 (소재)
-const idxColorCode   = 25;  // Z열
-const idxProductName = 6;   // G열 (상품명)
+      // A=0 B=1 C=2 D=3 E=4 F=5 G=6 ... P=15 ... U=20 ... W=22 ... Z=25
+      const idxProductCode = 5;   // F열
+      const idxColorName   = 15;  // P열
+      const idxBarcode     = 20;  // U열
+      const idxMaterial    = 22;  // W열 (소재)
+      const idxColorCode   = 25;  // Z열
+      const idxProductName = 6;   // G열 (상품명)
 
-products = rows.slice(1).map(row => {
-  const rawName = row[idxProductName] || '';
-  const cleanedName = cleanProductName(rawName);
+      products = rows.slice(1).map(row => {
+        const rawName = row[idxProductName] || '';
+        const cleanedName = cleanProductName(rawName);
 
-  return {
-    productCode: row[idxProductCode] || '',
-    colorName:   row[idxColorName]   || '',
-    barcode:     row[idxBarcode]     || '',
-    material:    row[idxMaterial]    || '',
-    colorCode:   row[idxColorCode]   || '',
-    productName: cleanedName         // ← 전처리된 이름 사용
-  };
-}).filter(p => p.productName);
-}
+        return {
+          productCode: row[idxProductCode] || '',
+          colorName:   row[idxColorName]   || '',
+          barcode:     row[idxBarcode]     || '',
+          material:    row[idxMaterial]    || '',
+          colorCode:   row[idxColorCode]   || '',
+          rawName,                    // 원본 상품명 (시즌/괄호 포함)
+          productName: cleanedName    // 화면에 보여줄 정제된 상품명
+        };
+      }).filter(p => p.productName);
+    }
 
     // ===== 5. 재고 시트 로드 (사이즈: B열, 재고: K열) =====
     async function loadStock() {
@@ -560,24 +589,31 @@ products = rows.slice(1).map(row => {
         const stock = stockByColorCode[p.colorCode] ?? '';
         const size  = sizeByColorCode[p.colorCode] ?? '';
 
+        const displayName = escapeHtml(p.productName || '');
+        const rawName     = escapeHtml(p.rawName || '');
+
+        // 원본명과 정제명이 다를 때만 툴팁 노출
+        const needTooltip = p.rawName && p.rawName !== p.productName;
+        const titleAttr = needTooltip ? ` title="${rawName}"` : '';
+
         bodyHtml += `
           <tr>
-            <td>${p.productName || ''}</td>
-            <td>${p.colorName || ''}</td>
-            <td>${p.barcode || ''}</td>
-            <td>${p.productCode || ''}</td>
-            <td>${p.colorCode || ''}</td>
-            <td>${size || ''}</td>
+            <td${titleAttr}>${displayName}</td>
+            <td>${escapeHtml(p.colorName || '')}</td>
+            <td>${escapeHtml(p.barcode || '')}</td>
+            <td>${escapeHtml(p.productCode || '')}</td>
+            <td>${escapeHtml(p.colorCode || '')}</td>
+            <td>${escapeHtml(size || '')}</td>
         `;
 
         if (showMaterial) {
-          bodyHtml += `<td>${p.material || ''}</td>`;
+          bodyHtml += `<td>${escapeHtml(p.material || '')}</td>`;
         }
 
         bodyHtml += `
             <td class="text-right">
               ${stock !== ''
-                ? `<span class="stock-pill"><span class="stock-pill-dot"></span>${stock}</span>`
+                ? `<span class="stock-pill"><span class="stock-pill-dot"></span>${escapeHtml(stock)}</span>`
                 : ''}
             </td>
           </tr>
@@ -616,7 +652,3 @@ products = rows.slice(1).map(row => {
   </script>
 </body>
 </html>
-
-
-
-
