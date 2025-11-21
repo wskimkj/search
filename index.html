@@ -232,8 +232,9 @@
 
     .button-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 12px;
+      gap: 10px 12px;
       margin-top: 4px;
     }
 
@@ -297,7 +298,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 11px;
+      font-size: 13px;
       background: #ffffff;
     }
     th, td {
@@ -329,53 +330,104 @@
       text-align: center;
     }
 
-   /* 공통 알약 형태 (모양은 여기서 다 잡고) */
-.stock-pill {
-  font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid transparent;
-}
+    /* 검색 결과 실제 데이터 폰트만 1단계 축소 */
+    .result-table-wrap td {
+      font-size: 12px !important;
+    }
 
-/* 안에 들어가는 동그란 점 공통 */
-.stock-pill-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
+    /* 공통 알약 형태 (재고) */
+    .stock-pill {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid transparent;
+    }
+    .stock-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    /* 초록 (100 이상) */
+    .stock-pill-green {
+      background: #ecfdf3;
+      color: #166534;
+      border-color: rgba(34, 197, 94, 0.45);
+    }
+    .stock-pill-green .stock-pill-dot {
+      background: #22c55e;
+    }
+    /* 노랑 (10~99) */
+    .stock-pill-yellow {
+      background: #fef9c3;
+      color: #854d0e;
+      border-color: rgba(250, 204, 21, 0.7);
+    }
+    .stock-pill-yellow .stock-pill-dot {
+      background: #facc15;
+    }
+    /* 빨강 (0~9) */
+    .stock-pill-red {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: rgba(239, 68, 68, 0.7);
+    }
+    .stock-pill-red .stock-pill-dot {
+      background: #ef4444;
+    }
 
-/* ─── 초록 (100개 이상) ─── */
-.stock-pill-green {
-  background: #ecfdf3;
-  color: #166534;
-  border-color: rgba(34, 197, 94, 0.45);
-}
-.stock-pill-green .stock-pill-dot {
-  background: #22c55e;
-}
-
-/* ─── 노랑 (10 ~ 99개) ─── */
-.stock-pill-yellow {
-  background: #fef9c3;
-  color: #854d0e;
-  border-color: rgba(250, 204, 21, 0.7);
-}
-.stock-pill-yellow .stock-pill-dot {
-  background: #facc15;
-}
-
-/* ─── 빨강 (0 ~ 9개) ─── */
-.stock-pill-red {
-  background: #fee2e2;
-  color: #b91c1c;
-  border-color: rgba(239, 68, 68, 0.7);
-}
-.stock-pill-red .stock-pill-dot {
-  background: #ef4444;
-}
+    /* 운영 여부 라벨 */
+    .op-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      margin-right: 6px;
+      border: 1px solid transparent;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .op-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .op-pill-green {
+      background: #ecfdf3;
+      color: #166534;
+      border-color: rgba(34, 197, 94, 0.45);
+    }
+    .op-pill-green .op-dot {
+      background: #22c55e;
+    }
+    .op-pill-red {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: rgba(239, 68, 68, 0.7);
+    }
+    .op-pill-red .op-dot {
+      background: #ef4444;
+    }
+    .op-pill-orange {
+      background: #fff7ed;
+      color: #9a3412;
+      border-color: rgba(249, 115, 22, 0.7);
+    }
+    .op-pill-orange .op-dot {
+      background: #f97316;
+    }
+    .op-pill-pause {
+      background: #fef9c3;
+      color: #854d0e;
+      border-color: rgba(250, 204, 21, 0.7);
+    }
+    .op-pill-pause .op-dot {
+      background: #eab308;
+    }
   </style>
 </head>
 <body>
@@ -434,6 +486,12 @@
               <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
               소재 보기
             </label>
+
+            <!-- 운영 여부 보기 토글 -->
+            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+              <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" />
+              운영 여부
+            </label>
           </div>
 
           <div class="status" id="status">
@@ -467,17 +525,25 @@
     const STOCK_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
     const STOCK_GID = '366983013';
 
+    // 운영 여부 시트 (상품칼라코드 / 운영유무)
+    const OPER_SHEET_ID = '1F4EC5w1VPmFpwSbw0LuIv5QkwSSs8YkCBPZKY3h-z64';
+    const OPER_GID = '2108422262';
+
     const PRODUCT_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/export?format=csv&gid=${PRODUCT_GID}`;
     const STOCK_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${STOCK_SHEET_ID}/export?format=csv&gid=${STOCK_GID}`;
+    const OPER_CSV_URL =
+      `https://docs.google.com/spreadsheets/d/${OPER_SHEET_ID}/export?format=csv&gid=${OPER_GID}`;
 
     // ===== 2. 전역 데이터 =====
-    let products = [];           // 상품 목록 (원본 + 정제명)
-    let stockByColorCode = {};   // { 상품칼라코드: 재고수량 }
-    let sizeByColorCode = {};    // { 상품칼라코드: 사이즈 }
-    let stockUpdatedAt = '';     // 재고 기준일시 (B1)
-    let showMaterial = false;    // 소재 표시 여부
+    let products = [];             // 상품 목록 (원본 + 정제명)
+    let stockByColorCode = {};     // { 상품칼라코드: 재고수량 }
+    let sizeByColorCode = {};      // { 상품칼라코드: 사이즈 }
+    let stockUpdatedAt = '';       // 재고 기준일시 (B1)
+    let showMaterial = false;      // 소재 표시 여부
+    let showOperation = false;     // 운영 여부 표시 여부
+    let opStatusByColorCode = {};  // { 상품칼라코드: 운영유무 }
 
     const statusEl = document.getElementById('status');
     const resultEl = document.getElementById('result');
@@ -485,6 +551,7 @@
     const searchBtn = document.getElementById('searchBtn');
     const keywordInput = document.getElementById('keyword');
     const toggleMaterialInput = document.getElementById('toggleMaterial');
+    const toggleOperationInput = document.getElementById('toggleOperation');
 
     // ===== 3. 유틸 =====
 
@@ -585,7 +652,27 @@
       }
     }
 
-    // ===== 6. 초기화 =====
+    // ===== 6. 운영 여부 시트 로드 (A: 상품칼라코드, C: 운영유무) =====
+    async function loadOperationStatus() {
+      const res = await fetch(OPER_CSV_URL);
+      if (!res.ok) {
+        throw new Error('운영 여부 시트 로드 실패: ' + res.status);
+      }
+      const text = await res.text();
+      const rows = parseCSV(text);
+      if (rows.length < 2) return;
+
+      // A열 index 0, C열 index 2
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const colorCode = (row[0] || '').trim();
+        const op = (row[2] || '').trim();
+        if (!colorCode || !op) continue;
+        opStatusByColorCode[colorCode] = op;
+      }
+    }
+
+    // ===== 7. 초기화 =====
     async function init() {
       try {
         statusEl.textContent = '상품/재고 데이터 불러오는 중...';
@@ -593,7 +680,8 @@
 
         await Promise.all([
           loadProducts(),
-          loadStock()
+          loadStock(),
+          loadOperationStatus()
         ]);
 
         statusEl.innerHTML = `데이터 로드 완료. <strong>상품 ${products.length}개</strong>`;
@@ -605,7 +693,43 @@
       }
     }
 
-    // ===== 7. 검색 =====
+    // ===== 8. 운영 여부 라벨 HTML 생성 =====
+    function buildOperationPill(colorCode) {
+      if (!showOperation) return '';
+      const status = opStatusByColorCode[colorCode];
+      if (!status) return '';
+
+      const s = status.trim();
+      let cls = 'op-pill';
+      let label = s;
+      let icon = '';
+
+      if (s === '운영') {
+        cls += ' op-pill-green';
+        icon = '●';
+      } else if (s === '단종') {
+        cls += ' op-pill-red';
+        icon = '●';
+      } else if (s === '단종 후 종료') {
+        cls += ' op-pill-orange';
+        icon = '●';
+      } else if (s === '일시 중단') {
+        cls += ' op-pill-pause';
+        icon = '⏸';
+      } else {
+        // 혹시 모르는 기타 상태는 회색 톤으로
+        cls += ' op-pill-pause';
+      }
+
+      return `
+        <span class="${cls}">
+          <span class="op-dot"></span>
+          ${escapeHtml(label)}
+        </span>
+      `;
+    }
+
+    // ===== 9. 검색 =====
     function search() {
       const kw = keywordInput.value.trim();
       if (!products.length) {
@@ -660,23 +784,23 @@
         const titleAttr = needTooltip ? ` title="${rawName}"` : '';
 
         // 재고 색상 분기
-let stockClass = 'stock-pill stock-pill-green'; // 기본: 초록
+        let stockClass = 'stock-pill stock-pill-green'; // 기본 초록
+        const stockNum = Number(stock);
+        if (!isNaN(stockNum)) {
+          if (stockNum >= 100) {
+            stockClass = 'stock-pill stock-pill-green';   // 초록
+          } else if (stockNum >= 10) {
+            stockClass = 'stock-pill stock-pill-yellow';  // 노랑
+          } else if (stockNum >= 0) {
+            stockClass = 'stock-pill stock-pill-red';     // 빨강
+          }
+        }
 
-const stockNum = Number(stock);
-if (!isNaN(stockNum)) {
-  if (stockNum >= 100) {
-    stockClass = 'stock-pill stock-pill-green';   // 초록
-  } else if (stockNum >= 10) {
-    stockClass = 'stock-pill stock-pill-yellow';  // 노랑
-  } else if (stockNum >= 0) {
-    stockClass = 'stock-pill stock-pill-red';     // 빨강
-  }
-}
-
+        const opPillHtml = buildOperationPill(p.colorCode);
 
         bodyHtml += `
           <tr>
-            <td${titleAttr}>${displayName}</td>
+            <td${titleAttr}>${opPillHtml}${displayName}</td>
             <td>${escapeHtml(p.colorName || '')}</td>
             <td>${escapeHtml(p.barcode || '')}</td>
             <td>${escapeHtml(p.productCode || '')}</td>
@@ -714,7 +838,7 @@ if (!isNaN(stockNum)) {
       resultEl.innerHTML = html;
     }
 
-    // ===== 8. 이벤트 =====
+    // ===== 10. 이벤트 =====
     searchBtn.addEventListener('click', search);
     keywordInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') search();
@@ -727,9 +851,15 @@ if (!isNaN(stockNum)) {
       }
     });
 
+    toggleOperationInput.addEventListener('change', () => {
+      showOperation = toggleOperationInput.checked;
+      if (keywordInput.value.trim()) {
+        search();
+      }
+    });
+
     // 시작
     init();
   </script>
 </body>
 </html>
-
