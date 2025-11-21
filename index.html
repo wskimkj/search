@@ -377,63 +377,64 @@
       background: #ef4444;
     }
 
-    /* 운영 여부 pill - 글자 없는 초미니 라벨 */
-    .op-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1px 4px;
-      border-radius: 999px;
-      font-size: 9px;
-      margin-right: 4px;
-      border: 1px solid transparent;
-      vertical-align: middle;
-      white-space: nowrap;
-      min-width: 0;
-    }
-    .op-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-    .op-icon {
-      font-size: 9px;
-      line-height: 1;
-      margin-left: 2px;
-    }
-    .op-pill-green {
-      background: #ecfdf3;
-      border-color: rgba(34, 197, 94, 0.45);
-    }
-    .op-pill-green .op-dot {
-      background: #22c55e;
-    }
-    .op-pill-red {
-      background: #fee2e2;
-      border-color: rgba(239, 68, 68, 0.7);
-    }
-    .op-pill-red .op-dot {
-      background: #ef4444;
-    }
-    .op-pill-orange {
-      background: #fff7ed;
-      border-color: rgba(249, 115, 22, 0.7);
-    }
-    .op-pill-orange .op-dot {
-      background: #f97316;
-    }
-    .op-pill-pause {
-      background: #fef9c3;
-      border-color: rgba(250, 204, 21, 0.7);
-    }
-    .op-pill-pause .op-dot {
-      background: #eab308;
-    }
-
-    /* 상품명 셀 - 클릭 가능 느낌 살짝 */
+    /* 상품명 셀 : 운영상태 점 들어갈 자리 확보 */
     .product-name-cell {
+      position: relative;
+      padding-left: 26px; /* 상태 점 자리 */
       cursor: pointer;
     }
+
+    /* 운영상태 점 (행 왼쪽에 박히는 아이콘) */
+    .op-status-dot {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.4);
+    }
+    .op-status-dot--on {
+      background: #22c55e; /* 운영 - 초록 */
+    }
+    .op-status-dot--end {
+      background: #f97316; /* 소진 후 종료 - 주황 */
+    }
+    .op-status-dot--stop {
+      background: #ef4444; /* 단종 - 빨강 */
+    }
+    .op-status-dot--pause {
+      background: #eab308; /* 일시 중단 - 노랑 */
+    }
+
+    /* 운영상태 legend */
+    .op-legend {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+    .op-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .op-legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.4);
+    }
+    .op-legend-dot.on    { background: #22c55e; }
+    .op-legend-dot.end   { background: #f97316; }
+    .op-legend-dot.stop  { background: #ef4444; }
+    .op-legend-dot.pause { background: #eab308; }
 
     /* 원상품명 복사 토스트 */
     .toast {
@@ -534,7 +535,22 @@
           <span class="icon">📋</span>
           검색 결과
         </h2>
-        <p class="card-sub"></p>
+        <!-- 운영 상태 legend -->
+        <div id="opLegend" class="op-legend">
+          <span class="op-legend-item">
+            <span class="op-legend-dot on"></span> 운영
+          </span>
+          <span class="op-legend-item">
+            <span class="op-legend-dot end"></span> 소진 후 종료
+          </span>
+          <span class="op-legend-item">
+            <span class="op-legend-dot stop"></span> 단종
+          </span>
+          <span class="op-legend-item">
+            <span class="op-legend-dot pause"></span> 일시 중단
+          </span>
+        </div>
+
         <div id="result">
           <div class="no-result">아직 검색 전이에요. 키워드를 입력하고 <strong>검색하기</strong>를 눌러주세요.</div>
         </div>
@@ -584,6 +600,7 @@
     const toggleMaterialInput = document.getElementById('toggleMaterial');
     const toggleOperationInput = document.getElementById('toggleOperation');
     const toastEl = document.getElementById('toast');
+    const opLegendEl = document.getElementById('opLegend');
 
     toggleOperationInput.checked = true;
 
@@ -629,6 +646,12 @@
       setTimeout(() => {
         toastEl.classList.remove('show');
       }, 1400);
+    }
+
+    function updateLegendVisibility() {
+      if (!opLegendEl) return;
+      const hasData = Object.keys(opStatusByColorCode).length > 0;
+      opLegendEl.style.display = (showOperation && hasData) ? 'flex' : 'none';
     }
 
     // ===== 4. 상품 시트 로드 =====
@@ -713,6 +736,7 @@
       }
 
       console.log('운영 여부 로드된 건수:', Object.keys(opStatusByColorCode).length);
+      updateLegendVisibility();
     }
 
     // ===== 7. 초기화 =====
@@ -736,10 +760,9 @@
       }
     }
 
-    // ===== 8. 운영 여부 pill HTML 생성 (글자 없이 점/아이콘만) =====
-    function buildOperationPill(colorCode) {
+    // ===== 8. 운영 상태 점 HTML 생성 =====
+    function buildOperationIndicator(colorCode) {
       if (!showOperation) return '';
-
       const rawStatus = opStatusByColorCode[colorCode];
       if (!rawStatus) return '';
 
@@ -748,28 +771,21 @@
         .replace(/\s+/g, '')
         .replace(/[()]/g, '');
 
-      let cls = 'op-pill';
-      let icon = '';
+      let cls = 'op-status-dot ';
 
       if (normalized.startsWith('운영')) {
-        cls += ' op-pill-green';
+        cls += 'op-status-dot--on';
       } else if (normalized.startsWith('소진후종료')) {
-        cls += ' op-pill-orange';
+        cls += 'op-status-dot--end';
       } else if (normalized.startsWith('단종')) {
-        cls += ' op-pill-red';
+        cls += 'op-status-dot--stop';
       } else if (normalized.startsWith('일시중단')) {
-        cls += ' op-pill-pause';
-        icon = '⏸';
+        cls += 'op-status-dot--pause';
       } else {
-        cls += ' op-pill-pause';
+        cls += 'op-status-dot--pause';
       }
 
-      return `
-        <span class="${cls}" title="${escapeHtml(rawStatus)}">
-          <span class="op-dot"></span>
-          ${icon ? `<span class="op-icon">${icon}</span>` : ''}
-        </span>
-      `;
+      return `<span class="${cls}" title="${escapeHtml(s)}"></span>`;
     }
 
     // ===== 9. 검색 =====
@@ -823,7 +839,7 @@
         const rawNameEsc  = escapeHtml(rawName);
         const hasRaw      = rawName && rawName !== p.productName;
 
-        const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
+        const titleAttr    = hasRaw ? ` title="${rawNameEsc}"` : '';
         const dataCodeAttr = p.colorCode ? ` data-color-code="${escapeHtml(p.colorCode)}"` : '';
 
         let stockClass = 'stock-pill stock-pill-green';
@@ -838,11 +854,13 @@
           }
         }
 
-        const opPillHtml = buildOperationPill(p.colorCode);
+        const opIndicatorHtml = buildOperationIndicator(p.colorCode);
 
         bodyHtml += `
           <tr>
-            <td class="product-name-cell"${titleAttr}${dataCodeAttr}>${opPillHtml}${displayName}</td>
+            <td class="product-name-cell"${titleAttr}${dataCodeAttr}>
+              ${opIndicatorHtml}${displayName}
+            </td>
             <td>${escapeHtml(p.colorName || '')}</td>
             <td>${escapeHtml(p.barcode || '')}</td>
             <td>${escapeHtml(p.productCode || '')}</td>
@@ -878,6 +896,7 @@
       `;
 
       resultEl.innerHTML = html;
+      updateLegendVisibility();
     }
 
     // ===== 10. 이벤트 =====
@@ -895,6 +914,7 @@
 
     toggleOperationInput.addEventListener('change', () => {
       showOperation = toggleOperationInput.checked;
+      updateLegendVisibility();
       if (keywordInput.value.trim()) {
         search();
       }
@@ -922,7 +942,6 @@
             showToast('복사에 실패했어요. 브라우저 권한을 확인해주세요.');
           });
       } else {
-        // 구형 브라우저 fallback
         const ta = document.createElement('textarea');
         ta.value = textToCopy;
         document.body.appendChild(ta);
