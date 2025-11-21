@@ -693,41 +693,50 @@
       }
     }
 
-    // ===== 8. 운영 여부 라벨 HTML 생성 =====
-    function buildOperationPill(colorCode) {
-      if (!showOperation) return '';
-      const status = opStatusByColorCode[colorCode];
-      if (!status) return '';
+   // ===== 8. 운영 여부 라벨 HTML 생성 =====
+function buildOperationPill(colorCode) {
+  if (!showOperation) return '';
 
-      const s = status.trim();
-      let cls = 'op-pill';
-      let label = s;
-      let icon = '';
+  const rawStatus = opStatusByColorCode[colorCode];
+  if (!rawStatus) return '';
 
-      if (s === '운영') {
-        cls += ' op-pill-green';
-        icon = '●';
-      } else if (s === '단종') {
-        cls += ' op-pill-red';
-        icon = '●';
-      } else if (s === '단종 후 종료') {
-        cls += ' op-pill-orange';
-        icon = '●';
-      } else if (s === '일시 중단') {
-        cls += ' op-pill-pause';
-        icon = '⏸';
-      } else {
-        // 혹시 모르는 기타 상태는 회색 톤으로
-        cls += ' op-pill-pause';
-      }
+  const s = rawStatus.trim();
 
-      return `
-        <span class="${cls}">
-          <span class="op-dot"></span>
-          ${escapeHtml(label)}
-        </span>
-      `;
-    }
+  // 공백, 괄호 제거해서 비교용 문자열 만들기
+  // 예: "소진 후 종료" -> "소진후종료"
+  const normalized = s
+    .replace(/\s+/g, '')
+    .replace(/[()]/g, '');
+
+  let cls = 'op-pill';
+  let icon = '●';
+
+  if (normalized.startsWith('운영')) {
+    // 운영 -> 초록
+    cls += ' op-pill-green';
+  } else if (normalized.startsWith('소진후종료')) {
+    // 소진 후 종료 -> 주황
+    cls += ' op-pill-orange';
+  } else if (normalized.startsWith('단종')) {
+    // 단종 -> 빨강
+    cls += ' op-pill-red';
+  } else if (normalized.startsWith('일시중단')) {
+    // 일시 중단 -> 노랑 + ⏸ 느낌
+    cls += ' op-pill-pause';
+    icon = '⏸';
+  } else {
+    // 혹시 다른 값이 들어와도 일단 보이긴 하게 처리
+    cls += ' op-pill-pause';
+  }
+
+  return `
+    <span class="${cls}" title="${escapeHtml(rawStatus)}">
+      <span class="op-dot"></span>
+      ${escapeHtml(s)}
+    </span>
+  `;
+}
+
 
     // ===== 9. 검색 =====
     function search() {
@@ -863,3 +872,4 @@
   </script>
 </body>
 </html>
+
