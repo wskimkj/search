@@ -688,32 +688,39 @@
       }).filter(p => p.productName);
     }
 
-    // ===== 5. 재고 시트 로드 =====
-    async function loadStock() {
-      const res = await fetch(STOCK_CSV_URL);
-      if (!res.ok) {
-        throw new Error('재고 시트 로드 실패: ' + res.status);
-      }
-      const text = await res.text();
-      const rows = parseCSV(text);
-      if (!rows.length) return;
+   // ===== 5. 재고 시트 로드 =====
+async function loadStock() {
+  const res = await fetch(STOCK_CSV_URL);
+  if (!res.ok) {
+    throw new Error('재고 시트 로드 실패: ' + res.status);
+  }
+  const text = await res.text();
+  const rows = parseCSV(text);
+  if (!rows.length) return;
 
-      stockUpdatedAt = (rows[0][1] || '').trim(); // B1
-      stockInfoEl.textContent = stockUpdatedAt || '미기재';
+  // B1 = 재고 기준일시
+  stockUpdatedAt = (rows[0][1] || '').trim(); // B1
+  stockInfoEl.textContent = stockUpdatedAt || '미기재';
 
-      // A: colorCode(0), B: size(1), K: stock(10)
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const colorCode = (row[0] || '').trim();
-        if (!colorCode) continue;
+  // A: colorCode(0), B: size(1), C: 창고(2), K: stock(10)
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const colorCode = (row[0] || '').trim();
+    if (!colorCode) continue;
 
-        const size = (row[1] || '').trim();
-        const stockQty = (row[10] || '').trim();
-
-        sizeByColorCode[colorCode]  = size;
-        stockByColorCode[colorCode] = stockQty || '0';
-      }
+    const warehouse = (row[2] || '').trim(); // C열 = 창고
+    // 🔴 여기에서 "주희물류"만 사용
+    if (warehouse !== '주희물류') {
+      continue; // 다른 창고는 전부 무시
     }
+
+    const size = (row[1] || '').trim();      // B열 = 사이즈
+    const stockQty = (row[10] || '').trim(); // K열 = 재고
+
+    sizeByColorCode[colorCode]  = size;
+    stockByColorCode[colorCode] = stockQty || '0';
+  }
+}
 
     // ===== 6. 운영 여부 시트 로드 =====
     async function loadOperationStatus() {
@@ -961,3 +968,4 @@
   </script>
 </body>
 </html>
+
