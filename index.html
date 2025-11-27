@@ -43,7 +43,7 @@
 
     .app-shell {
       width: 100%;
-      max-width: 1400px; /* 넓게 */
+      max-width: 1400px;
       background: var(--card-bg);
       border-radius: 28px;
       box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.7);
@@ -302,6 +302,7 @@
       border-collapse: collapse;
       font-size: 13px;
       background: #ffffff;
+      table-layout: fixed;
     }
     th, td {
       border-bottom: 1px solid #e5e7eb;
@@ -320,10 +321,18 @@
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
 
-    /* 상품명 / 칼라 / 창고 폭 */
-    th.col-product, td.col-product { min-width: 260px; }  /* 상품명 가장 넓게 */
-    th.col-color, td.col-color     { min-width: 140px; }
-    th.col-warehouse, td.col-warehouse { min-width: 180px; }
+    /* 🔢 폭 비율 세팅 */
+    /* 상품명 = 전체의 1/6 정도 */
+    th.col-product, td.col-product { width: 16.66%; }
+
+    /* 칼라명 = 상품명의 절반 */
+    th.col-color, td.col-color { width: 8.33%; }
+
+    /* 상품코드 / 창고 너비 동일 */
+    th.col-pcode, td.col-pcode,
+    th.col-warehouse, td.col-warehouse { width: 10%; }
+
+    /* 바코드 / 상품칼라코드는 따로 width 안 줌 = 자동 */
 
     .no-result {
       margin-top: 12px;
@@ -337,12 +346,10 @@
       text-align: center;
     }
 
-    /* 결과 데이터 폰트만 1단계 줄이기 */
     .result-table-wrap td {
       font-size: 12px !important;
     }
 
-    /* 재고 pill 공통 */
     .stock-pill {
       font-size: 11px;
       padding: 2px 7px;
@@ -376,7 +383,6 @@
     }
     .stock-pill-red .stock-pill-dot { background: #ef4444; }
 
-    /* 상품명 셀 : 운영상태 점 자리 */
     .product-name-cell {
       position: relative;
       padding-left: 26px;
@@ -449,7 +455,6 @@
 </head>
 <body>
   <div class="app-shell">
-    <!-- 헤더 -->
     <div class="header">
       <div class="header-left">
         <div class="logo-pill">🧸</div>
@@ -473,9 +478,7 @@
       </div>
     </div>
 
-    <!-- 본문 -->
     <div class="content-row">
-      <!-- 검색 카드 -->
       <div class="card">
         <h2 class="card-title">
           <span class="icon">🔍</span>
@@ -498,20 +501,17 @@
               검색
             </button>
 
-            <!-- 창고 -->
             <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
               <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
               창고
             </label>
 
-            <!-- 소재 -->
             <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
               <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
               소재
             </label>
 
-            <!-- 운영 -->
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
+            <label style="display:inline-flex; alignItems:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
               <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" checked />
               운영
             </label>
@@ -523,7 +523,6 @@
         </div>
       </div>
 
-      <!-- 결과 카드 -->
       <div class="card result-card">
         <h2 class="card-title">
           <span class="icon">📋</span>
@@ -554,7 +553,6 @@
   <div id="toast" class="toast">원래 상품명을 클립보드에 복사했어요.</div>
 
   <script>
-    // ===== 1. 시트 설정 =====
     const PRODUCT_SHEET_ID = '1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc';
     const PRODUCT_GID = '885700988';
 
@@ -571,16 +569,15 @@
     const OPER_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${OPER_SHEET_ID}/export?format=csv&gid=${OPER_GID}`;
 
-    // ===== 2. 전역 데이터 =====
-    let products = [];                   // 상품 목록 (원본 + 정제명)
-    let stockEntriesByColorCode = {};    // { colorCode: [ {warehouse,size,qty} ] }
-    let sizeByColorCode = {};            // { colorCode: size }
-    let stockUpdatedAt = '';             // 재고 기준일시 (B1)
+    let products = [];
+    let stockEntriesByColorCode = {};
+    let sizeByColorCode = {};
+    let stockUpdatedAt = '';
 
     let showMaterial = false;
     let showWarehouse = false;
     let showOperation = true;
-    let opStatusByColorCode = {};        // { colorCode: 운영유무 }
+    let opStatusByColorCode = {};
 
     const statusEl = document.getElementById('status');
     const resultEl = document.getElementById('result');
@@ -595,7 +592,6 @@
 
     toggleOperationInput.checked = true;
 
-    // ===== 3. 유틸 =====
     const regexBracket = /\[[^\]]*\]/g;
     const regexSeason  = /^\s*[0-9]{2}\s*(FW|SS)\s*/i;
 
@@ -607,7 +603,7 @@
         .replace(regexBracket, '')
         .replace(regexSeason, '')
         .replace(/\s*\([^)]*\)\s*[^()]*$/, '')
-        .replace(/\([^)]*\)\s*$/, "")
+        .replace(/\([^)]*\)\s*$/, '')
         .replace(/\s{2,}/g, ' ')
         .trim();
     }
@@ -645,22 +641,20 @@
       opLegendEl.style.display = (showOperation && hasData) ? 'flex' : 'none';
     }
 
-    // ===== 4. 상품 시트 로드 =====
     async function loadProducts() {
       const res = await fetch(PRODUCT_CSV_URL);
-      if (!res.ok) {
-        throw new Error('상품 시트 로드 실패: ' + res.status);
-      }
+      if (!res.ok) throw new Error('상품 시트 로드 실패: ' + res.status);
+
       const text = await res.text();
       const rows = parseCSV(text);
       if (rows.length < 2) return;
 
-      const idxProductCode = 5;   // F열
-      const idxColorName   = 15;  // P열
-      const idxBarcode     = 20;  // U열
-      const idxMaterial    = 22;  // W열
-      const idxColorCode   = 25;  // Z열
-      const idxProductName = 26;  // AA열
+      const idxProductCode = 5;
+      const idxColorName   = 15;
+      const idxBarcode     = 20;
+      const idxMaterial    = 22;
+      const idxColorCode   = 25;
+      const idxProductName = 26;
 
       products = rows.slice(1).map(row => {
         const rawName = row[idxProductName] || '';
@@ -678,24 +672,20 @@
       }).filter(p => p.productName);
     }
 
-    // ===== 5. 재고 시트 로드 =====
     async function loadStock() {
       const res = await fetch(STOCK_CSV_URL);
-      if (!res.ok) {
-        throw new Error('재고 시트 로드 실패: ' + res.status);
-      }
+      if (!res.ok) throw new Error('재고 시트 로드 실패: ' + res.status);
+
       const text = await res.text();
       const rows = parseCSV(text);
       if (!rows.length) return;
 
-      // B1 = 재고 기준일시
       stockUpdatedAt = (rows[0][1] || '').trim();
       stockInfoEl.textContent = stockUpdatedAt || '미기재';
 
       stockEntriesByColorCode = {};
       sizeByColorCode = {};
 
-      // 0: A 상품칼라코드, 1: B 사이즈, 2: C 창고명, 10: K 재고
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         if (!row || !row.length) continue;
@@ -715,21 +705,14 @@
         if (!stockEntriesByColorCode[colorCode]) {
           stockEntriesByColorCode[colorCode] = [];
         }
-        stockEntriesByColorCode[colorCode].push({
-          warehouse,
-          size,
-          qty
-        });
+        stockEntriesByColorCode[colorCode].push({ warehouse, size, qty });
 
         if (!sizeByColorCode[colorCode] && size) {
           sizeByColorCode[colorCode] = size;
         }
       }
-
-      console.log('재고 로드(색상 기준):', Object.keys(stockEntriesByColorCode).length);
     }
 
-    // ===== 6. 운영 여부 시트 로드 =====
     async function loadOperationStatus() {
       const res = await fetch(OPER_CSV_URL);
       if (!res.ok) {
@@ -747,12 +730,9 @@
         if (!colorCode || !op) continue;
         opStatusByColorCode[colorCode] = op;
       }
-
-      console.log('운영 여부 로드:', Object.keys(opStatusByColorCode).length);
       updateLegendVisibility();
     }
 
-    // ===== 7. 초기화 =====
     async function init() {
       try {
         statusEl.textContent = '상품/재고 데이터 불러오는 중...';
@@ -773,7 +753,6 @@
       }
     }
 
-    // ===== 8. 운영 상태 점 =====
     function buildOperationIndicator(colorCode) {
       if (!showOperation) return '';
       const rawStatus = opStatusByColorCode[colorCode];
@@ -782,23 +761,15 @@
       const s = rawStatus.trim();
       const normalized = s.replace(/\s+/g, '').replace(/[()]/g, '');
       let cls = 'op-status-dot ';
-
-      if (normalized.startsWith('운영')) {
-        cls += 'op-status-dot--on';
-      } else if (normalized.startsWith('소진후종료')) {
-        cls += 'op-status-dot--end';
-      } else if (normalized.startsWith('단종')) {
-        cls += 'op-status-dot--stop';
-      } else if (normalized.startsWith('일시중단')) {
-        cls += 'op-status-dot--pause';
-      } else {
-        cls += 'op-status-dot--pause';
-      }
+      if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
+      else if (normalized.startsWith('소진후종료')) cls += 'op-status-dot--end';
+      else if (normalized.startsWith('단종')) cls += 'op-status-dot--stop';
+      else if (normalized.startsWith('일시중단')) cls += 'op-status-dot--pause';
+      else cls += 'op-status-dot--pause';
 
       return `<span class="${cls}" title="${escapeHtml(s)}"></span>`;
     }
 
-    // ===== 9. 검색 =====
     function search() {
       const kw = keywordInput.value.trim();
       if (!products.length) {
@@ -829,18 +800,13 @@
           <th class="col-product">상품명</th>
           <th class="col-color">칼라명</th>
           <th>바코드</th>
-          <th>상품코드</th>
+          <th class="col-pcode">상품코드</th>
           <th>상품칼라코드</th>
           <th>사이즈</th>
       `;
 
-      if (showMaterial) {
-        headerHtml += `<th>소재</th>`;
-      }
-      if (showWarehouse) {
-        headerHtml += `<th class="col-warehouse">창고</th>`;
-      }
-
+      if (showMaterial) headerHtml += `<th>소재</th>`;
+      if (showWarehouse) headerHtml += `<th class="col-warehouse">창고</th>`;
       headerHtml += `<th class="stock-header">재고</th></tr>`;
 
       let bodyHtml = '';
@@ -848,7 +814,6 @@
       filtered.forEach(p => {
         const entries = stockEntriesByColorCode[p.colorCode] || [];
 
-        // 창고 체크 OFF면 주희물류만
         let useEntries;
         if (showWarehouse) {
           useEntries = entries;
@@ -856,19 +821,22 @@
           useEntries = entries.filter(e => e.warehouse === '주희물류');
         }
 
-        // 재고행이 하나도 없으면, 빈 재고 1줄이라도 보여주기
         if (!useEntries.length) {
           const opIndicatorHtml = buildOperationIndicator(p.colorCode);
           const size = sizeByColorCode[p.colorCode] || '';
+          const rawName = p.rawName || '';
+          const rawNameEsc = escapeHtml(rawName);
+          const hasRaw = rawName && rawName !== p.productName;
+          const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
           bodyHtml += `
             <tr>
-              <td class="product-name-cell col-product" data-color-code="${escapeHtml(p.colorCode || '')}">
+              <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(p.colorCode || '')}">
                 ${opIndicatorHtml}${escapeHtml(p.productName || '')}
               </td>
               <td class="col-color">${escapeHtml(p.colorName || '')}</td>
               <td>${escapeHtml(p.barcode || '')}</td>
-              <td>${escapeHtml(p.productCode || '')}</td>
+              <td class="col-pcode">${escapeHtml(p.productCode || '')}</td>
               <td>${escapeHtml(p.colorCode || '')}</td>
               <td>${escapeHtml(size || '')}</td>
               ${showMaterial ? `<td>${escapeHtml(p.material || '')}</td>` : ''}
@@ -879,22 +847,16 @@
           return;
         }
 
-        // 창고(또는 주희물류)별로 행 나누기
         useEntries.forEach(entry => {
           const opIndicatorHtml = buildOperationIndicator(p.colorCode);
           const size = entry.size || sizeByColorCode[p.colorCode] || '';
           const stockNum = entry.qty;
           const stockStr = String(stockNum);
-
           let stockClass = 'stock-pill stock-pill-green';
           if (!isNaN(stockNum)) {
-            if (stockNum >= 100) {
-              stockClass = 'stock-pill stock-pill-green';
-            } else if (stockNum >= 10) {
-              stockClass = 'stock-pill stock-pill-yellow';
-            } else if (stockNum >= 0) {
-              stockClass = 'stock-pill stock-pill-red';
-            }
+            if (stockNum >= 100) stockClass = 'stock-pill stock-pill-green';
+            else if (stockNum >= 10) stockClass = 'stock-pill stock-pill-yellow';
+            else if (stockNum >= 0) stockClass = 'stock-pill stock-pill-red';
           }
 
           const rawName = p.rawName || '';
@@ -909,7 +871,7 @@
               </td>
               <td class="col-color">${escapeHtml(p.colorName || '')}</td>
               <td>${escapeHtml(p.barcode || '')}</td>
-              <td>${escapeHtml(p.productCode || '')}</td>
+              <td class="col-pcode">${escapeHtml(p.productCode || '')}</td>
               <td>${escapeHtml(p.colorCode || '')}</td>
               <td>${escapeHtml(size || '')}</td>
               ${showMaterial ? `<td>${escapeHtml(p.material || '')}</td>` : ''}
@@ -938,12 +900,10 @@
           </div>
         </div>
       `;
-
       resultEl.innerHTML = html;
       updateLegendVisibility();
     }
 
-    // ===== 10. 이벤트 =====
     searchBtn.addEventListener('click', search);
     keywordInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') search();
@@ -965,7 +925,6 @@
       if (keywordInput.value.trim()) search();
     });
 
-    // 상품명 클릭 -> 원래 상품명 복사
     resultEl.addEventListener('click', e => {
       const cell = e.target.closest('.product-name-cell');
       if (!cell) return;
@@ -997,7 +956,6 @@
       }
     });
 
-    // 시작
     init();
   </script>
 </body>
