@@ -43,7 +43,7 @@
 
     .app-shell {
       width: 100%;
-      max-width: 1200px;
+      max-width: 1400px; /* 🔥 폭 넓힘 */
       background: var(--card-bg);
       border-radius: 28px;
       box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.7);
@@ -232,10 +232,11 @@
 
     .button-row {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* 한 줄 고정 */
       align-items: center;
-      gap: 10px 12px;
+      gap: 10px;
       margin-top: 4px;
+      overflow-x: auto;
     }
 
     button#searchBtn {
@@ -252,6 +253,7 @@
       align-items: center;
       gap: 6px;
       transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+      white-space: nowrap;
     }
     button#searchBtn:hover:not(:disabled) {
       transform: translateY(-1px);
@@ -300,12 +302,14 @@
       border-collapse: collapse;
       font-size: 13px;
       background: #ffffff;
+      table-layout: fixed; /* 🔥 열 너비 고정에 도움 */
     }
     th, td {
       border-bottom: 1px solid #e5e7eb;
       padding: 8px 10px;
       text-align: left;
       vertical-align: middle;
+      word-break: keep-all;
     }
     th {
       background: #f9fafb;
@@ -316,6 +320,14 @@
     }
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
+
+    /* 🔥 칼라명 / 창고 열 넓게 */
+    th.col-color, td.col-color {
+      min-width: 140px;
+    }
+    th.col-warehouse, td.col-warehouse {
+      min-width: 180px;
+    }
 
     .no-result {
       margin-top: 12px;
@@ -510,20 +522,20 @@
               검색
             </button>
 
-            <!-- 소재 보기 토글 -->
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
-              <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
-              소재
-            </label>
-
             <!-- 창고 보기 토글 -->
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
               <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
               창고
             </label>
 
+            <!-- 소재 보기 토글 -->
+            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
+              <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
+              소재
+            </label>
+
             <!-- 운영 여부 토글 -->
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
               <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" checked />
               운영
             </label>
@@ -590,15 +602,16 @@
       `https://docs.google.com/spreadsheets/d/${OPER_SHEET_ID}/export?format=csv&gid=${OPER_GID}`;
 
     // ===== 2. 전역 데이터 =====
-    let products = [];             // 상품 목록 (원본 + 정제명)
-    let stockByColorCode = {};     // { 상품칼라코드: 재고수량 }
-    let sizeByColorCode = {};      // { 상품칼라코드: 사이즈 }
-    let warehouseByColorCode = {}; // { 상품칼라코드: 창고명 }
-    let stockUpdatedAt = '';       // 재고 기준일시 (B1)
-    let showMaterial = false;      // 소재 표시 여부
-    let showWarehouse = false;     // 창고 표시 여부
-    let showOperation = true;      // 운영 여부 표시 (기본 ON)
-    let opStatusByColorCode = {};  // { 상품칼라코드: 운영유무 }
+    let products = [];                // 상품 목록 (원본 + 정제명)
+    let stockByColorCodeMain = {};    // { 상품칼라코드: 재고수량 }  주희물류만
+    let stockByColorCodeAll  = {};    // { 상품칼라코드: 재고수량 }  전체 창고 합산
+    let sizeByColorCode      = {};    // { 상품칼라코드: 사이즈 }
+    let warehousesByColorCodeAll = {}; // { 상품칼라코드: Set(창고명들) }
+    let stockUpdatedAt = '';          // 재고 기준일시 (B1)
+    let showMaterial = false;         // 소재 표시 여부
+    let showWarehouse = false;        // 창고 표시 여부 (체크박스)
+    let showOperation = true;         // 운영 여부 표시 (기본 ON)
+    let opStatusByColorCode = {};     // { 상품칼라코드: 운영유무 }
 
     const statusEl = document.getElementById('status');
     const resultEl = document.getElementById('result');
@@ -714,11 +727,12 @@
       stockInfoEl.textContent = stockUpdatedAt || '미기재';
 
       // 기존 데이터 초기화
-      stockByColorCode     = {};
+      stockByColorCodeMain = {};
+      stockByColorCodeAll  = {};
       sizeByColorCode      = {};
-      warehouseByColorCode = {};
+      warehousesByColorCodeAll = {};
 
-      // 창고재고 시트 구조 (CSV 기준 인덱스)
+      // 구조 (CSV 인덱스)
       // 0: A열 = 상품칼라코드
       // 1: B열 = 사이즈
       // 2: C열 = 창고명
@@ -730,22 +744,35 @@
         const colorCode = (row[0] || '').trim();
         if (!colorCode) continue;
 
-        const warehouse = (row[2] || '').trim();   // C열 = 창고명
+        const size      = (row[1] || '').trim();
+        const warehouse = (row[2] || '').trim() || '미정';
+        let stockQtyRaw = (row[10] || '').toString().trim();
 
-        // 기본은 "주희물류" 재고만 사용
-        if (warehouse !== '주희물류') {
-          continue;
+        if (!stockQtyRaw) continue;
+        stockQtyRaw = stockQtyRaw.replace(/,/g, '');
+        const qty = Number(stockQtyRaw);
+        if (isNaN(qty)) continue;
+
+        if (!sizeByColorCode[colorCode] && size) {
+          sizeByColorCode[colorCode] = size;
         }
 
-        const size     = (row[1]  || '').trim();   // B열 = 사이즈
-        const stockQty = (row[10] || '').trim();   // K열 = 재고
+        // 전체 창고 합산
+        stockByColorCodeAll[colorCode] = (stockByColorCodeAll[colorCode] || 0) + qty;
 
-        sizeByColorCode[colorCode]      = size;
-        stockByColorCode[colorCode]     = stockQty || '0';
-        warehouseByColorCode[colorCode] = warehouse || '주희물류';
+        if (!warehousesByColorCodeAll[colorCode]) {
+          warehousesByColorCodeAll[colorCode] = new Set();
+        }
+        warehousesByColorCodeAll[colorCode].add(warehouse);
+
+        // 주희물류만
+        if (warehouse === '주희물류') {
+          stockByColorCodeMain[colorCode] = (stockByColorCodeMain[colorCode] || 0) + qty;
+        }
       }
 
-      console.log('주희물류 재고 건수:', Object.keys(stockByColorCode).length);
+      console.log('전체 재고 건수(색상 기준):', Object.keys(stockByColorCodeAll).length);
+      console.log('주희물류 재고 건수(색상 기준):', Object.keys(stockByColorCodeMain).length);
     }
 
     // ===== 6. 운영 여부 시트 로드 =====
@@ -847,22 +874,25 @@
 
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${filtered.length}개</strong>`;
 
+      const useAllWarehouses = showWarehouse;
+      const stockMap = useAllWarehouses ? stockByColorCodeAll : stockByColorCodeMain;
+
       let headerHtml = `
         <tr>
           <th>상품명</th>
-          <th>칼라명</th>
+          <th class="col-color">칼라명</th>
           <th>바코드</th>
           <th>상품코드</th>
           <th>상품칼라코드</th>
           <th>사이즈</th>
       `;
 
-      // 순서: 소재 > 창고 > 재고
+      // 순서: (소재) → (창고) → 재고
       if (showMaterial) {
         headerHtml += `<th>소재</th>`;
       }
       if (showWarehouse) {
-        headerHtml += `<th>창고</th>`;
+        headerHtml += `<th class="col-warehouse">창고</th>`;
       }
 
       headerHtml += `<th class="stock-header">재고</th></tr>`;
@@ -870,8 +900,9 @@
       let bodyHtml = '';
 
       filtered.forEach(p => {
-        const stock = stockByColorCode[p.colorCode] ?? '';
         const size  = sizeByColorCode[p.colorCode] ?? '';
+        const stockVal = stockMap[p.colorCode];
+        const stockStr = stockVal === undefined ? '' : String(stockVal);
 
         const displayName = escapeHtml(p.productName || '');
         const rawName     = p.rawName || '';
@@ -882,7 +913,7 @@
         const dataCodeAttr = p.colorCode ? ` data-color-code="${escapeHtml(p.colorCode)}"` : '';
 
         let stockClass = 'stock-pill stock-pill-green';
-        const stockNum = Number(stock);
+        const stockNum = Number(stockStr);
         if (!isNaN(stockNum)) {
           if (stockNum >= 100) {
             stockClass = 'stock-pill stock-pill-green';
@@ -900,7 +931,7 @@
             <td class="product-name-cell"${titleAttr}${dataCodeAttr}>
               ${opIndicatorHtml}${displayName}
             </td>
-            <td>${escapeHtml(p.colorName || '')}</td>
+            <td class="col-color">${escapeHtml(p.colorName || '')}</td>
             <td>${escapeHtml(p.barcode || '')}</td>
             <td>${escapeHtml(p.productCode || '')}</td>
             <td>${escapeHtml(p.colorCode || '')}</td>
@@ -912,15 +943,19 @@
         }
 
         if (showWarehouse) {
-          const whName = warehouseByColorCode[p.colorCode] || '주희물류';
-          bodyHtml += `<td>${escapeHtml(whName)}</td>`;
+          let whLabel = '';
+          const set = warehousesByColorCodeAll[p.colorCode];
+          if (set && set.size > 0) {
+            whLabel = Array.from(set).join(', ');
+          }
+          bodyHtml += `<td class="col-warehouse">${escapeHtml(whLabel)}</td>`;
         }
 
         bodyHtml += `
             <td class="text-right">
-              ${stock !== ''
+              ${stockStr !== ''
                 ? `<span class="${stockClass}">
-                     <span class="stock-pill-dot"></span>${escapeHtml(stock)}
+                     <span class="stock-pill-dot"></span>${escapeHtml(stockStr)}
                    </span>`
                 : ''}
             </td>
