@@ -868,49 +868,58 @@
         return total;
       }
 
-      // ===== 정렬: 상품명/칼라명/재고 =====
-      filtered.sort((a, b) => {
-        // 상품명 기준 정렬 (오름/내림)
-        if (sortMode === 'nameAsc' || sortMode === 'nameDesc') {
-          const mul = sortMode === 'nameAsc' ? 1 : -1;
-          const nameA = a.productName || '';
-          const nameB = b.productName || '';
-          const nameCmp = nameA.localeCompare(nameB, 'ko-KR') * mul;
-          if (nameCmp !== 0) return nameCmp;
+     // ===== 정렬: 상품명/칼라명/재고 + 주희물류 우선 =====
+filtered.sort((a, b) => {
+    // 1) 창고 우선: 주희물류 있는 상품 먼저
+    const entriesA = stockEntriesByColorCode[a.colorCode] || [];
+    const entriesB = stockEntriesByColorCode[b.colorCode] || [];
+    const hasJuheeA = entriesA.some(e => e.warehouse === '주희물류');
+    const hasJuheeB = entriesB.some(e => e.warehouse === '주희물류');
+    if (hasJuheeA && !hasJuheeB) return -1;
+    if (!hasJuheeA && hasJuheeB) return 1;
 
-          const colorA = a.colorName || '';
-          const colorB = b.colorName || '';
-          const colorCmp = colorA.localeCompare(colorB, 'ko-KR') * mul;
-          if (colorCmp !== 0) return colorCmp;
+    // 상품명 기준 정렬 (오름/내림)
+    if (sortMode === 'nameAsc' || sortMode === 'nameDesc') {
+        const mul = sortMode === 'nameAsc' ? 1 : -1;
+        const nameA = a.productName || '';
+        const nameB = b.productName || '';
+        const nameCmp = nameA.localeCompare(nameB, 'ko-KR') * mul;
+        if (nameCmp !== 0) return nameCmp;
 
-          const codeA = a.colorCode || '';
-          const codeB = b.colorCode || '';
-          return codeA.localeCompare(codeB, 'ko-KR') * mul;
-        }
+        const colorA = a.colorName || '';
+        const colorB = b.colorName || '';
+        const colorCmp = colorA.localeCompare(colorB, 'ko-KR') * mul;
+        if (colorCmp !== 0) return colorCmp;
 
-        // 재고 많은 순: 색상코드별 총 재고 기준 (동률이면 상품명/칼라명)
-        if (sortMode === 'stockDesc') {
-          const totalA = getTotalStockForColorCode(a.colorCode);
-          const totalB = getTotalStockForColorCode(b.colorCode);
-          if (totalA !== totalB) return totalB - totalA;
+        const codeA = a.colorCode || '';
+        const codeB = b.colorCode || '';
+        return codeA.localeCompare(codeB, 'ko-KR') * mul;
+    }
 
-          const nameA = a.productName || '';
-          const nameB = b.productName || '';
-          const nameCmp = nameA.localeCompare(nameB, 'ko-KR');
-          if (nameCmp !== 0) return nameCmp;
+    // 재고 많은 순: 색상코드별 총 재고 기준 (동률이면 상품명/칼라명)
+    if (sortMode === 'stockDesc') {
+        const totalA = getTotalStockForColorCode(a.colorCode);
+        const totalB = getTotalStockForColorCode(b.colorCode);
+        if (totalA !== totalB) return totalB - totalA;
 
-          const colorA = a.colorName || '';
-          const colorB = b.colorName || '';
-          const colorCmp = colorA.localeCompare(colorB, 'ko-KR');
-          if (colorCmp !== 0) return colorCmp;
+        const nameA = a.productName || '';
+        const nameB = b.productName || '';
+        const nameCmp = nameA.localeCompare(nameB, 'ko-KR');
+        if (nameCmp !== 0) return nameCmp;
 
-          const codeA = a.colorCode || '';
-          const codeB = b.colorCode || '';
-          return codeA.localeCompare(codeB, 'ko-KR');
-        }
+        const colorA = a.colorName || '';
+        const colorB = b.colorName || '';
+        const colorCmp = colorA.localeCompare(colorB, 'ko-KR');
+        if (colorCmp !== 0) return colorCmp;
 
-        return 0;
-      });
+        const codeA = a.colorCode || '';
+        const codeB = b.colorCode || '';
+        return codeA.localeCompare(codeB, 'ko-KR');
+    }
+
+    return 0;
+});
+
 
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${filtered.length}개</strong>`;
 
@@ -1099,3 +1108,4 @@
   </script>
 </body>
 </html>
+
