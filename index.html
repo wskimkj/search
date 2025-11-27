@@ -870,15 +870,23 @@
       }
 
      // ===== 정렬: 상품명/칼라명/재고 + 주희물류 우선 =====
-      if (sortMode === 'warehouse') {
-        filtered.sort((a, b) => {
-    // 1) 창고 우선: 주희물류 있는 상품 먼저
+    if (sortMode === 'warehouse') {
+  filtered.sort((a, b) => {
     const entriesA = stockEntriesByColorCode[a.colorCode] || [];
     const entriesB = stockEntriesByColorCode[b.colorCode] || [];
     const hasJuheeA = entriesA.some(e => e.warehouse === '주희물류');
     const hasJuheeB = entriesB.some(e => e.warehouse === '주희물류');
     if (hasJuheeA && !hasJuheeB) return -1;
     if (!hasJuheeA && hasJuheeB) return 1;
+
+    // 동률이면 상품명/칼라명 기준
+    const nameCmp = (a.productName || '').localeCompare(b.productName || '', 'ko-KR');
+    if (nameCmp !== 0) return nameCmp;
+    const colorCmp = (a.colorName || '').localeCompare(b.colorName || '', 'ko-KR');
+    if (colorCmp !== 0) return colorCmp;
+    return (a.colorCode || '').localeCompare(b.colorCode || '', 'ko-KR');
+  });
+}
   
 
     // 상품명 기준 정렬 (오름/내림)
@@ -1111,5 +1119,6 @@
   </script>
 </body>
 </html>
+
 
 
