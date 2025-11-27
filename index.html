@@ -442,6 +442,21 @@
       opacity: 1;
       transform: translateX(-50%) translateY(-4px);
     }
+
+    /* 정렬 셀렉트 */
+    .sort-select {
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: #f9fafb;
+      font-size: 11px;
+      outline: none;
+    }
+    .sort-select:focus {
+      background: #ffffff;
+      border-color: #fb7185;
+      box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.55);
+    }
   </style>
 </head>
 <body>
@@ -506,6 +521,16 @@
               <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" checked />
               운영
             </label>
+
+            <!-- 정렬 옵션 -->
+            <div style="margin-left:auto; display:inline-flex; align-items:center; gap:4px; font-size:11px; white-space:nowrap;">
+              <span>정렬</span>
+              <select id="sortMode" class="sort-select">
+                <option value="nameAsc">상품명 ↑</option>
+                <option value="nameDesc">상품명 ↓</option>
+                <option value="stockDesc">재고 많은 순</option>
+              </select>
+            </div>
           </div>
 
           <div class="status" id="status">
@@ -572,6 +597,8 @@
     let showOperation = true;
     let opStatusByColorCode = {};
 
+    let sortMode = 'nameAsc'; // nameAsc | nameDesc | stockDesc
+
     const statusEl = document.getElementById('status');
     const resultEl = document.getElementById('result');
     const stockInfoEl = document.getElementById('stockInfo');
@@ -580,6 +607,7 @@
     const toggleMaterialInput = document.getElementById('toggleMaterial');
     const toggleWarehouseInput = document.getElementById('toggleWarehouse');
     const toggleOperationInput = document.getElementById('toggleOperation');
+    const sortModeSelect = document.getElementById('sortMode');
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
 
@@ -786,6 +814,73 @@
         return;
       }
 
+      // 색상코드별 총 재고 계산 캐시 (정렬용)
+      const totalStockCache = {};
+      function getTotalStockForColorCode(colorCode) {
+        if (!colorCode) return 0;
+        if (totalStockCache[colorCode] !== undefined) {
+          return totalStockCache[colorCode];
+        }
+        const entriesAll = stockEntriesByColorCode[colorCode] || [];
+        let entriesForCalc;
+        if (showWarehouse) {
+          entriesForCalc = entriesAll;
+        } else {
+          // 창고 토글 OFF일 땐 주희물류만 기준
+          entriesForCalc = entriesAll.filter(e => e.warehouse === '주희물류');
+        }
+        const total = entriesForCalc.reduce((sum, e) => {
+          const n = Number(e.qty);
+          return sum + (isNaN(n) ? 0 : n);
+        }, 0);
+        totalStockCache[colorCode] = total;
+        return total;
+      }
+
+      // ===== 정렬: 상품명/칼라명/재고 =====
+      filtered.sort((a, b) => {
+        // 상품명 기준 정렬 (오름/내림)
+        if (sortMode === 'nameAsc' || sortMode === 'nameDesc') {
+          const mul = sortMode === 'nameAsc' ? 1 : -1;
+          const nameA = a.productName || '';
+          const nameB = b.productName || '';
+          const nameCmp = nameA.localeCompare(nameB, 'ko-KR') * mul;
+          if (nameCmp !== 0) return nameCmp;
+
+          const colorA = a.colorName || '';
+          const colorB = b.colorName || '';
+          const colorCmp = colorA.localeCompare(colorB, 'ko-KR') * mul;
+          if (colorCmp !== 0) return colorCmp;
+
+          const codeA = a.colorCode || '';
+          const codeB = b.colorCode || '';
+          return codeA.localeCompare(codeB, 'ko-KR') * mul;
+        }
+
+        // 재고 많은 순: 색상코드별 총 재고 기준 (동률이면 상품명/칼라명)
+        if (sortMode === 'stockDesc') {
+          const totalA = getTotalStockForColorCode(a.colorCode);
+          const totalB = getTotalStockForColorCode(b.colorCode);
+          if (totalA !== totalB) return totalB - totalA;
+
+          const nameA = a.productName || '';
+          const nameB = b.productName || '';
+          const nameCmp = nameA.localeCompare(nameB, 'ko-KR');
+          if (nameCmp !== 0) return nameCmp;
+
+          const colorA = a.colorName || '';
+          const colorB = b.colorName || '';
+          const colorCmp = colorA.localeCompare(colorB, 'ko-KR');
+          if (colorCmp !== 0) return colorCmp;
+
+          const codeA = a.colorCode || '';
+          const codeB = b.colorCode || '';
+          return codeA.localeCompare(codeB, 'ko-KR');
+        }
+
+        return 0;
+      });
+
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${filtered.length}개</strong>`;
 
       let headerHtml = `
@@ -911,6 +1006,7 @@
       updateLegendVisibility();
     }
 
+    // 이벤트 핸들러들
     searchBtn.addEventListener('click', search);
     keywordInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') search();
@@ -929,6 +1025,11 @@
     toggleOperationInput.addEventListener('change', () => {
       showOperation = toggleOperationInput.checked;
       updateLegendVisibility();
+      if (keywordInput.value.trim()) search();
+    });
+
+    sortModeSelect.addEventListener('change', () => {
+      sortMode = sortModeSelect.value;
       if (keywordInput.value.trim()) search();
     });
 
