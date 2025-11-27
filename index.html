@@ -568,6 +568,7 @@
           <div class="result-header-right">
             <span>정렬</span>
             <select id="sortMode" class="sort-select">
+               <option value="warehouse">창고 순</option>
               <option value="nameAsc">상품명 ↑</option>
               <option value="nameDesc">상품명 ↓</option>
               <option value="stockDesc">재고 많은 순</option>
@@ -869,7 +870,8 @@
       }
 
      // ===== 정렬: 상품명/칼라명/재고 + 주희물류 우선 =====
-filtered.sort((a, b) => {
+      if (sortMode === 'warehouse') {
+        filtered.sort((a, b) => {
     // 1) 창고 우선: 주희물류 있는 상품 먼저
     const entriesA = stockEntriesByColorCode[a.colorCode] || [];
     const entriesB = stockEntriesByColorCode[b.colorCode] || [];
@@ -877,6 +879,7 @@ filtered.sort((a, b) => {
     const hasJuheeB = entriesB.some(e => e.warehouse === '주희물류');
     if (hasJuheeA && !hasJuheeB) return -1;
     if (!hasJuheeA && hasJuheeB) return 1;
+  
 
     // 상품명 기준 정렬 (오름/내림)
     if (sortMode === 'nameAsc' || sortMode === 'nameDesc') {
@@ -1108,4 +1111,5 @@ filtered.sort((a, b) => {
   </script>
 </body>
 </html>
+
 
