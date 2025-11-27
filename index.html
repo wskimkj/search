@@ -321,18 +321,11 @@
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
 
-    /* 🔢 폭 비율 세팅 */
-    /* 상품명 = 전체의 1/6 정도 */
-    th.col-product, td.col-product { width: 16.66%; }
-
-    /* 칼라명 = 상품명의 절반 */
-    th.col-color, td.col-color { width: 8.33%; }
-
-    /* 상품코드 / 창고 너비 동일 */
+    /* 폭 비율 */
+    th.col-product, td.col-product { width: 16.66%; }   /* 상품명: 전체 1/6 */
+    th.col-color, td.col-color     { width: 8.33%; }    /* 칼라명: 상품명의 절반 */
     th.col-pcode, td.col-pcode,
-    th.col-warehouse, td.col-warehouse { width: 10%; }
-
-    /* 바코드 / 상품칼라코드는 따로 width 안 줌 = 자동 */
+    th.col-warehouse, td.col-warehouse { width: 10%; }  /* 상품코드 = 창고 */
 
     .no-result {
       margin-top: 12px;
@@ -342,9 +335,7 @@
 
     .text-right { text-align: right; }
 
-    .stock-header {
-      text-align: center;
-    }
+    .stock-header { text-align: center; }
 
     .result-table-wrap td {
       font-size: 12px !important;
@@ -511,7 +502,7 @@
               소재
             </label>
 
-            <label style="display:inline-flex; alignItems:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
+            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
               <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" checked />
               운영
             </label>
@@ -553,6 +544,7 @@
   <div id="toast" class="toast">원래 상품명을 클립보드에 복사했어요.</div>
 
   <script>
+    // ===== 시트 설정 =====
     const PRODUCT_SHEET_ID = '1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc';
     const PRODUCT_GID = '885700988';
 
@@ -569,8 +561,9 @@
     const OPER_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${OPER_SHEET_ID}/export?format=csv&gid=${OPER_GID}`;
 
+    // ===== 전역 데이터 =====
     let products = [];
-    let stockEntriesByColorCode = {};
+    let stockEntriesByColorCode = {}; // { colorCode: [ {warehouse,size,qty} ] }
     let sizeByColorCode = {};
     let stockUpdatedAt = '';
 
@@ -821,6 +814,7 @@
           useEntries = entries.filter(e => e.warehouse === '주희물류');
         }
 
+        // 주희물류도 없고 창고도 안보는 경우 → 재고 없는 행 1줄
         if (!useEntries.length) {
           const opIndicatorHtml = buildOperationIndicator(p.colorCode);
           const size = sizeByColorCode[p.colorCode] || '';
@@ -845,6 +839,19 @@
             </tr>
           `;
           return;
+        }
+
+        // 창고 보기 ON이면: 주희물류 먼저, 그 다음 창고명 가나다순
+        if (showWarehouse) {
+          useEntries = [...useEntries].sort((a, b) => {
+            const aw = a.warehouse || '';
+            const bw = b.warehouse || '';
+
+            if (aw === '주희물류' && bw !== '주희물류') return -1;
+            if (bw === '주희물류' && aw !== '주희물류') return 1;
+
+            return aw.localeCompare(bw, 'ko-KR');
+          });
         }
 
         useEntries.forEach(entry => {
