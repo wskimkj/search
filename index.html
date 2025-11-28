@@ -1050,51 +1050,62 @@
       // ---- 바디 HTML (행 단위 렌더링) ----
       let bodyHtml = '';
 
-      rows.forEach(r => {
-        const opIndicatorHtml = buildOperationIndicator(r.colorCode);
-        const rawNameEsc = escapeHtml(r.rawName || '');
-        const hasRaw = r.rawName && r.rawName !== r.productName;
-        const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
+// ---- 바디 HTML (행 단위 렌더링) ----
+rows.forEach(r => {
+  const opIndicatorHtml = buildOperationIndicator(r.colorCode);
+  const rawNameEsc = escapeHtml(r.rawName || '');
+  const hasRaw = r.rawName && r.rawName !== r.productName;
+  const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
-        const stockCellInner = (r.stockStr && r.stockClass)
-          ? `<span class="${r.stockClass}">
-               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-             </span>`
-          : '';
+  const stockCellInner = (r.stockStr && r.stockClass)
+    ? `<span class="${r.stockClass}">
+         <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
+       </span>`
+    : '';
 
-        bodyHtml += `
-          <tr>
-            <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
-              ${opIndicatorHtml}${escapeHtml(r.productName || '')}
-            </td>
-            <td class="col-color">${escapeHtml(r.colorName || '')}</td>
-            <td>${escapeHtml(r.barcode || '')}</td>
-            <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
-            <td>${escapeHtml(r.colorCode || '')}</td>
-            <td>${escapeHtml(r.size || '')}</td>
-            ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
-            ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
-            <td class="text-right">
-              ${stockCellInner}
-            </td>
-          </tr>
-        `;
-      });
+  bodyHtml += `
+    <tr>
+      <td class="product-name-cell col-product" data-color-code="${escapeHtml(r.colorCodeKey || '')}"${titleAttr}>
+        ${opIndicatorHtml}${escapeHtml(r.productName || '')}
+      </td>
+      <td class="col-color">${escapeHtml(r.colorName || '')}</td>
+      <td>${escapeHtml(r.barcode || '')}</td>
+      <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
+      <td>${escapeHtml(r.colorCode || '')}</td>
+      <td>${escapeHtml(r.size || '')}</td>
+      ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
+      ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
+      <td class="text-right">
+        ${stockCellInner}
+      </td>
+    </tr>
+  `;
+});
 
-      const html = `
-        <div class="result-table-wrap">
-          <div class="result-scroll">
-            <table>
-              <thead>${headerHtml}</thead>
-              <tbody>${bodyHtml}</tbody>
-            </table>
-          </div>
-        </div>
-      `;
-      resultEl.innerHTML = html;
-      updateLegendVisibility();
-      attachTableHeaderEvents();
-    }
+// 테이블 HTML 생성
+const html = `
+  <div class="result-table-wrap">
+    <div class="result-scroll">
+      <table>
+        <thead>${headerHtml}</thead>
+        <tbody>${bodyHtml}</tbody>
+      </table>
+    </div>
+  </div>
+`;
+resultEl.innerHTML = html;
+updateLegendVisibility();
+attachTableHeaderEvents();
+
+// ---- 셀 클릭 복사 ----
+resultEl.querySelectorAll('td').forEach(td => {
+  td.addEventListener('click', () => {
+    const text = td.innerText || td.textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).catch(() => {});
+  });
+});
+
 
     function attachTableHeaderEvents() {
       const table = resultEl.querySelector('table');
@@ -1232,3 +1243,4 @@
   </script>
 </body>
 </html>
+
