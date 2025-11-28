@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -335,11 +334,12 @@
       position: sticky;
       top: 0;
       z-index: 1;
+      padding-right: 14px;
     }
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
 
-    /* 폭 비율 */
+    /* 폭 비율 (기본값, 드래그 시 인라인 스타일이 우선) */
     th.col-product, td.col-product { width: 16.66%; }
     th.col-color, td.col-color     { width: 8.33%; }
     th.col-pcode, td.col-pcode,
@@ -461,19 +461,34 @@
       transform: translateX(-50%) translateY(-4px);
     }
 
-    /* 정렬 셀렉트 */
-    .sort-select {
-      padding: 5px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.8);
-      background: #f9fafb;
-      font-size: 11px;
-      outline: none;
+    /* 정렬 가능한 헤더 & 정렬 방향 표시 */
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
     }
-    .sort-select:focus {
-      background: #ffffff;
-      border-color: #fb7185;
-      box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.55);
+    th.sortable-active {
+      background: #fee2e2;
+    }
+    .sort-indicator {
+      margin-left: 4px;
+      font-size: 10px;
+      opacity: 0.7;
+    }
+
+    /* 컬럼 리사이즈 핸들 */
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      user-select: none;
+      /* 살짝 보이는 가이드 */
+      border-right: 1px solid transparent;
+    }
+    .resize-handle:hover {
+      border-right-color: rgba(148, 163, 184, 0.8);
     }
 
     @media (max-width: 860px) {
@@ -483,7 +498,8 @@
       }
       .result-header-right {
         align-self: stretch;
-        justify-content: flex-end;
+        justify-content: flex-start;
+        white-space: normal;
       }
     }
   </style>
@@ -567,12 +583,10 @@
             검색 결과
           </h2>
           <div class="result-header-right">
-            <span>정렬</span>
-            <select id="sortMode" class="sort-select">
-              <option value="nameAsc">상품명 ↑</option>
-              <option value="nameDesc">상품명 ↓</option>
-              <option value="stockDesc">재고 많은 순</option>
-            </select>
+            <span style="font-size:11px;">
+              열 머리글을 <strong>클릭</strong>하면 오름/내림차순 정렬,  
+              경계선을 <strong>드래그</strong>하면 열 너비를 조절할 수 있어요.
+            </span>
           </div>
         </div>
 
@@ -629,7 +643,9 @@
     let showOperation = true;
     let opStatusByColorCode = {};
 
-    let sortMode = 'nameAsc'; // nameAsc | nameDesc | stockDesc
+    // 정렬 상태 (헤더 클릭용)
+    let sortKey = 'productName'; // productName | colorName | barcode | productCode | colorCode | size | material | stock
+    let sortDir = 'asc';         // asc | desc
 
     const statusEl = document.getElementById('status');
     const resultEl = document.getElementById('result');
@@ -639,7 +655,6 @@
     const toggleMaterialInput = document.getElementById('toggleMaterial');
     const toggleWarehouseInput = document.getElementById('toggleWarehouse');
     const toggleOperationInput = document.getElementById('toggleOperation');
-    const sortModeSelect = document.getElementById('sortMode');
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
 
@@ -823,6 +838,110 @@
       return `<span class="${cls}" title="${escapeHtml(s)}"></span>`;
     }
 
+    function getTotalStockForColorCode(colorCode, useWarehouseFilter) {
+      if (!colorCode) return 0;
+      const entriesAll = stockEntriesByColorCode[colorCode] || [];
+      let entriesForCalc;
+      if (useWarehouseFilter) {
+        // 창고 토글 OFF일 땐 주희물류만 기준
+        entriesForCalc = entriesAll.filter(e => e.warehouse === '주희물류');
+      } else {
+        entriesForCalc = entriesAll;
+      }
+      const total = entriesForCalc.reduce((sum, e) => {
+        const n = Number(e.qty);
+        return sum + (isNaN(n) ? 0 : n);
+      }, 0);
+      return total;
+    }
+
+    function compareProducts(a, b) {
+      const direction = sortDir === 'desc' ? -1 : 1;
+      const key = sortKey;
+
+      function cmpString(sa, sb) {
+        return sa.localeCompare(sb, 'ko-KR');
+      }
+
+      function tieBreak(a, b) {
+        const nameCmp = cmpString(a.productName || '', b.productName || '');
+        if (nameCmp !== 0) return nameCmp;
+        const colorCmp = cmpString(a.colorName || '', b.colorName || '');
+        if (colorCmp !== 0) return colorCmp;
+        return cmpString(a.colorCode || '', b.colorCode || '');
+      }
+
+      if (key === 'stock') {
+        const totalA = getTotalStockForColorCode(a.colorCode, !showWarehouse);
+        const totalB = getTotalStockForColorCode(b.colorCode, !showWarehouse);
+        if (totalA !== totalB) {
+          return (totalA < totalB ? -1 : 1) * direction;
+        }
+        return tieBreak(a, b);
+      }
+
+      let valA = '';
+      let valB = '';
+
+      switch (key) {
+        case 'productName':
+          valA = a.productName || '';
+          valB = b.productName || '';
+          break;
+        case 'colorName':
+          valA = a.colorName || '';
+          valB = b.colorName || '';
+          break;
+        case 'barcode':
+          valA = a.barcode || '';
+          valB = b.barcode || '';
+          break;
+        case 'productCode':
+          valA = a.productCode || '';
+          valB = b.productCode || '';
+          break;
+        case 'colorCode':
+          valA = a.colorCode || '';
+          valB = b.colorCode || '';
+          break;
+        case 'material':
+          valA = a.material || '';
+          valB = b.material || '';
+          break;
+        case 'size':
+          valA = sizeByColorCode[a.colorCode] || '';
+          valB = sizeByColorCode[b.colorCode] || '';
+          break;
+        default:
+          // 알 수 없는 키면 기본 tie-break만
+          return tieBreak(a, b);
+      }
+
+      const primary = cmpString(valA, valB);
+      if (primary !== 0) return primary * direction;
+      return tieBreak(a, b);
+    }
+
+    function buildHeaderCell(label, key, extraClass = '', textAlignCenter = false) {
+      const isActive = sortKey === key;
+      const arrow = isActive ? (sortDir === 'asc' ? '▲' : '▼') : '';
+      const classes = [
+        'sortable',
+        isActive ? 'sortable-active' : '',
+        extraClass || '',
+        textAlignCenter ? 'text-center' : ''
+      ].filter(Boolean).join(' ');
+
+      return `
+        <th class="${classes}" data-sort-key="${key}">
+          <span class="th-label">${escapeHtml(label)}${
+            arrow ? `<span class="sort-indicator">${arrow}</span>` : ''
+          }</span>
+          <span class="resize-handle"></span>
+        </th>
+      `;
+    }
+
     function search() {
       const kw = keywordInput.value.trim();
       if (!products.length) {
@@ -846,88 +965,27 @@
         return;
       }
 
-      // 색상코드별 총 재고 계산 캐시 (정렬용)
-      const totalStockCache = {};
-      function getTotalStockForColorCode(colorCode) {
-        if (!colorCode) return 0;
-        if (totalStockCache[colorCode] !== undefined) {
-          return totalStockCache[colorCode];
-        }
-        const entriesAll = stockEntriesByColorCode[colorCode] || [];
-        let entriesForCalc;
-        if (showWarehouse) {
-          entriesForCalc = entriesAll;
-        } else {
-          // 창고 토글 OFF일 땐 주희물류만 기준
-          entriesForCalc = entriesAll.filter(e => e.warehouse === '주희물류');
-        }
-        const total = entriesForCalc.reduce((sum, e) => {
-          const n = Number(e.qty);
-          return sum + (isNaN(n) ? 0 : n);
-        }, 0);
-        totalStockCache[colorCode] = total;
-        return total;
-      }
-
-      // ===== 정렬: 상품명/칼라명/재고 =====
-      filtered.sort((a, b) => {
-        // 상품명 기준 정렬 (오름/내림)
-        if (sortMode === 'nameAsc' || sortMode === 'nameDesc') {
-          const mul = sortMode === 'nameAsc' ? 1 : -1;
-          const nameA = a.productName || '';
-          const nameB = b.productName || '';
-          const nameCmp = nameA.localeCompare(nameB, 'ko-KR') * mul;
-          if (nameCmp !== 0) return nameCmp;
-
-          const colorA = a.colorName || '';
-          const colorB = b.colorName || '';
-          const colorCmp = colorA.localeCompare(colorB, 'ko-KR') * mul;
-          if (colorCmp !== 0) return colorCmp;
-
-          const codeA = a.colorCode || '';
-          const codeB = b.colorCode || '';
-          return codeA.localeCompare(codeB, 'ko-KR') * mul;
-        }
-
-        // 재고 많은 순: 색상코드별 총 재고 기준 (동률이면 상품명/칼라명)
-        if (sortMode === 'stockDesc') {
-          const totalA = getTotalStockForColorCode(a.colorCode);
-          const totalB = getTotalStockForColorCode(b.colorCode);
-          if (totalA !== totalB) return totalB - totalA;
-
-          const nameA = a.productName || '';
-          const nameB = b.productName || '';
-          const nameCmp = nameA.localeCompare(nameB, 'ko-KR');
-          if (nameCmp !== 0) return nameCmp;
-
-          const colorA = a.colorName || '';
-          const colorB = b.colorName || '';
-          const colorCmp = colorA.localeCompare(colorB, 'ko-KR');
-          if (colorCmp !== 0) return colorCmp;
-
-          const codeA = a.colorCode || '';
-          const codeB = b.colorCode || '';
-          return codeA.localeCompare(codeB, 'ko-KR');
-        }
-
-        return 0;
-      });
+      // 정렬
+      filtered.sort(compareProducts);
 
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${filtered.length}개</strong>`;
 
-      let headerHtml = `
-        <tr>
-          <th class="col-product">상품명</th>
-          <th class="col-color">칼라명</th>
-          <th>바코드</th>
-          <th class="col-pcode">상품코드</th>
-          <th>상품칼라코드</th>
-          <th>사이즈</th>
-      `;
+      let headerHtml = '<tr>';
+      headerHtml += buildHeaderCell('상품명', 'productName', 'col-product');
+      headerHtml += buildHeaderCell('칼라명', 'colorName', 'col-color');
+      headerHtml += buildHeaderCell('바코드', 'barcode');
+      headerHtml += buildHeaderCell('상품코드', 'productCode', 'col-pcode');
+      headerHtml += buildHeaderCell('상품칼라코드', 'colorCode');
+      headerHtml += buildHeaderCell('사이즈', 'size');
 
-      if (showMaterial) headerHtml += `<th>소재</th>`;
-      if (showWarehouse) headerHtml += `<th class="col-warehouse">창고</th>`;
-      headerHtml += `<th class="stock-header">재고</th></tr>`;
+      if (showMaterial) {
+        headerHtml += buildHeaderCell('소재', 'material');
+      }
+      if (showWarehouse) {
+        headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
+      }
+      headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
+      headerHtml += '</tr>';
 
       let bodyHtml = '';
 
@@ -1036,6 +1094,85 @@
       `;
       resultEl.innerHTML = html;
       updateLegendVisibility();
+      attachTableHeaderEvents();
+    }
+
+    function attachTableHeaderEvents() {
+      const table = resultEl.querySelector('table');
+      if (!table) return;
+
+      const thead = table.querySelector('thead');
+      const ths = thead ? Array.from(thead.querySelectorAll('th')) : [];
+
+      ths.forEach((th, index) => {
+        const key = th.dataset.sortKey;
+
+        // 정렬: 헤더 클릭
+        if (key) {
+          th.addEventListener('click', (e) => {
+            // 리사이즈 핸들 클릭은 무시
+            if (e.target.classList.contains('resize-handle') ||
+                e.target.closest('.resize-handle')) {
+              return;
+            }
+            if (sortKey === key) {
+              sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
+            } else {
+              sortKey = key;
+              sortDir = 'asc';
+            }
+            search();
+          });
+        }
+
+        // 리사이즈 핸들 설정
+        let handle = th.querySelector('.resize-handle');
+        if (!handle) {
+          handle = document.createElement('span');
+          handle.className = 'resize-handle';
+          th.appendChild(handle);
+        }
+
+        handle.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          startColumnResize(e, table, th, index);
+        });
+      });
+    }
+
+    function startColumnResize(e, table, th, colIndex) {
+      const startX = e.pageX;
+      const startWidth = th.offsetWidth;
+
+      const bodyRows = table.tBodies[0] ? Array.from(table.tBodies[0].rows) : [];
+      const thead = table.tHead;
+      const headCells = thead ? Array.from(thead.rows[0].cells) : [];
+
+      function onMouseMove(ev) {
+        const dx = ev.pageX - startX;
+        const newWidth = Math.max(60, startWidth + dx); // 최소 60px
+
+        if (headCells[colIndex]) {
+          headCells[colIndex].style.width = newWidth + 'px';
+        }
+        bodyRows.forEach(row => {
+          if (row.cells[colIndex]) {
+            row.cells[colIndex].style.width = newWidth + 'px';
+          }
+        });
+      }
+
+      function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
     }
 
     // 이벤트 핸들러들
@@ -1057,11 +1194,6 @@
     toggleOperationInput.addEventListener('change', () => {
       showOperation = toggleOperationInput.checked;
       updateLegendVisibility();
-      if (keywordInput.value.trim()) search();
-    });
-
-    sortModeSelect.addEventListener('change', () => {
-      sortMode = sortModeSelect.value;
       if (keywordInput.value.trim()) search();
     });
 
@@ -1100,4 +1232,3 @@
   </script>
 </body>
 </html>
-
