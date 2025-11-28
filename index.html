@@ -484,7 +484,6 @@
       height: 100%;
       cursor: col-resize;
       user-select: none;
-      /* 살짝 보이는 가이드 */
       border-right: 1px solid transparent;
     }
     .resize-handle:hover {
@@ -643,8 +642,8 @@
     let showOperation = true;
     let opStatusByColorCode = {};
 
-    // 정렬 상태 (헤더 클릭용)
-    let sortKey = 'productName'; // productName | colorName | barcode | productCode | colorCode | size | material | stock
+    // 정렬 상태 (헤더 클릭용 / 행 단위 정렬)
+    let sortKey = 'productName'; // productName | colorName | barcode | productCode | colorCode | size | material | warehouse | stock
     let sortDir = 'asc';         // asc | desc
 
     const statusEl = document.getElementById('status');
@@ -838,24 +837,27 @@
       return `<span class="${cls}" title="${escapeHtml(s)}"></span>`;
     }
 
-    function getTotalStockForColorCode(colorCode, useWarehouseFilter) {
-      if (!colorCode) return 0;
-      const entriesAll = stockEntriesByColorCode[colorCode] || [];
-      let entriesForCalc;
-      if (useWarehouseFilter) {
-        // 창고 토글 OFF일 땐 주희물류만 기준
-        entriesForCalc = entriesAll.filter(e => e.warehouse === '주희물류');
-      } else {
-        entriesForCalc = entriesAll;
-      }
-      const total = entriesForCalc.reduce((sum, e) => {
-        const n = Number(e.qty);
-        return sum + (isNaN(n) ? 0 : n);
-      }, 0);
-      return total;
+    function buildHeaderCell(label, key, extraClass = '', textAlignCenter = false) {
+      const isActive = sortKey === key;
+      const arrow = isActive ? (sortDir === 'asc' ? '▲' : '▼') : '';
+      const classes = [
+        'sortable',
+        isActive ? 'sortable-active' : '',
+        extraClass || '',
+        textAlignCenter ? 'text-center' : ''
+      ].filter(Boolean).join(' ');
+
+      return `
+        <th class="${classes}" data-sort-key="${key}">
+          <span class="th-label">${escapeHtml(label)}${
+            arrow ? `<span class="sort-indicator">${arrow}</span>` : ''
+          }</span>
+          <span class="resize-handle"></span>
+        </th>
+      `;
     }
 
-    function compareProducts(a, b) {
+    function compareRows(a, b) {
       const direction = sortDir === 'desc' ? -1 : 1;
       const key = sortKey;
 
@@ -864,18 +866,19 @@
       }
 
       function tieBreak(a, b) {
-        const nameCmp = cmpString(a.productName || '', b.productName || '');
-        if (nameCmp !== 0) return nameCmp;
-        const colorCmp = cmpString(a.colorName || '', b.colorName || '');
-        if (colorCmp !== 0) return colorCmp;
+        const nCmp = cmpString(a.productName || '', b.productName || '');
+        if (nCmp !== 0) return nCmp;
+        const cCmp = cmpString(a.colorName || '', b.colorName || '');
+        if (cCmp !== 0) return cCmp;
         return cmpString(a.colorCode || '', b.colorCode || '');
       }
 
+      // 재고 숫자 정렬
       if (key === 'stock') {
-        const totalA = getTotalStockForColorCode(a.colorCode, !showWarehouse);
-        const totalB = getTotalStockForColorCode(b.colorCode, !showWarehouse);
-        if (totalA !== totalB) {
-          return (totalA < totalB ? -1 : 1) * direction;
+        const aNum = (typeof a.stockNum === 'number') ? a.stockNum : -1;
+        const bNum = (typeof b.stockNum === 'number') ? b.stockNum : -1;
+        if (aNum !== bNum) {
+          return (aNum < bNum ? -1 : 1) * direction;
         }
         return tieBreak(a, b);
       }
@@ -904,42 +907,25 @@
           valA = a.colorCode || '';
           valB = b.colorCode || '';
           break;
+        case 'size':
+          valA = a.size || '';
+          valB = b.size || '';
+          break;
         case 'material':
           valA = a.material || '';
           valB = b.material || '';
           break;
-        case 'size':
-          valA = sizeByColorCode[a.colorCode] || '';
-          valB = sizeByColorCode[b.colorCode] || '';
+        case 'warehouse':
+          valA = a.warehouse || '';
+          valB = b.warehouse || '';
           break;
         default:
-          // 알 수 없는 키면 기본 tie-break만
           return tieBreak(a, b);
       }
 
       const primary = cmpString(valA, valB);
       if (primary !== 0) return primary * direction;
       return tieBreak(a, b);
-    }
-
-    function buildHeaderCell(label, key, extraClass = '', textAlignCenter = false) {
-      const isActive = sortKey === key;
-      const arrow = isActive ? (sortDir === 'asc' ? '▲' : '▼') : '';
-      const classes = [
-        'sortable',
-        isActive ? 'sortable-active' : '',
-        extraClass || '',
-        textAlignCenter ? 'text-center' : ''
-      ].filter(Boolean).join(' ');
-
-      return `
-        <th class="${classes}" data-sort-key="${key}">
-          <span class="th-label">${escapeHtml(label)}${
-            arrow ? `<span class="sort-indicator">${arrow}</span>` : ''
-          }</span>
-          <span class="resize-handle"></span>
-        </th>
-      `;
     }
 
     function search() {
@@ -955,21 +941,95 @@
       }
 
       const lowerKw = kw.toLowerCase();
-      const filtered = products.filter(p =>
+      const filteredProducts = products.filter(p =>
         String(p.productName).toLowerCase().includes(lowerKw)
       );
 
-      if (!filtered.length) {
+      if (!filteredProducts.length) {
         statusEl.textContent = `"${kw}" 검색 결과: 0개`;
         resultEl.innerHTML = '<div class="no-result">검색 결과 없음</div>';
         return;
       }
 
+      // ---- 결과를 "행 단위" 배열로 구성 ----
+      const rows = [];
+
+      filteredProducts.forEach(p => {
+        const entries = stockEntriesByColorCode[p.colorCode] || [];
+
+        let useEntries;
+        if (showWarehouse) {
+          useEntries = entries;
+        } else {
+          useEntries = entries.filter(e => e.warehouse === '주희물류');
+        }
+
+        // 주희물류도 없고 창고도 안 보는 경우: 재고 없는 1행
+        if (!useEntries.length) {
+          rows.push({
+            productName: p.productName || '',
+            colorName:   p.colorName   || '',
+            barcode:     p.barcode     || '',
+            productCode: p.productCode || '',
+            colorCode:   p.colorCode   || '',
+            size:        sizeByColorCode[p.colorCode] || '',
+            material:    p.material    || '',
+            warehouse:   '', // 표시 X
+            stockNum:    null,
+            stockStr:    '',
+            stockClass:  '',
+            rawName:     p.rawName     || '',
+            colorCodeKey: p.colorCode  || ''
+          });
+          return;
+        }
+
+        // 창고 보기 ON이면: 주희물류 먼저, 그 다음 창고명 가나다순
+        let sortedEntries = useEntries;
+        if (showWarehouse) {
+          sortedEntries = [...useEntries].sort((a, b) => {
+            const aw = a.warehouse || '';
+            const bw = b.warehouse || '';
+            if (aw === '주희물류' && bw !== '주희물류') return -1;
+            if (bw === '주희물류' && aw !== '주희물류') return 1;
+            return aw.localeCompare(bw, 'ko-KR');
+          });
+        }
+
+        sortedEntries.forEach(entry => {
+          const stockNum = entry.qty;
+          const stockStr = String(stockNum);
+          let stockClass = 'stock-pill stock-pill-green';
+          if (!isNaN(stockNum)) {
+            if (stockNum >= 100) stockClass = 'stock-pill stock-pill-green';
+            else if (stockNum >= 10) stockClass = 'stock-pill stock-pill-yellow';
+            else if (stockNum >= 0) stockClass = 'stock-pill stock-pill-red';
+          }
+
+          rows.push({
+            productName: p.productName || '',
+            colorName:   p.colorName   || '',
+            barcode:     p.barcode     || '',
+            productCode: p.productCode || '',
+            colorCode:   p.colorCode   || '',
+            size:        entry.size || sizeByColorCode[p.colorCode] || '',
+            material:    p.material    || '',
+            warehouse:   showWarehouse ? (entry.warehouse || '') : '',
+            stockNum,
+            stockStr,
+            stockClass,
+            rawName:     p.rawName     || '',
+            colorCodeKey: p.colorCode  || ''
+          });
+        });
+      });
+
       // 정렬
-      filtered.sort(compareProducts);
+      rows.sort(compareRows);
 
-      statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${filtered.length}개</strong>`;
+      statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${rows.length}행</strong>`;
 
+      // ---- 헤더 HTML ----
       let headerHtml = '<tr>';
       headerHtml += buildHeaderCell('상품명', 'productName', 'col-product');
       headerHtml += buildHeaderCell('칼라명', 'colorName', 'col-color');
@@ -987,99 +1047,38 @@
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
 
+      // ---- 바디 HTML (행 단위 렌더링) ----
       let bodyHtml = '';
 
-      filtered.forEach(p => {
-        const entries = stockEntriesByColorCode[p.colorCode] || [];
+      rows.forEach(r => {
+        const opIndicatorHtml = buildOperationIndicator(r.colorCode);
+        const rawNameEsc = escapeHtml(r.rawName || '');
+        const hasRaw = r.rawName && r.rawName !== r.productName;
+        const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
-        let useEntries;
-        if (showWarehouse) {
-          useEntries = entries;
-        } else {
-          useEntries = entries.filter(e => e.warehouse === '주희물류');
-        }
+        const stockCellInner = (r.stockStr && r.stockClass)
+          ? `<span class="${r.stockClass}">
+               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
+             </span>`
+          : '';
 
-        // 주희물류도 없고 창고도 안보는 경우 → 재고 없는 행 1줄
-        if (!useEntries.length) {
-          const opIndicatorHtml = buildOperationIndicator(p.colorCode);
-          const size = sizeByColorCode[p.colorCode] || '';
-          const rawName = p.rawName || '';
-          const rawNameEsc = escapeHtml(rawName);
-          const hasRaw = rawName && rawName !== p.productName;
-          const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
-
-          bodyHtml += `
-            <tr>
-              <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(p.colorCode || '')}">
-                ${opIndicatorHtml}${escapeHtml(p.productName || '')}
-              </td>
-              <td class="col-color">${escapeHtml(p.colorName || '')}</td>
-              <td>${escapeHtml(p.barcode || '')}</td>
-              <td class="col-pcode">${escapeHtml(p.productCode || '')}</td>
-              <td>${escapeHtml(p.colorCode || '')}</td>
-              <td>${escapeHtml(size || '')}</td>
-              ${showMaterial ? `<td>${escapeHtml(p.material || '')}</td>` : ''}
-              ${showWarehouse ? `<td class="col-warehouse"></td>` : ''}
-              <td class="text-right"></td>
-            </tr>
-          `;
-          return;
-        }
-
-        // 창고 보기 ON이면: 주희물류 먼저, 그 다음 창고명 가나다순
-        if (showWarehouse) {
-          useEntries = [...useEntries].sort((a, b) => {
-            const aw = a.warehouse || '';
-            const bw = b.warehouse || '';
-
-            if (aw === '주희물류' && bw !== '주희물류') return -1;
-            if (bw === '주희물류' && aw !== '주희물류') return 1;
-
-            return aw.localeCompare(bw, 'ko-KR');
-          });
-        }
-
-        useEntries.forEach(entry => {
-          const opIndicatorHtml = buildOperationIndicator(p.colorCode);
-          const size = entry.size || sizeByColorCode[p.colorCode] || '';
-          const stockNum = entry.qty;
-          const stockStr = String(stockNum);
-          let stockClass = 'stock-pill stock-pill-green';
-          if (!isNaN(stockNum)) {
-            if (stockNum >= 100) stockClass = 'stock-pill stock-pill-green';
-            else if (stockNum >= 10) stockClass = 'stock-pill stock-pill-yellow';
-            else if (stockNum >= 0) stockClass = 'stock-pill stock-pill-red';
-          }
-
-          const rawName = p.rawName || '';
-          const rawNameEsc = escapeHtml(rawName);
-          const hasRaw = rawName && rawName !== p.productName;
-          const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
-
-          bodyHtml += `
-            <tr>
-              <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(p.colorCode || '')}">
-                ${opIndicatorHtml}${escapeHtml(p.productName || '')}
-              </td>
-              <td class="col-color">${escapeHtml(p.colorName || '')}</td>
-              <td>${escapeHtml(p.barcode || '')}</td>
-              <td class="col-pcode">${escapeHtml(p.productCode || '')}</td>
-              <td>${escapeHtml(p.colorCode || '')}</td>
-              <td>${escapeHtml(size || '')}</td>
-              ${showMaterial ? `<td>${escapeHtml(p.material || '')}</td>` : ''}
-              ${
-                showWarehouse
-                  ? `<td class="col-warehouse">${escapeHtml(entry.warehouse || '')}</td>`
-                  : ''
-              }
-              <td class="text-right">
-                <span class="${stockClass}">
-                  <span class="stock-pill-dot"></span>${escapeHtml(stockStr)}
-                </span>
-              </td>
-            </tr>
-          `;
-        });
+        bodyHtml += `
+          <tr>
+            <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
+              ${opIndicatorHtml}${escapeHtml(r.productName || '')}
+            </td>
+            <td class="col-color">${escapeHtml(r.colorName || '')}</td>
+            <td>${escapeHtml(r.barcode || '')}</td>
+            <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
+            <td>${escapeHtml(r.colorCode || '')}</td>
+            <td>${escapeHtml(r.size || '')}</td>
+            ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
+            ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
+            <td class="text-right">
+              ${stockCellInner}
+            </td>
+          </tr>
+        `;
       });
 
       const html = `
@@ -1197,6 +1196,7 @@
       if (keywordInput.value.trim()) search();
     });
 
+    // 상품명 클릭 → 원래 상품명 복사
     resultEl.addEventListener('click', e => {
       const cell = e.target.closest('.product-name-cell');
       if (!cell) return;
