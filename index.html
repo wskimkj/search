@@ -1224,11 +1224,32 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
         document.body.removeChild(ta);
       }
     });
+// PlayMD 버튼을 클릭하면 WhiteSands 검색 페이지를 새 탭에서 열기
+document.addEventListener('DOMContentLoaded', () => {
+  // 예: 제목 클릭
+  const titleEl = document.querySelector('.title-wrap h1');
+  if (titleEl) {
+    titleEl.style.cursor = 'pointer';
+    titleEl.addEventListener('click', () => {
+      window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+    });
+  }
+
+  // 또는 로고 클릭
+  const logoPill = document.querySelector('.logo-pill');
+  if (logoPill) {
+    logoPill.style.cursor = 'pointer';
+    logoPill.addEventListener('click', () => {
+      window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+    });
+  }
+});
 
     init();
   </script>
 </body>
 </html>
+
 
 
 
