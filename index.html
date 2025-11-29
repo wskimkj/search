@@ -1027,7 +1027,7 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${rows.length}행</strong>`;
 
       // ---- 헤더 HTML ----
-      let headerHtml = '<tr>';
+      let headerHtml = '';
       headerHtml += buildHeaderCell('상품명', 'productName', 'col-product');
       headerHtml += buildHeaderCell('칼라명', 'colorName', 'col-color');
       headerHtml += buildHeaderCell('바코드', 'barcode');
@@ -1053,29 +1053,37 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
         const hasRaw = r.rawName && r.rawName !== r.productName;
         const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
-        const stockCellInner = (r.stockStr && r.stockClass)
-          ? `<span class="${r.stockClass}">
-               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-             </span>`
-          : '';
+   const stockCellInner = (r.stockStr && r.stockClass)
+  ? `<a href="${r.productUrl}" target="_blank" class="${r.stockClass}">
+       <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
+     </a>`
+  : '';
 
-        bodyHtml += `
-          <tr>
-            <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
-              ${opIndicatorHtml}${escapeHtml(r.productName || '')}
-            </td>
-            <td class="col-color">${escapeHtml(r.colorName || '')}</td>
-            <td>${escapeHtml(r.barcode || '')}</td>
-            <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
-            <td>${escapeHtml(r.colorCode || '')}</td>
-            <td>${escapeHtml(r.size || '')}</td>
-            ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
-            ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
-            <td class="text-right">
-              ${stockCellInner}
-            </td>
-          </tr>
-        `;
+
+bodyHtml += `
+  <tr>
+    <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
+      ${opIndicatorHtml}${escapeHtml(r.productName || '')}
+    </td>
+    <td class="col-color">${escapeHtml(r.colorName || '')}</td>
+    <td>${escapeHtml(r.barcode || '')}</td>
+    <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
+    <td>${escapeHtml(r.colorCode || '')}</td>
+    <td>${escapeHtml(r.size || '')}</td>
+    ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
+    ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
+    <td class="text-right">
+      ${
+        (r.stockStr && r.stockClass)
+          ? `<a href="${r.productUrl}" target="_blank" class="${r.stockClass}">
+               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
+             </a>`
+          : ''
+      }
+    </td>
+  </tr>
+`;
+
       });
 
       const html = `
@@ -1283,6 +1291,7 @@ document.addEventListener("click", (e) => {
   </script>
 </body>
 </html>
+
 
 
 
