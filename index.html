@@ -1244,11 +1244,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+    async function openWhiteSandsDetailByName(productName) {
+  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
+
+  try {
+    const res = await fetch(searchUrl);
+    const text = await res.text();
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, "text/html");
+
+    // 검색결과 리스트에서 첫 번째 상품 링크
+    const firstProductLink = doc.querySelector(".prdList .thumbnail a");
+
+    if (firstProductLink) {
+      window.open(firstProductLink.href, "_blank"); // 새탭으로 열기
+    } else {
+      alert(`"${productName}" 검색 결과가 없습니다.`);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("상품 상세페이지로 이동할 수 없습니다.");
+  }
+}
+
+// 재고셀 클릭 이벤트
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("stock-cell")) {
+    const productName = e.target.dataset.productName;
+    openWhiteSandsDetailByName(productName);
+  }
+});
+
 
     init();
   </script>
 </body>
 </html>
+
 
 
 
