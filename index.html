@@ -1042,7 +1042,6 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
         headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
       }
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
-      headerHtml += buildHeaderCell('테스트', 'test', 'test', true);
       headerHtml += '</tr>';
 
       // ---- 바디 HTML (행 단위 렌더링) ----
@@ -1082,7 +1081,6 @@ bodyHtml += `
           : ''
       }
     </td>
-    <td>${r.productUrl}</td>
   </tr>
 `;
 
@@ -1280,7 +1278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 재고셀 클릭 이벤트
 document.addEventListener("click", (e) => {
-  const cell = e.target.closest(".stock");  // 부모 탐색
+  const cell = e.target.closest(".stock-cell");  // 부모 탐색
   if (cell) {
     const productName = cell.dataset.productName;
     openWhiteSandsDetailByName(productName);
@@ -1293,6 +1291,7 @@ document.addEventListener("click", (e) => {
   </script>
 </body>
 </html>
+
 
 
 
