@@ -1042,6 +1042,7 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
         headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
       }
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
+      headerHtml += buildHeaderCell('테스트', 'test', 'test', true);
       headerHtml += '</tr>';
 
       // ---- 바디 HTML (행 단위 렌더링) ----
@@ -1081,6 +1082,7 @@ bodyHtml += `
           : ''
       }
     </td>
+    <td>${r.productUrl}</td>
   </tr>
 `;
 
@@ -1291,6 +1293,7 @@ document.addEventListener("click", (e) => {
   </script>
 </body>
 </html>
+
 
 
 
