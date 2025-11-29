@@ -1270,17 +1270,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 재고셀 클릭 이벤트
 document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("stock-cell")) {
-    const productName = e.target.dataset.productName;
+  const cell = e.target.closest(".stock-cell");  // 부모 탐색
+  if (cell) {
+    const productName = cell.dataset.productName;
     openWhiteSandsDetailByName(productName);
   }
 });
+
 
 
     init();
   </script>
 </body>
 </html>
+
 
 
 
