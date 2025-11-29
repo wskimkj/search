@@ -1280,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 재고셀 클릭 이벤트
 document.addEventListener("click", (e) => {
-  const cell = e.target.closest(".stock-cell");  // 부모 탐색
+  const cell = e.target.closest(".stock");  // 부모 탐색
   if (cell) {
     const productName = cell.dataset.productName;
     openWhiteSandsDetailByName(productName);
@@ -1293,6 +1293,7 @@ document.addEventListener("click", (e) => {
   </script>
 </body>
 </html>
+
 
 
 
