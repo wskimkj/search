@@ -1074,15 +1074,11 @@ bodyHtml += `
     <td>${escapeHtml(r.size || '')}</td>
     ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
     ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
-    <td class="text-right">
-      ${
-        (r.stockStr && r.stockClass)
-          ? `<a href="${r.productUrl}" target="_blank" class="${r.stockClass}">
-               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-             </a>`
-          : ''
-      }
-    </td>
+    <td class="text-right stock-cell" data-product-name="${escapeHtml(r.productName)}">
+  <span class="${r.stockClass}" style="cursor:pointer;">
+    <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
+  </span>
+</td>
   </tr>
 `;
 
@@ -1285,30 +1281,36 @@ document.addEventListener("click", async (e) => {
   const productName = cell.dataset.productName;
   if (!productName) return;
 
-  // 검색 페이지 URL
-  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
+  try {
+    const searchUrl =
+      `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
 
-  // 새 탭 열기
-  const newTab = window.open(searchUrl, "_blank");
+    // 검색 HTML 가져오기
+    const res = await fetch(searchUrl);
+    const html = await res.text();
 
-  // 첫 번째 상품 상세페이지를 바로 열기 위해 새 탭에서 실행
-  newTab.onload = async () => {
-    try {
-      const firstProductLink = newTab.document.querySelector(".prdList .thumbnail a");
-      if (firstProductLink) {
-        const href = firstProductLink.href.startsWith("http") 
-          ? firstProductLink.href 
-          : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
-        newTab.location.href = href; // 첫 번째 상품으로 이동
-      } else {
-        alert(`"${productName}" 검색 결과가 없습니다.`);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("상품 상세페이지로 이동할 수 없습니다.");
+    // 파싱
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    // 첫 상품 상세 링크
+    const firstProductLink = doc.querySelector(".prdList .thumbnail a");
+    if (!firstProductLink) {
+      alert(`"${productName}" 검색 결과가 없습니다.`);
+      return;
     }
-  };
+
+    const detailUrl = firstProductLink.href.startsWith("http")
+      ? firstProductLink.href
+      : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
+
+    window.open(detailUrl, "_blank");
+  } catch (err) {
+    console.error(err);
+    alert("상품 상세페이지 이동 실패.");
+  }
 });
+
 
 
 
@@ -1318,6 +1320,7 @@ document.addEventListener("click", async (e) => {
   </script>
 </body>
 </html>
+
 
 
 
