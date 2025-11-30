@@ -817,20 +817,7 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
       }
     }
     
-    async function fetchSearchHtml(productName) {
-  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
   
-const proxyUrl = `https://ws-proxy.wskimkj.workers.dev/?url=${encodeURIComponent(searchUrl)}`;
-
-  const res = await fetch(proxyUrl);
-  const html = await res.text();
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  return [...doc.querySelectorAll(".prdList .thumbnail a")];
-}
-
-
     function buildOperationIndicator(colorCode) {
       if (!showOperation) return '';
       const rawStatus = opStatusByColorCode[colorCode];
@@ -1067,14 +1054,6 @@ const proxyUrl = `https://ws-proxy.wskimkj.workers.dev/?url=${encodeURIComponent
         const hasRaw = r.rawName && r.rawName !== r.productName;
         const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
-const stockCellInner = `
-  <span class="stock-cell" data-product-name="${escapeHtml(r.productName)}">
-    <span class="${r.stockClass}">
-      <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-    </span>
-  </span>
-`;
-
 
 bodyHtml += `
   <tr>
@@ -1287,60 +1266,11 @@ async function openWhiteSandsDetailByName(productName) {
     alert("상품 상세페이지로 이동할 수 없습니다.");
   }
 }
-
-document.addEventListener("click", async (e) => {
-  const cell = e.target.closest(".stock-cell");
-  if (!cell) return;
-
-  const productName = cell.dataset.productName;
-  if (!productName) return;
-
-  try {
-    const searchUrl =
-      `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
-
-    const res = await fetch(searchUrl);
-    const html = await res.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    const items = [...doc.querySelectorAll(".prdList .thumbnail a")];
-
-    if (items.length === 0) {
-      alert(`"${productName}" 검색 결과가 없습니다.`);
-      return;
-    }
-
-    if (items.length === 1) {
-      const href = items[0].getAttribute("href");
-      const detailUrl = href.startsWith("http")
-        ? href
-        : `https://whitesands.co.kr${href}`;
-      window.open(detailUrl, "_blank");
-      return;
-    }
-
-    // 여러 개일 경우 팝업 기능 호출
-    showSelectPopup(items);
-
-  } catch (err) {
-    console.error(err);
-    alert("상품 상세페이지 이동 실패");
-  }
-});
-
-
-
-
-
-
-
-
     init();
   </script>
 </body>
 </html>
+
 
 
 
