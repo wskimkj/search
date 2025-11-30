@@ -1285,31 +1285,37 @@ document.addEventListener("click", async (e) => {
     const searchUrl =
       `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
 
-    // 검색 HTML 가져오기
     const res = await fetch(searchUrl);
     const html = await res.text();
 
-    // 파싱
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
 
-    // 첫 상품 상세 링크
-    const firstProductLink = doc.querySelector(".prdList .thumbnail a");
-    if (!firstProductLink) {
+    const items = [...doc.querySelectorAll(".prdList .thumbnail a")];
+
+    if (items.length === 0) {
       alert(`"${productName}" 검색 결과가 없습니다.`);
       return;
     }
 
-    const detailUrl = firstProductLink.href.startsWith("http")
-      ? firstProductLink.href
-      : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
+    if (items.length === 1) {
+      const href = items[0].getAttribute("href");
+      const detailUrl = href.startsWith("http")
+        ? href
+        : `https://whitesands.co.kr${href}`;
+      window.open(detailUrl, "_blank");
+      return;
+    }
 
-    window.open(detailUrl, "_blank");
+    // 여러 개일 경우 팝업 기능 호출
+    showSelectPopup(items);
+
   } catch (err) {
     console.error(err);
-    alert("상품 상세페이지 이동 실패.");
+    alert("상품 상세페이지 이동 실패");
   }
 });
+
 
 
 
@@ -1320,6 +1326,7 @@ document.addEventListener("click", async (e) => {
   </script>
 </body>
 </html>
+
 
 
 
