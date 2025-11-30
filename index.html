@@ -1244,32 +1244,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
     
-async function openWhiteSandsDetailByName(productName) {
-  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
-
-  try {
-    const res = await fetch(searchUrl);
-    const text = await res.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, "text/html");
-
-    const firstProductLink = doc.querySelector(".prdList .thumbnail a");
-
-    if (firstProductLink) {
-      window.open(firstProductLink.href, "_blank");
-    } else {
-      alert(`"${productName}" 검색 결과가 없습니다.`);
-    }
-  } catch (err) {
-    console.error(err);
-    alert("상품 상세페이지로 이동할 수 없습니다.");
-  }
-}
     init();
   </script>
 </body>
 </html>
+
 
 
 
