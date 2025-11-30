@@ -816,6 +816,20 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
         stockInfoEl.textContent = '로드 실패';
       }
     }
+    
+    async function fetchSearchHtml(productName) {
+  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
+  
+const proxyUrl = `https://ws-proxy.wskimkj.workers.dev/?url=${encodeURIComponent(searchUrl)}`;
+
+  const res = await fetch(proxyUrl);
+  const html = await res.text();
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  return [...doc.querySelectorAll(".prdList .thumbnail a")];
+}
+
 
     function buildOperationIndicator(colorCode) {
       if (!showOperation) return '';
@@ -1322,10 +1336,12 @@ document.addEventListener("click", async (e) => {
 
 
 
+
     init();
   </script>
 </body>
 </html>
+
 
 
 
