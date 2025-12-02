@@ -938,9 +938,18 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
       }
 
       const lowerKw = kw.toLowerCase();
-      const filteredProducts = products.filter(p =>
-        String(p.productName).toLowerCase().includes(lowerKw)
-      );
+      const filteredProducts = products.filter(p => {
+  const name      = (p.productName || '').toLowerCase();
+  const code      = (p.productCode || '').toLowerCase();   // 상품코드
+  const colorCode = (p.colorCode   || '').toLowerCase();   // 상품칼라코드
+
+  return (
+    name.includes(lowerKw) ||
+    code.includes(lowerKw) ||
+    colorCode.includes(lowerKw)
+  );
+});
+;
 
       if (!filteredProducts.length) {
         statusEl.textContent = `"${kw}" 검색 결과: 0개`;
@@ -1318,6 +1327,7 @@ document.addEventListener("click", async (e) => {
   </script>
 </body>
 </html>
+
 
 
 
