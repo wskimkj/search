@@ -155,20 +155,19 @@
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
 
-    /* 🔍 검색바 전체 박스 */
-    .search-card.premium {
-      width: 100%;
-      max-width: 480px;      /* 더 좁게 */
-      margin: 0 auto 20px;
-      padding: 20px 22px 22px;
-      border-radius: 26px;
-      background: #f7f7f8;
-      box-shadow:
-        -6px -6px 14px rgba(255,255,255,1),
-         8px  8px 20px rgba(150,150,150,0.22);
-      position: relative;
-      z-index: 1;
-    }
+.search-card.premium {
+  width: auto;
+  max-width: 360px;           /* ▶ 파란 네모 정도 폭 */
+  margin: 0 0 16px 0;         /* 왼쪽 정렬 + 아래 살짝 여백 */
+  padding: 14px 16px 16px;    /* 카드 안 여백도 줄이기 */
+  border-radius: 20px;
+  background: #f7f7f8;
+  box-shadow:
+    -4px -4px 10px rgba(255,255,255,1),
+     6px  6px 16px rgba(150,150,150,0.20);
+  position: relative;
+  z-index: 1;
+}
 
     /* 위쪽 필터 pill */
     .search-filters {
@@ -230,18 +229,20 @@
       position: relative;
       width: 100%;
     }
-    .input-wrap input {
-      width: 100%;
-      padding: 14px 48px;
-      border-radius: 20px;
-      border: none;
-      outline: none;
-      font-size: 14px;
-      background: #f3f4f6;
-      box-shadow:
-        inset 2px 2px 4px rgba(0,0,0,0.10),
-        inset -2px -2px 5px rgba(255,255,255,0.9);
-      transition: 0.15s ease;
+ .input-wrap input {
+  width: 100%;
+  padding: 10px 42px;        /* ▶ 세로/가로 패딩 줄여서 작게 */
+  border-radius: 18px;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  background: #f3f4f6;
+  box-shadow:
+    inset 1px 1px 3px rgba(0,0,0,0.10),
+    inset -1px -1px 3px rgba(255,255,255,0.9);
+  transition: 0.15s ease;
+}
+
     }
     .input-wrap input:focus {
       box-shadow:
@@ -1322,3 +1323,4 @@
   </script>
 </body>
 </html>
+
