@@ -80,19 +80,6 @@
       gap: 12px;
     }
 
-    .logo-pill {
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #f9a8d4, #f97316);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      box-shadow: 0 8px 18px rgba(248, 113, 113, 0.4);
-    }
-
     .title-wrap h1 {
       margin: 0;
       font-size: 19px;
@@ -148,7 +135,7 @@
     /* ===== 레이아웃: 검색창 위, 아래 전체 폭을 결과 테이블이 사용 ===== */
     .content-row {
       display: block;
-      margin-top: 12px;
+      margin-top: 16px;
       position: relative;
       z-index: 1;
     }
@@ -168,122 +155,154 @@
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
 
-/* 검색바 전체 박스 */
-.search-card.premium {
-  width: 100%;
-  max-width: 560px;      /* ✔ 너무 길지 않게 조정 */
-  margin: 0 auto 20px;
-  padding: 22px 26px 26px;
-  border-radius: 26px;
-  background: #f7f7f8;
-  box-shadow:
-    -6px -6px 14px rgba(255,255,255,1),
-     8px  8px 20px rgba(150,150,150,0.22);
-}
+    /* 🔍 검색바 전체 박스 */
+    .search-card.premium {
+      width: 100%;
+      max-width: 480px;      /* 더 좁게 */
+      margin: 0 auto 20px;
+      padding: 20px 22px 22px;
+      border-radius: 26px;
+      background: #f7f7f8;
+      box-shadow:
+        -6px -6px 14px rgba(255,255,255,1),
+         8px  8px 20px rgba(150,150,150,0.22);
+      position: relative;
+      z-index: 1;
+    }
 
-/* 상단 SEARCH 라벨 */
-.search-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.search-title {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #4b5563;
-}
-.header-icon {
-  width: 18px;
-  height: 18px;
-}
+    /* 위쪽 필터 pill */
+    .search-filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
 
-/* 입력창 */
-.input-wrap {
-  position: relative;
-  width: 100%;
-}
-.input-wrap input {
-  width: 100%;
-  padding: 14px 48px;
-  border-radius: 20px;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  background: #f3f4f6;
-  box-shadow:
-    inset 2px 2px 4px rgba(0,0,0,0.10),
-    inset -2px -2px 5px rgba(255,255,255,0.9);
-  transition: 0.15s ease;
-}
-.input-wrap input:focus {
-  box-shadow:
-    inset 1px 1px 2px rgba(0,0,0,0.15),
-    0 0 0 2px rgba(251,113,133,0.35);
-}
+    .filter-pill {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      cursor: pointer;
+    }
 
-/* 입력창 안 돋보기 아이콘 */
-.input-search-icon {
-  position: absolute;
-  top: 50%;
-  left: 14px;
-  width: 18px;
-  height: 18px;
-  transform: translateY(-50%);
-  opacity: 0.55;
-}
+    .filter-pill input {
+      display: none;   /* 실제 체크박스 숨김 */
+    }
 
-/* Enter 힌트 */
-.enter-hint {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px;
-  color: #9ca3af;
-}
+    .filter-pill span {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #4b5563;
+      border: 1px solid transparent;
+      transition: 0.15s ease;
+    }
 
-/* 옵션 */
-.search-options {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.search-options label {
-  font-size: 12px;
-  color: #6b7280;
-}
+    /* 체크되었을 때 하이라이트 (라디오 버튼 느낌) */
+    .filter-pill input:checked + span {
+      background: linear-gradient(135deg, #f472b6, #fb7185);
+      color: #fff;
+      border-color: rgba(248,113,113,0.6);
+      box-shadow: 0 4px 10px rgba(248,113,113,0.35);
+    }
 
-/* 검색 버튼 */
-#searchBtn {
-  padding: 6px 16px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f472b6, #fb7185);
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 13px;
-  box-shadow: 0 4px 12px rgba(248,113,113,0.3);
-}
-#searchBtn:disabled {
-  opacity: 0.55;
-  cursor: default;
-  box-shadow: none;
-}
+    /* 상단 SEARCH 라벨 */
+    .search-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .search-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+    }
+    .header-icon {
+      width: 18px;
+      height: 18px;
+    }
 
+    /* 입력창 */
+    .input-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .input-wrap input {
+      width: 100%;
+      padding: 14px 48px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      background: #f3f4f6;
+      box-shadow:
+        inset 2px 2px 4px rgba(0,0,0,0.10),
+        inset -2px -2px 5px rgba(255,255,255,0.9);
+      transition: 0.15s ease;
+    }
+    .input-wrap input:focus {
+      box-shadow:
+        inset 1px 1px 2px rgba(0,0,0,0.15),
+        0 0 0 2px rgba(251,113,133,0.35);
+    }
+
+    /* 입력창 안 돋보기 아이콘 */
+    .input-search-icon {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      width: 18px;
+      height: 18px;
+      transform: translateY(-50%);
+      opacity: 0.55;
+    }
+
+    /* Enter 힌트 */
+    .enter-hint {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* 검색 버튼 오른쪽 정렬 */
+    .search-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    #searchBtn {
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #f472b6, #fb7185);
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(248,113,113,0.3);
+    }
+    #searchBtn:disabled {
+      opacity: 0.55;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .status {
+      margin: 4px 4px 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
 
     @media (max-width: 860px) {
-      .search-card {
+      .search-card.premium {
         border-radius: 18px;
-      }
-      .search-inner {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .search-label {
-        justify-content: flex-start;
+        padding: 16px;
       }
       .status {
         white-space: normal;
@@ -306,6 +325,7 @@
     }
 
     .result-card {
+      width: 100%;
       max-height: 620px;
       overflow: hidden;
       display: flex;
@@ -368,9 +388,9 @@
     tr:hover td { background: #fce7f3; }
 
     /* 폭 비율 */
-    th.col-product, td.col-product { width: 16.66%; }
-    th.col-color, td.col-color       { width: 8.33%; }
-    th.col-pcode, td.col-pcode       { width: 10%; }
+    th.col-product, td.col-product     { width: 16.66%; }
+    th.col-color, td.col-color         { width: 8.33%; }
+    th.col-pcode, td.col-pcode         { width: 10%; }
     th.col-warehouse, td.col-warehouse { width: 10%; }
 
     .no-result {
@@ -555,46 +575,57 @@
       </div>
     </div>
 
-<!-- 🔍 고급형 검색바 -->
-<div class="search-card premium">
+    <!-- 🔍 고급형 검색바 (하나만 존재) -->
+    <div class="search-card premium">
 
-  <div class="search-header">
-    <svg class="header-icon" viewBox="0 0 24 24">
-      <defs>
-        <linearGradient id="gradSearch" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#f472b6"/>
-          <stop offset="100%" stop-color="#fb7185"/>
-        </linearGradient>
-      </defs>
-      <path d="M11 4a7 7 0 015.29 11.71l3.5 3.5a1 1 0 01-1.42 1.42l-3.5-3.5A7 7 0 1111 4zm0 2a5 5 0 100 10 5 5 0 000-10z"
-            fill="none" stroke="url(#gradSearch)" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-    <span class="search-title">SEARCH</span>
-  </div>
-
-  <div class="input-wrap">
-    <svg class="input-search-icon" viewBox="0 0 24 24">
-      <path d="M11 4a7 7 0 015.29 11.71l3.5 3.5a1 1 0 01-1.42 1.42l-3.5-3.5A7 7 0 1111 4zm0 2a5 5 0 100 10 5 5 0 000-10z"
-            fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-
-    <input type="text" id="keyword" placeholder="상품명, 상품코드, 상품칼라코드로 검색하세요." />
-    <span class="enter-hint">Enter ↵</span>
-  </div>
-
-  <div class="search-options">
-    <button id="searchBtn" disabled>✨ 검색</button>
-    <label><input type="checkbox" id="toggleWarehouse"> 창고</label>
-    <label><input type="checkbox" id="toggleMaterial"> 소재</label>
-  </div>
-
-</div>
-
-          <div class="status" id="status">
-            데이터 불러오는 중...
-          </div>
-        </div>
+      <!-- 위쪽 필터(창고 / 소재) 라디오 느낌 -->
+      <div class="search-filters">
+        <label class="filter-pill">
+          <input type="checkbox" id="toggleWarehouse">
+          <span>창고 보기</span>
+        </label>
+        <label class="filter-pill">
+          <input type="checkbox" id="toggleMaterial">
+          <span>소재 보기</span>
+        </label>
       </div>
+
+      <!-- 상단 SEARCH 라벨 -->
+      <div class="search-header">
+        <svg class="header-icon" viewBox="0 0 24 24">
+          <defs>
+            <linearGradient id="gradSearch" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f472b6"/>
+              <stop offset="100%" stop-color="#fb7185"/>
+            </linearGradient>
+          </defs>
+          <path d="M11 4a7 7 0 015.29 11.71l3.5 3.5a1 1 0 01-1.42 1.42l-3.5-3.5A7 7 0 1111 4zm0 2a5 5 0 100 10 5 5 0 000-10z"
+                fill="none" stroke="url(#gradSearch)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="search-title">SEARCH</span>
+      </div>
+
+      <!-- 입력창 -->
+      <div class="input-wrap">
+        <svg class="input-search-icon" viewBox="0 0 24 24">
+          <path d="M11 4a7 7 0 015.29 11.71l3.5 3.5a1 1 0 01-1.42 1.42l-3.5-3.5A7 7 0 1111 4zm0 2a5 5 0 100 10 5 5 0 000-10z"
+                fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+
+        <input type="text" id="keyword" placeholder="상품명, 상품코드, 상품칼라코드로 검색하세요." />
+        <span class="enter-hint">Enter ↵</span>
+      </div>
+
+      <!-- 검색 버튼 -->
+      <div class="search-actions">
+        <button id="searchBtn" disabled>✨ 검색</button>
+      </div>
+
+    </div><!-- /.search-card -->
+
+    <!-- 검색 상태 텍스트 -->
+    <div class="status" id="status">
+      상품/재고 데이터 불러오는 중...
     </div>
 
     <!-- 📋 결과 테이블: 아래 영역 전체 사용 -->
@@ -626,11 +657,13 @@
         </div>
 
         <div id="result">
-          <div class="no-result">아직 검색 전이에요. 키워드를 입력하고 <strong>검색하기</strong>를 눌러주세요.</div>
+          <div class="no-result">
+            아직 검색 전이에요. 키워드를 입력하고 <strong>검색</strong> 버튼이나 <strong>Enter</strong>를 눌러주세요.
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </div> <!-- /.app-shell -->
 
   <div id="toast" class="toast">원래 상품명을 클립보드에 복사했어요.</div>
 
@@ -1254,14 +1287,6 @@
           window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
         });
       }
-
-      const logoPill = document.querySelector('.logo-pill');
-      if (logoPill) {
-        logoPill.style.cursor = 'pointer';
-        logoPill.addEventListener('click', () => {
-          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
-        });
-      }
     });
 
     // 재고 뱃지 클릭 → 화이트샌즈 상세페이지 새 탭
@@ -1297,4 +1322,3 @@
   </script>
 </body>
 </html>
-
