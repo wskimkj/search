@@ -157,7 +157,7 @@
 
 .search-card.premium {
   width: auto;
-  max-width: 360px;           /* ▶ 파란 네모 정도 폭 */
+  max-width: 100px;           /* ▶ 파란 네모 정도 폭 */
   margin: 0 0 16px 0;         /* 왼쪽 정렬 + 아래 살짝 여백 */
   padding: 14px 16px 16px;    /* 카드 안 여백도 줄이기 */
   border-radius: 20px;
@@ -561,7 +561,6 @@
             상품 조회
             <span class="title-tag"> PlayMD </span>
           </h1>
-          <p>오늘도 화이팅!!!</p>
         </div>
       </div>
       <div class="header-right">
@@ -583,11 +582,11 @@
       <div class="search-filters">
         <label class="filter-pill">
           <input type="checkbox" id="toggleWarehouse">
-          <span>창고 보기</span>
+          <span>창고</span>
         </label>
         <label class="filter-pill">
           <input type="checkbox" id="toggleMaterial">
-          <span>소재 보기</span>
+          <span>소재</span>
         </label>
       </div>
 
@@ -613,13 +612,8 @@
                 fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
         </svg>
 
-        <input type="text" id="keyword" placeholder="상품명, 상품코드, 상품칼라코드로 검색하세요." />
+        <input type="text" id="keyword" placeholder="검색" />
         <span class="enter-hint">Enter ↵</span>
-      </div>
-
-      <!-- 검색 버튼 -->
-      <div class="search-actions">
-        <button id="searchBtn" disabled>✨ 검색</button>
       </div>
 
     </div><!-- /.search-card -->
@@ -659,14 +653,14 @@
 
         <div id="result">
           <div class="no-result">
-            아직 검색 전이에요. 키워드를 입력하고 <strong>검색</strong> 버튼이나 <strong>Enter</strong>를 눌러주세요.
+            아직 검색 전이에요.
           </div>
         </div>
       </div>
     </div>
   </div> <!-- /.app-shell -->
 
-  <div id="toast" class="toast">원래 상품명을 클립보드에 복사했어요.</div>
+  <div id="toast" class="toast">복사</div>
 
   <script>
     // ===== 시트 설정 =====
@@ -1323,4 +1317,5 @@
   </script>
 </body>
 </html>
+
 
