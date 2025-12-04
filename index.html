@@ -168,137 +168,111 @@
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
 
-    /* 상단 검색 카드 (핀터레스트 스타일 참고해서 살짝 뉴모피즘 느낌) */
-    .search-card {
-      margin-bottom: 12px;
-      padding: 16px 20px;
-      border-radius: 999px;
-      background: #f3f4f6;
-      border: none;
-      box-shadow:
-        8px 8px 18px rgba(148, 163, 184, 0.4),
-        -6px -6px 16px rgba(255, 255, 255, 0.95);
-    }
+/* 검색바 전체 박스 */
+.search-card.premium {
+  width: 100%;
+  max-width: 560px;      /* ✔ 너무 길지 않게 조정 */
+  margin: 0 auto 20px;
+  padding: 22px 26px 26px;
+  border-radius: 26px;
+  background: #f7f7f8;
+  box-shadow:
+    -6px -6px 14px rgba(255,255,255,1),
+     8px  8px 20px rgba(150,150,150,0.22);
+}
 
-    .search-inner {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+/* 상단 SEARCH 라벨 */
+.search-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.search-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #4b5563;
+}
+.header-icon {
+  width: 18px;
+  height: 18px;
+}
 
-    .search-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #6b7280;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+/* 입력창 */
+.input-wrap {
+  position: relative;
+  width: 100%;
+}
+.input-wrap input {
+  width: 100%;
+  padding: 14px 48px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: #f3f4f6;
+  box-shadow:
+    inset 2px 2px 4px rgba(0,0,0,0.10),
+    inset -2px -2px 5px rgba(255,255,255,0.9);
+  transition: 0.15s ease;
+}
+.input-wrap input:focus {
+  box-shadow:
+    inset 1px 1px 2px rgba(0,0,0,0.15),
+    0 0 0 2px rgba(251,113,133,0.35);
+}
 
-    .search-label span.icon {
-      font-size: 16px;
-    }
+/* 입력창 안 돋보기 아이콘 */
+.input-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  opacity: 0.55;
+}
 
-    .search-box {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+/* Enter 힌트 */
+.enter-hint {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: #9ca3af;
+}
 
-    .input-wrap {
-      position: relative;
-    }
+/* 옵션 */
+.search-options {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.search-options label {
+  font-size: 12px;
+  color: #6b7280;
+}
 
-    .input-wrap input[type="text"] {
-      width: 100%;
-      padding: 11px 40px 11px 40px;
-      font-size: 13px;
-      border-radius: 999px;
-      border: none;
-      outline: none;
-      background: #f3f4f6;
-      box-shadow:
-        inset 2px 2px 4px rgba(148, 163, 184, 0.4),
-        inset -2px -2px 4px rgba(255, 255, 255, 0.9);
-      transition: box-shadow 0.18s ease, transform 0.18s ease;
-    }
-    .input-wrap input::placeholder {
-      color: #9ca3af;
-      font-size: 12px;
-    }
-    .input-wrap input:focus {
-      box-shadow:
-        inset 1px 1px 3px rgba(148, 163, 184, 0.4),
-        inset -2px -2px 5px rgba(255, 255, 255, 1),
-        0 0 0 1px rgba(251, 113, 133, 0.5);
-      transform: translateY(-1px);
-    }
-    .input-icon-left {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 14px;
-      color: #9ca3af;
-    }
-    .input-icon-right {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 11px;
-      color: #9ca3af;
-    }
+/* 검색 버튼 */
+#searchBtn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f472b6, #fb7185);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(248,113,113,0.3);
+}
+#searchBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
 
-    .button-row {
-      display: flex;
-      flex-wrap: nowrap;
-      align-items: center;
-      gap: 10px;
-      margin-top: 2px;
-      overflow-x: auto;
-    }
-
-    button#searchBtn {
-      padding: 7px 16px;
-      font-size: 13px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(135deg, #f472b6, #fb7185);
-      color: white;
-      font-weight: 500;
-      box-shadow: 0 10px 25px rgba(248, 113, 113, 0.4);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
-      white-space: nowrap;
-    }
-    button#searchBtn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 30px rgba(248, 113, 113, 0.45);
-    }
-    button#searchBtn:active:not(:disabled) {
-      transform: translateY(0px) scale(0.99);
-      box-shadow: 0 8px 18px rgba(248, 113, 113, 0.3);
-    }
-    button#searchBtn:disabled {
-      opacity: 0.55;
-      cursor: default;
-      box-shadow: none;
-    }
-    .btn-icon { font-size: 14px; }
-
-    .status {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 4px;
-      white-space: nowrap;
-    }
-    .status strong { color: #4b5563; }
 
     @media (max-width: 860px) {
       .search-card {
@@ -561,7 +535,6 @@
   <div class="app-shell">
     <div class="header">
       <div class="header-left">
-        <div class="logo-pill">💎</div>
         <div class="title-wrap">
           <h1>
             상품 조회
@@ -582,36 +555,40 @@
       </div>
     </div>
 
-    <!-- 🔍 상단 전체폭 검색 바 -->
-    <div class="card search-card">
-      <div class="search-inner">
-        <div class="search-label">
-          <span class="icon">🔍</span>
-          상품 검색
-        </div>
-        <div class="search-box">
-          <div class="input-wrap">
-            <span class="input-icon-left">⌨️</span>
-            <input type="text" id="keyword" placeholder="상품명, 상품코드, 상품칼라코드로 검색해보세요." />
-            <span class="input-icon-right">Enter ↵</span>
-          </div>
+<!-- 🔍 고급형 검색바 -->
+<div class="search-card premium">
 
-          <div class="button-row">
-            <button id="searchBtn" disabled>
-              <span class="btn-icon">✨</span>
-              검색
-            </button>
+  <div class="search-header">
+    <svg class="header-icon" viewBox="0 0 24 24">
+      <defs>
+        <linearGradient id="gradSearch" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f472b6"/>
+          <stop offset="100%" stop-color="#fb7185"/>
+        </linearGradient>
+      </defs>
+      <path d="M11 4a7 7 0 015.29 11.71l3.5 3.5a1 1 0 01-1.42 1.42l-3.5-3.5A7 7 0 1111 4zm0 2a5 5 0 100 10 5 5 0 000-10z"
+            fill="none" stroke="url(#gradSearch)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="search-title">SEARCH</span>
+  </div>
 
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-              <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
-              창고
-            </label>
+  <div class="input-wrap">
+    <svg class="input-search-icon" viewBox="0 0 24 24">
+      <path d="M11 4a7 7 0 015.29 11.71l3.5 3.5a1 1 0 01-1.42 1.42l-3.5-3.5A7 7 0 1111 4zm0 2a5 5 0 100 10 5 5 0 000-10z"
+            fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
+    </svg>
 
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-              <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
-              소재
-            </label>
-          </div>
+    <input type="text" id="keyword" placeholder="상품명, 상품코드, 상품칼라코드로 검색하세요." />
+    <span class="enter-hint">Enter ↵</span>
+  </div>
+
+  <div class="search-options">
+    <button id="searchBtn" disabled>✨ 검색</button>
+    <label><input type="checkbox" id="toggleWarehouse"> 창고</label>
+    <label><input type="checkbox" id="toggleMaterial"> 소재</label>
+  </div>
+
+</div>
 
           <div class="status" id="status">
             데이터 불러오는 중...
@@ -1320,3 +1297,4 @@
   </script>
 </body>
 </html>
+
