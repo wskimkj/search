@@ -31,10 +31,10 @@
 
     body {
       margin: 0;
-      min-height: 30vh;
+      min-height: 100vh;
       padding: 24px;
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: var(--bg-gradient);
+      background: #111827;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -44,10 +44,10 @@
     .app-shell {
       width: 100%;
       max-width: 1400px;
-      background: var(--card-bg);
-      border-radius: 28px;
-      box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.7);
-      padding: 22px 24px 26px;
+      background: var(--bg-gradient);
+      border-radius: 32px;
+      box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.35);
+      padding: 22px 22px 26px;
       position: relative;
       overflow: hidden;
     }
@@ -64,14 +64,21 @@
       pointer-events: none;
     }
 
+    .inner-shell {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      padding: 18px 20px 20px;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.18);
+    }
+
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 14px;
     }
 
     .header-left {
@@ -145,29 +152,46 @@
       background: #22c55e;
     }
 
+    /* ===== 레이아웃 : 위 검색, 아래 결과 ===== */
     .content-row {
-      display: grid;
-      grid-template-columns: minmax(0, 0.7fr) minmax(0, 2.3fr);
-      gap: 16px;
-      align-items: flex-start;
-      position: relative;
-      z-index: 1;
-    }
-
-    @media (max-width: 860px) {
-      body { padding: 12px; }
-      .app-shell { border-radius: 20px; padding: 16px; }
-      .content-row { grid-template-columns: minmax(0, 1fr); }
-      .header { flex-direction: column; align-items: flex-start; }
-      .header-right { text-align: left; }
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       border-radius: var(--radius-xl);
-      padding: 14px 14px 16px;
+      padding: 14px 16px 16px;
       border: 1px solid var(--border-subtle);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+    }
+
+    /* 검색 카드 : 얇고 길게 */
+    .card-search {
+      border-radius: 999px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(90deg, rgba(251, 113, 133, 0.1), rgba(96, 165, 250, 0.05));
+    }
+
+    .card-search .card-title {
+      margin: 0;
+      min-width: 70px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .card-search .card-sub {
+      display: none;
+    }
+
+    .card-search .search-box {
+      flex: 1;
+      margin-top: 0;
     }
 
     .card-title {
@@ -196,7 +220,7 @@
 
     .input-wrap input[type="text"] {
       width: 100%;
-      padding: 9px 36px 9px 32px;
+      padding: 9px 40px 9px 32px;
       font-size: 13px;
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.8);
@@ -223,7 +247,7 @@
     }
     .input-icon-right {
       position: absolute;
-      right: 10px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
       font-size: 11px;
@@ -234,8 +258,8 @@
       display: flex;
       flex-wrap: nowrap;
       align-items: center;
-      gap: 10px;
-      margin-top: 4px;
+      gap: 8px;
+      margin-top: 2px;
       overflow-x: auto;
     }
 
@@ -273,15 +297,18 @@
     .status {
       font-size: 11px;
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-top: 2px;
     }
     .status strong { color: #4b5563; }
 
+    /* 결과 카드 : 넓고 크게 */
     .result-card {
       max-height: 620px;
+      min-height: 360px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      padding-top: 16px;
     }
 
     .result-header-row {
@@ -289,7 +316,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
 
     .result-header-right {
@@ -303,7 +330,7 @@
 
     .result-table-wrap {
       margin-top: 10px;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
       border: 1px solid var(--border-subtle);
       background: #f9fafb;
@@ -340,10 +367,10 @@
     tr:hover td { background: #fce7f3; }
 
     /* 폭 비율 (기본값, 드래그 시 인라인 스타일이 우선) */
-  th.col-product, td.col-product { width: 16.66%; }
-th.col-color, td.col-color       { width: 8.33%; }
-th.col-pcode, td.col-pcode       { width: 10%; }
-th.col-warehouse, td.col-warehouse { width: 10%; }
+    th.col-product, td.col-product { width: 16.66%; }
+    th.col-color, td.col-color       { width: 8.33%; }
+    th.col-pcode, td.col-pcode       { width: 10%; }
+    th.col-warehouse, td.col-warehouse { width: 10%; }
 
     .no-result {
       margin-top: 12px;
@@ -491,6 +518,21 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
     }
 
     @media (max-width: 860px) {
+      body { padding: 12px; }
+      .app-shell { border-radius: 24px; padding: 16px; }
+      .inner-shell { padding: 14px 12px 16px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .header-right { text-align: left; }
+
+      .card-search {
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 18px;
+      }
+      .card-search .card-title {
+        font-size: 12px;
+      }
+
       .result-header-row {
         flex-direction: column;
         align-items: flex-start;
@@ -505,104 +547,102 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
 </head>
 <body>
   <div class="app-shell">
-    <div class="header">
-      <div class="header-left">
-        <div class="logo-pill">💎</div>
-        <div class="title-wrap">
-          <h1>
-            상품 조회
-            <span class="title-tag"> PlayMD </span>
-          </h1>
-          <p>오늘도 화이팅!!!</p>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="pill-label">
-          <span class="pill-dot"></span>
-          화이트샌즈
-        </div>
-        <div style="margin-top: 6px;">
-        <br>
-          <span id="stockInfo">로딩 중...</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="content-row">
-      <!-- 검색 카드 -->
-      <div class="card">
-        <h2 class="card-title">
-          <span class="icon">🔍</span>
-          검색
-        </h2>
-        <p class="card-sub">
-        </p>
-
-        <div class="search-box">
-          <div class="input-wrap">
-            <span class="input-icon-left">⌨️</span>
-            <input type="text" id="keyword" placeholder="(예: 볼드린, 벨루오 등)" />
-            <span class="input-icon-right">Enter ↵</span>
+    <div class="inner-shell">
+      <div class="header">
+        <div class="header-left">
+          <div class="logo-pill">💎</div>
+          <div class="title-wrap">
+            <h1>
+              상품 조회
+              <span class="title-tag"> PlayMD </span>
+            </h1>
+            <p>오늘도 화이팅!!!</p>
           </div>
-
-          <div class="button-row">
-            <button id="searchBtn" disabled>
-              <span class="btn-icon">✨</span>
-              검색
-            </button>
-
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-              <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
-              창고
-            </label>
-
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-              <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
-              소재
-            </label>
-
-            <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-              <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" checked />
-              운영
-            </label>
+        </div>
+        <div class="header-right">
+          <div class="pill-label">
+            <span class="pill-dot"></span>
+            화이트샌즈
           </div>
-
-          <div class="status" id="status">
-            데이터 불러오는 중...
+          <div style="margin-top: 4px;">
+            <span id="stockInfo">로딩 중...</span>
           </div>
         </div>
       </div>
 
-      <!-- 결과 카드 -->
-      <div class="card result-card">
-        <div class="result-header-row">
+      <div class="content-row">
+        <!-- 검색 카드 -->
+        <div class="card card-search">
           <h2 class="card-title">
-            <span class="icon">📋</span>
-            검색 결과
+            <span class="icon">🔍</span>
+            검색
           </h2>
-          <div class="result-header-right">
-            <span style="font-size:11px;">
+          <div class="search-box">
+            <div class="input-wrap">
+              <span class="input-icon-left">⌨️</span>
+              <input type="text" id="keyword" placeholder="(예: 볼드린, 벨루오 등)" />
+              <span class="input-icon-right">Enter ↵</span>
+            </div>
+
+            <div class="button-row">
+              <button id="searchBtn" disabled>
+                <span class="btn-icon">✨</span>
+                검색
+              </button>
+
+              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
+                <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
+                창고
+              </label>
+
+              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
+                <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
+                소재
+              </label>
+
+              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
+                <input type="checkbox" id="toggleOperation" style="transform:scale(0.9);" checked />
+                운영
+              </label>
+            </div>
+
+            <div class="status" id="status">
+              데이터 불러오는 중...
+            </div>
+          </div>
+        </div>
+
+        <!-- 결과 카드 -->
+        <div class="card result-card">
+          <div class="result-header-row">
+            <h2 class="card-title">
+              <span class="icon">📋</span>
+              검색 결과
+            </h2>
+            <div class="result-header-right">
+              <span style="font-size:11px;">
+              </span>
+            </div>
+          </div>
+
+          <div id="opLegend" class="op-legend">
+            <span class="op-legend-item">
+              <span class="op-legend-dot on"></span> 운영
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot end"></span> 소진 후 종료
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot stop"></span> 단종
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot pause"></span> 일시 중단
             </span>
           </div>
-        </div>
 
-        <div id="opLegend" class="op-legend">
-          <span class="op-legend-item">
-            <span class="op-legend-dot on"></span> 운영
-          </span>
-          <span class="op-legend-item">
-            <span class="op-legend-dot end"></span> 소진 후 종료
-          </span>
-          <span class="op-legend-item">
-            <span class="op-legend-dot stop"></span> 단종
-          </span>
-          <span class="op-legend-item">
-            <span class="op-legend-dot pause"></span> 일시 중단
-          </span>
-        </div>
-
-        <div id="result">
-          <div class="no-result">아직 검색 전이에요. 키워드를 입력하고 <strong>검색하기</strong>를 눌러주세요.</div>
+          <div id="result">
+            <div class="no-result">아직 검색 전이에요. 키워드를 입력하고 <strong>검색</strong>을 눌러주세요.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -939,17 +979,16 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
 
       const lowerKw = kw.toLowerCase();
       const filteredProducts = products.filter(p => {
-  const name      = (p.productName || '').toLowerCase();
-  const code      = (p.productCode || '').toLowerCase();   // 상품코드
-  const colorCode = (p.colorCode   || '').toLowerCase();   // 상품칼라코드
+        const name      = (p.productName || '').toLowerCase();
+        const code      = (p.productCode || '').toLowerCase();   // 상품코드
+        const colorCode = (p.colorCode   || '').toLowerCase();   // 상품칼라코드
 
-  return (
-    name.includes(lowerKw) ||
-    code.includes(lowerKw) ||
-    colorCode.includes(lowerKw)
-  );
-});
-;
+        return (
+          name.includes(lowerKw) ||
+          code.includes(lowerKw) ||
+          colorCode.includes(lowerKw)
+        );
+      });
 
       if (!filteredProducts.length) {
         statusEl.textContent = `"${kw}" 검색 결과: 0개`;
@@ -1062,39 +1101,30 @@ th.col-warehouse, td.col-warehouse { width: 10%; }
         const hasRaw = r.rawName && r.rawName !== r.productName;
         const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
-const stockCellInner = `
-  <span class="stock-cell" data-product-name="${escapeHtml(r.productName)}">
-    <span class="${r.stockClass}">
-      <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-    </span>
-  </span>
-`;
+        const hasStock = r.stockStr && r.stockClass;
+        const stockCellInner = hasStock ? `
+          <span class="stock-cell" data-product-name="${escapeHtml(r.productName)}">
+            <span class="${r.stockClass}">
+              <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
+            </span>
+          </span>
+        ` : '';
 
-
-bodyHtml += `
-  <tr>
-    <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
-      ${opIndicatorHtml}${escapeHtml(r.productName || '')}
-    </td>
-    <td class="col-color">${escapeHtml(r.colorName || '')}</td>
-    <td>${escapeHtml(r.barcode || '')}</td>
-    <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
-    <td>${escapeHtml(r.colorCode || '')}</td>
-    <td>${escapeHtml(r.size || '')}</td>
-    ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
-    ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
-    <td class="text-right">
-      ${
-        (r.stockStr && r.stockClass)
-          ? `<a href="${r.productUrl}" target="_blank" class="${r.stockClass}">
-               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-             </a>`
-          : ''
-      }
-    </td>
-  </tr>
-`;
-
+        bodyHtml += `
+          <tr>
+            <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
+              ${opIndicatorHtml}${escapeHtml(r.productName || '')}
+            </td>
+            <td class="col-color">${escapeHtml(r.colorName || '')}</td>
+            <td>${escapeHtml(r.barcode || '')}</td>
+            <td class="col-pcode">${escapeHtml(r.productCode || '')}</td>
+            <td>${escapeHtml(r.colorCode || '')}</td>
+            <td>${escapeHtml(r.size || '')}</td>
+            ${showMaterial ? `<td>${escapeHtml(r.material || '')}</td>` : ''}
+            ${showWarehouse ? `<td class="col-warehouse">${escapeHtml(r.warehouse || '')}</td>` : ''}
+            <td class="text-right">${stockCellInner}</td>
+          </tr>
+        `;
       });
 
       const html = `
@@ -1243,100 +1273,80 @@ bodyHtml += `
         document.body.removeChild(ta);
       }
     });
-// PlayMD 버튼을 클릭하면 WhiteSands 검색 페이지를 새 탭에서 열기
-document.addEventListener('DOMContentLoaded', () => {
-  // 예: 제목 클릭
-  const titleEl = document.querySelector('.title-wrap h1');
-  if (titleEl) {
-    titleEl.style.cursor = 'pointer';
-    titleEl.addEventListener('click', () => {
-      window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
-    });
-  }
 
-  // 또는 로고 클릭
-  const logoPill = document.querySelector('.logo-pill');
-  if (logoPill) {
-    logoPill.style.cursor = 'pointer';
-    logoPill.addEventListener('click', () => {
-      window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
-    });
-  }
-});
-    
-async function openWhiteSandsDetailByName(productName) {
-  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
-
-  try {
-    const res = await fetch(searchUrl);
-    const text = await res.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, "text/html");
-
-    const firstProductLink = doc.querySelector(".prdList .thumbnail a");
-
-    if (firstProductLink) {
-      window.open(firstProductLink.href, "_blank");
-    } else {
-      alert(`"${productName}" 검색 결과가 없습니다.`);
-    }
-  } catch (err) {
-    console.error(err);
-    alert("상품 상세페이지로 이동할 수 없습니다.");
-  }
-}
-
-document.addEventListener("click", async (e) => {
-  const cell = e.target.closest(".stock-cell");
-  if (!cell) return;
-
-  const productName = cell.dataset.productName;
-  if (!productName) return;
-
-  // 검색 페이지 URL
-  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
-
-  // 새 탭 열기
-  const newTab = window.open(searchUrl, "_blank");
-
-  // 첫 번째 상품 상세페이지를 바로 열기 위해 새 탭에서 실행
-  newTab.onload = async () => {
-    try {
-      const firstProductLink = newTab.document.querySelector(".prdList .thumbnail a");
-      if (firstProductLink) {
-        const href = firstProductLink.href.startsWith("http") 
-          ? firstProductLink.href 
-          : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
-        newTab.location.href = href; // 첫 번째 상품으로 이동
-      } else {
-        alert(`"${productName}" 검색 결과가 없습니다.`);
+    // PlayMD 버튼 / 로고 클릭 → 화이트샌즈 검색 페이지 새 탭
+    document.addEventListener('DOMContentLoaded', () => {
+      const titleEl = document.querySelector('.title-wrap h1');
+      if (titleEl) {
+        titleEl.style.cursor = 'pointer';
+        titleEl.addEventListener('click', () => {
+          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+        });
       }
-    } catch (err) {
-      console.error(err);
-      alert("상품 상세페이지로 이동할 수 없습니다.");
+
+      const logoPill = document.querySelector('.logo-pill');
+      if (logoPill) {
+        logoPill.style.cursor = 'pointer';
+        logoPill.addEventListener('click', () => {
+          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+        });
+      }
+    });
+
+    async function openWhiteSandsDetailByName(productName) {
+      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
+
+      try {
+        const res = await fetch(searchUrl);
+        const text = await res.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, "text/html");
+
+        const firstProductLink = doc.querySelector(".prdList .thumbnail a");
+
+        if (firstProductLink) {
+          window.open(firstProductLink.href, "_blank");
+        } else {
+          alert(`"${productName}" 검색 결과가 없습니다.`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("상품 상세페이지로 이동할 수 없습니다.");
+      }
     }
-  };
-});
 
+    // 재고 pill 클릭 → 화이트샌즈 검색 후 첫 상품으로 이동
+    document.addEventListener("click", async (e) => {
+      const cell = e.target.closest(".stock-cell");
+      if (!cell) return;
 
+      const productName = cell.dataset.productName;
+      if (!productName) return;
 
+      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
 
+      const newTab = window.open(searchUrl, "_blank");
+
+      newTab.onload = async () => {
+        try {
+          const firstProductLink = newTab.document.querySelector(".prdList .thumbnail a");
+          if (firstProductLink) {
+            const href = firstProductLink.href.startsWith("http") 
+              ? firstProductLink.href 
+              : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
+            newTab.location.href = href;
+          } else {
+            alert(`"${productName}" 검색 결과가 없습니다.`);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("상품 상세페이지로 이동할 수 없습니다.");
+        }
+      };
+    });
 
     init();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
