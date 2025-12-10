@@ -32,22 +32,16 @@
     body {
       margin: 0;
       min-height: 100vh;
-      padding: 24px;
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       background: #f9fafb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       color: var(--text-main);
     }
 
     .app-shell {
       width: 100%;
-      max-width: 1400px;
-      background: var(--bg-gradient);
-      border-radius: 32px;
-      box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.35);
-      padding: 22px 22px 26px;
+      min-height: 100vh;
+      background: var(--bg-gradient); /* 화면 전체로 확장되는 배경 */
+      padding: 24px 24px 32px;
       position: relative;
       overflow: hidden;
     }
@@ -67,6 +61,8 @@
     .inner-shell {
       position: relative;
       z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
       background: rgba(255, 255, 255, 0.9);
       border-radius: 24px;
       padding: 18px 20px 20px;
@@ -190,10 +186,6 @@
       min-width: 70px;
       font-size: 13px;
       white-space: nowrap;
-    }
-
-    .card-search .card-sub {
-      display: none;
     }
 
     .card-search .search-box {
@@ -325,54 +317,6 @@
     }
     .status strong { color: #4b5563; }
 
-    .helper-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-      gap: 8px;
-      font-size: 11px;
-      color: #6b7280;
-    }
-    .helper-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .kbd {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 18px;
-      padding: 1px 5px;
-      border-radius: 4px;
-      border: 1px solid #d1d5db;
-      background: #f3f4f6;
-      font-size: 10px;
-      font-family: 'Pretendard', system-ui, -apple-system;
-      color: #374151;
-    }
-
-    .quick-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      justify-content: flex-end;
-    }
-    .chip {
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      background: rgba(249, 250, 251, 0.8);
-      padding: 3px 8px;
-      font-size: 11px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .chip:hover {
-      background: #e5e7eb;
-    }
-
     /* 결과 카드 : 넓고 크게 */
     .result-card {
       max-height: 620px;
@@ -447,7 +391,7 @@
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
 
-    /* 폭 비율 (기본값, 드래그 시 인라인 스타일이 우선) */
+    /* 폭 비율 */
     th.col-product, td.col-product { width: 16.66%; }
     th.col-color, td.col-color       { width: 8.33%; }
     th.col-pcode, td.col-pcode       { width: 10%; }
@@ -540,7 +484,7 @@
     .op-legend-dot {
       width: 9px;
       height: 9px;
-      border-radius: 999px;
+      border-radius: 50%;
       border: 2px solid #ffffff;
       box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.4);
     }
@@ -608,10 +552,17 @@
     }
 
     @media (max-width: 860px) {
-      body { padding: 12px; }
-      .app-shell { border-radius: 24px; padding: 16px; }
-      .inner-shell { padding: 14px 12px 16px; }
-      .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .app-shell {
+        padding: 12px 8px 20px;
+      }
+      .inner-shell {
+        padding: 14px 12px 16px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
       .header-right { text-align: left; }
 
       .card-search {
@@ -621,14 +572,6 @@
       }
       .card-search .card-title {
         font-size: 12px;
-      }
-
-      .helper-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .quick-chips {
-        justify-content: flex-start;
       }
 
       .result-header-row {
@@ -708,22 +651,6 @@
               </label>
             </div>
 
-            <div class="helper-row">
-              <div class="helper-left">
-                <span class="kbd">Enter</span> 검색
-                ·
-                <span class="kbd">Ctrl + K</span> 포커스
-                ·
-                <span class="kbd">/</span> 빠른 포커스
-              </div>
-              <div class="quick-chips">
-                <button type="button" class="chip" data-chip="볼드린">볼드린</button>
-                <button type="button" class="chip" data-chip="벨루오">벨루오</button>
-                <button type="button" class="chip" data-chip="비키니">비키니</button>
-                <button type="button" class="chip" data-chip="버킷햇">버킷햇</button>
-              </div>
-            </div>
-
             <div class="status" id="status">
               데이터 불러오는 중...
             </div>
@@ -789,20 +716,18 @@
 
     // ===== 전역 데이터 =====
     let products = [];
-    let stockEntriesByColorCode = {}; // { colorCode: [ {warehouse,size,qty} ] }
+    let stockEntriesByColorCode = {};
     let sizeByColorCode = {};
     let stockUpdatedAt = '';
 
     let showMaterial = false;
     let showWarehouse = false;
-    let inStockOnly = false; // 재고 있는 상품만 보기
+    let inStockOnly = false;
     let opStatusByColorCode = {};
 
-    // 정렬 상태 (헤더 클릭용 / 행 단위 정렬)
-    let sortKey = 'productName'; // productName | colorName | barcode | productCode | colorCode | size | material | warehouse | stock
-    let sortDir = 'asc';         // asc | desc
+    let sortKey = 'productName';
+    let sortDir = 'asc';
 
-    // 마지막 검색 키워드 (하이라이트용)
     let lastKeyword = '';
 
     const statusEl = document.getElementById('status');
@@ -864,7 +789,6 @@
     function updateLegendVisibility() {
       if (!opLegendEl) return;
       const hasData = Object.keys(opStatusByColorCode).length > 0;
-      // 운영 여부는 항상 표시되지만, 데이터 없으면 숨김
       opLegendEl.style.display = hasData ? 'flex' : 'none';
     }
 
@@ -1002,7 +926,6 @@
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // 검색 키워드 하이라이트
     function highlightText(text, keyword) {
       const base = escapeHtml(text || '');
       if (!keyword) return base;
@@ -1050,7 +973,6 @@
         return cmpString(a.colorCode || '', b.colorCode || '');
       }
 
-      // 재고 숫자 정렬
       if (key === 'stock') {
         const aNum = (typeof a.stockNum === 'number') ? a.stockNum : -1;
         const bNum = (typeof b.stockNum === 'number') ? b.stockNum : -1;
@@ -1125,8 +1047,8 @@
       const lowerKw = kw.toLowerCase();
       const filteredProducts = products.filter(p => {
         const name      = (p.productName || '').toLowerCase();
-        const code      = (p.productCode || '').toLowerCase();   // 상품코드
-        const colorCode = (p.colorCode   || '').toLowerCase();   // 상품칼라코드
+        const code      = (p.productCode || '').toLowerCase();
+        const colorCode = (p.colorCode   || '').toLowerCase();
 
         return (
           name.includes(lowerKw) ||
@@ -1144,7 +1066,6 @@
         return;
       }
 
-      // ---- 결과를 "행 단위" 배열로 구성 ----
       const rows = [];
 
       filteredProducts.forEach(p => {
@@ -1157,7 +1078,6 @@
           useEntries = entries.filter(e => e.warehouse === '주희물류');
         }
 
-        // 주희물류도 없고 창고도 안 보는 경우: 재고 없는 1행
         if (!useEntries.length) {
           rows.push({
             productName: p.productName || '',
@@ -1167,7 +1087,7 @@
             colorCode:   p.colorCode   || '',
             size:        sizeByColorCode[p.colorCode] || '',
             material:    p.material    || '',
-            warehouse:   '', // 표시 X
+            warehouse:   '',
             stockNum:    null,
             stockStr:    '',
             stockClass:  '',
@@ -1177,7 +1097,6 @@
           return;
         }
 
-        // 창고 보기 ON이면: 주희물류 먼저, 그 다음 창고명 가나다순
         let sortedEntries = useEntries;
         if (showWarehouse) {
           sortedEntries = [...useEntries].sort((a, b) => {
@@ -1217,7 +1136,6 @@
         });
       });
 
-      // 재고 있는 상품만 보기 옵션
       let usedRows = rows;
       if (inStockOnly) {
         usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
@@ -1232,7 +1150,6 @@
         return;
       }
 
-      // 정렬
       usedRows.sort(compareRows);
 
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>`;
@@ -1246,7 +1163,6 @@
         }
       }
 
-      // ---- 헤더 HTML ----
       let headerHtml = '';
       headerHtml += buildHeaderCell('상품명', 'productName', 'col-product');
       headerHtml += buildHeaderCell('칼라명', 'colorName', 'col-color');
@@ -1264,7 +1180,6 @@
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
 
-      // ---- 바디 HTML (행 단위 렌더링) ----
       let bodyHtml = '';
 
       usedRows.forEach(r => {
@@ -1324,10 +1239,8 @@
       ths.forEach((th, index) => {
         const key = th.dataset.sortKey;
 
-        // 정렬: 헤더 클릭
         if (key) {
           th.addEventListener('click', (e) => {
-            // 리사이즈 핸들 클릭은 무시
             if (e.target.classList.contains('resize-handle') ||
                 e.target.closest('.resize-handle')) {
               return;
@@ -1342,7 +1255,6 @@
           });
         }
 
-        // 리사이즈 핸들 설정
         let handle = th.querySelector('.resize-handle');
         if (!handle) {
           handle = document.createElement('span');
@@ -1367,7 +1279,7 @@
 
       function onMouseMove(ev) {
         const dx = ev.pageX - startX;
-        const newWidth = Math.max(60, startWidth + dx); // 최소 60px
+        const newWidth = Math.max(60, startWidth + dx);
 
         if (headCells[colIndex]) {
           headCells[colIndex].style.width = newWidth + 'px';
@@ -1435,16 +1347,6 @@
       }
     });
 
-    // 퀵 칩 버튼
-    document.querySelectorAll('.chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const v = chip.dataset.chip || chip.textContent.trim();
-        keywordInput.value = v;
-        keywordInput.focus();
-        search();
-      });
-    });
-
     // 상품명 클릭 → 원래 상품명 복사
     resultEl.addEventListener('click', e => {
       const cell = e.target.closest('.product-name-cell');
@@ -1477,7 +1379,7 @@
       }
     });
 
-    // PlayMD 버튼 / 로고 클릭 → 화이트샌즈 검색 페이지 새 탭
+    // 타이틀/로고 클릭 → 사이트 검색 페이지
     document.addEventListener('DOMContentLoaded', () => {
       const titleEl = document.querySelector('.title-wrap h1');
       if (titleEl) {
@@ -1494,30 +1396,7 @@
       }
     });
 
-    async function openWhiteSandsDetailByName(productName) {
-      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
-
-      try {
-        const res = await fetch(searchUrl);
-        const text = await res.text();
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, "text/html");
-
-        const firstProductLink = doc.querySelector(".prdList .thumbnail a");
-
-        if (firstProductLink) {
-          window.open(firstProductLink.href, "_blank");
-        } else {
-          alert(`"${productName}" 검색 결과가 없습니다.`);
-        }
-      } catch (err) {
-        console.error(err);
-        alert("상품 상세페이지로 이동할 수 없습니다.");
-      }
-    }
-
-    // 재고 pill 클릭 → 화이트샌즈 검색 후 첫 상품으로 이동
+    // 재고 pill 클릭 → 검색 후 첫 상품으로 이동
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
@@ -1547,16 +1426,14 @@
       };
     });
 
-    // 키보드 단축키: Ctrl+K, Cmd+K, /
+    // 단축키: Ctrl+K / Cmd+K / /
     document.addEventListener('keydown', (e) => {
-      // Ctrl+K / Cmd+K
       if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
         keywordInput.focus();
         keywordInput.select();
         return;
       }
-      // / 키로 빠른 포커스 (인풋/텍스트에어리어 포커스 아닐 때만)
       if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const tag = document.activeElement && document.activeElement.tagName;
         if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
