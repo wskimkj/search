@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="stylesheet" href="https://wskimkj.github.io/admin/css/common.css">
+  <link rel="stylesheet" href="https://wskimkj.github.io/admin/css/glass-unified.css">
+
+
   <meta charset="UTF-8">
   <title>상품 조회</title>
-
-  <!-- 공통 유니파이드(전역) -->
-  <link rel="stylesheet" href="https://wskimkj.github.io/admin/css/glass-unified.css">
 
   <!-- 파비콘 -->
   <link rel="icon" type="image/png" href="android-chrome-512x512 (1).ico">
@@ -18,9 +19,6 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-    /* =========================================
-       BASE (원본 스타일 - 기능/레이아웃 유지)
-       ========================================= */
     :root {
       --bg-gradient: radial-gradient(circle at top left, #f9a8d4 0, #e5e7eb 40%, #e0f2fe 100%);
       --card-bg: rgba(255, 255, 255, 0.96);
@@ -46,7 +44,7 @@
     .app-shell {
       width: 100%;
       min-height: 100vh;
-      background: var(--bg-gradient);
+      background: var(--bg-gradient); /* 화면 전체로 확장되는 배경 */
       padding: 24px 24px 32px;
       position: relative;
       overflow: hidden;
@@ -87,6 +85,25 @@
       display: flex;
       align-items: center;
       gap: 12px;
+    }
+
+    .logo-pill {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #f9a8d4, #f97316);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 8px 18px rgba(248, 113, 113, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+    }
+    .logo-pill:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 12px 22px rgba(248, 113, 113, 0.5);
     }
 
     .title-wrap h1 {
@@ -142,6 +159,7 @@
       background: #22c55e;
     }
 
+    /* ===== 레이아웃 : 위 검색, 아래 결과 ===== */
     .content-row {
       display: flex;
       flex-direction: column;
@@ -157,6 +175,7 @@
       box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
     }
 
+    /* 검색 카드 */
     .card-search {
       border-radius: 20px;
       padding: 10px 14px;
@@ -302,6 +321,7 @@
     }
     .status strong { color: #4b5563; }
 
+    /* 결과 카드 : 넓고 크게 */
     .result-card {
       max-height: 620px;
       min-height: 360px;
@@ -375,9 +395,10 @@
     tr:nth-child(even) td { background: #fdf2f8; }
     tr:hover td { background: #fce7f3; }
 
+    /* 폭 비율 */
     th.col-product, td.col-product { width: 16.66%; }
-    th.col-color, td.col-color     { width: 8.33%; }
-    th.col-pcode, td.col-pcode     { width: 10%; }
+    th.col-color, td.col-color       { width: 8.33%; }
+    th.col-pcode, td.col-pcode       { width: 10%; }
     th.col-warehouse, td.col-warehouse { width: 10%; }
 
     .no-result {
@@ -497,6 +518,7 @@
       transform: translateX(-50%) translateY(-4px);
     }
 
+    /* 키워드 하이라이트 */
     .kw-mark {
       background: #fef3c7;
       color: #92400e;
@@ -504,6 +526,7 @@
       border-radius: 3px;
     }
 
+    /* 정렬 가능한 헤더 & 정렬 방향 표시 */
     th.sortable {
       cursor: pointer;
       user-select: none;
@@ -517,6 +540,7 @@
       opacity: 0.7;
     }
 
+    /* 컬럼 리사이즈 핸들 */
     .resize-handle {
       position: absolute;
       top: 0;
@@ -532,170 +556,200 @@
     }
 
     @media (max-width: 860px) {
-      .app-shell { padding: 12px 8px 20px; }
-      .inner-shell { padding: 14px 12px 16px; }
-      .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .app-shell {
+        padding: 12px 8px 20px;
+      }
+      .inner-shell {
+        padding: 14px 12px 16px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
       .header-right { text-align: left; }
-      .card-search { flex-direction: column; align-items: stretch; border-radius: 18px; }
-      .card-search .card-title { font-size: 12px; }
-      .result-header-row { flex-direction: column; align-items: flex-start; }
-      .result-header-right { align-self: stretch; justify-content: space-between; white-space: normal; }
+
+      .card-search {
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 18px;
+      }
+      .card-search .card-title {
+        font-size: 12px;
+      }
+
+      .result-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .result-header-right {
+        align-self: stretch;
+        justify-content: space-between;
+        white-space: normal;
+      }
     }
+    /* ===== admin 공통 스타일 최소 적용 (테스트용) ===== */
+body{
+  font-family: 'Pretendard', system-ui, sans-serif;
+  font-size: 10px;
+}
 
-    /* =========================================
-       FINAL – ADMIN UNIFIED (기준 템플릿)
-       ========================================= */
-    body{
-      font-family:'Pretendard',system-ui,sans-serif !important;
-      font-size:10px !important;
-      color:#111827;
-    }
+:root{
+  --primary: #7c3aed; /* admin 사이드바 보라 톤 */
+}
+/* ===== 통일감 체감 패치(글래스 유지) ===== */
+:root{
+  /* admin 쉘 톤과 맞추기 */
+  --accent: #7c3aed;        /* 보라 포인트 */
+  --text-main:#111827;
+  --text-muted:#6b7280;
 
-    .app-shell{
-      background:
-        radial-gradient(circle at top left, rgba(236,72,153,.35), transparent 55%),
-        radial-gradient(circle at bottom right, rgba(96,165,250,.28), transparent 55%),
-        radial-gradient(circle at top right, rgba(124,58,237,.22), transparent 55%),
-        #fdf2ff !important;
-      padding:18px !important;
-    }
+  /* 통일 규격 */
+  --radius-xl: 18px;
+  --shadow-soft: 0 18px 45px rgba(15,23,42,0.18);
+}
 
-    .inner-shell{
-      background: rgba(255,255,255,.78) !important;
-      backdrop-filter: blur(18px) !important;
-      -webkit-backdrop-filter: blur(18px) !important;
-      border:1px solid rgba(255,255,255,.55) !important;
-      border-radius:18px !important;
-      box-shadow:0 24px 60px rgba(15,23,42,.22) !important;
-    }
+/* 폰트/스케일 통일(체감 포인트) */
+body{ font-size:10px !important; }
+.title-wrap h1{ font-size:14px !important; }      /* 기존 19px -> 14px */
+.title-wrap p{ font-size:9px !important; }        /* 기존 12px -> 9px */
+.card-title{ font-size:12px !important; }         /* 기존 13px -> 12px */
+.card-sub, .status, .header-right, .pill-label{ font-size:9px !important; }
 
-    .card{
-      background: rgba(255,255,255,.70) !important;
-      backdrop-filter: blur(12px) !important;
-      -webkit-backdrop-filter: blur(12px) !important;
-      border:1px solid rgba(148,163,184,.28) !important;
-      border-radius:16px !important;
-      box-shadow:0 10px 26px rgba(15,23,42,.12) !important;
-    }
+/* 배경/글래스 톤 통일(감성은 유지) */
+.app-shell{
+  background: var(--bg-gradient) !important;
+  padding: 18px !important;
+}
+.inner-shell{
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.55) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
 
-    .card-search{
-      border-radius:16px !important;
-      padding:10px 12px !important;
-    }
+/* 카드 통일 */
+.card{
+  border-radius: 16px !important;
+  background: rgba(255,255,255,0.70) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(148,163,184,0.28) !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10) !important;
+}
+.card-search{
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+}
 
-    .title-wrap h1{ font-size:14px !important; }
-    .card-title{ font-size:12px !important; }
-    .card-sub,
-    .status,
-    .header-right,
-    .result-header-right,
-    .no-result{ font-size:9px !important; }
+/* 입력/버튼 규격 통일 (pill 감성은 유지하되 “같은 제품” 느낌) */
+.input-wrap input[type="text"]{
+  font-size:10px !important;
+  padding: 8px 38px 8px 30px !important;
+  border-radius: 14px !important; /* 999px -> 14px 로 통일감 */
+  background: rgba(255,255,255,0.70) !important;
+}
+.input-wrap input::placeholder{ font-size:9px !important; }
 
-    .input-wrap input[type="text"]{
-      font-size:10px !important;
-      padding:8px 36px 8px 30px !important;
-      border-radius:14px !important;
-      background: rgba(255,255,255,.75) !important;
-    }
-    .input-wrap input::placeholder{ font-size:9px !important; }
+button#searchBtn{
+  font-size:10px !important;
+  padding: 8px 14px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #7c3aed, #ec4899) !important; /* 쉘 그라데이션과 통일 */
+  box-shadow: 0 10px 25px rgba(124,58,237,0.30) !important;
+}
+.btn-secondary{
+  font-size:10px !important;
+  padding: 8px 12px !important;
+  border-radius: 14px !important;
+}
 
-    button#searchBtn{
-      font-size:10px !important;
-      padding:8px 14px !important;
-      border-radius:14px !important;
-      background: linear-gradient(135deg,#7c3aed,#ec4899) !important;
-      box-shadow: 0 10px 25px rgba(124,58,237,.35) !important;
-    }
+/* 테이블 폰트/헤더 톤 통일 */
+table{ font-size:10px !important; }
+th{ font-size:9px !important; color: var(--text-muted) !important; }
+.result-table-wrap td{ font-size:10px !important; }
+/* ===============================
+   SEARCH FINAL – ADMIN UNIFIED
+   기준 페이지 (복제용)
+================================ */
 
-    .btn-secondary{
-      font-size:10px !important;
-      padding:8px 12px !important;
-      border-radius:14px !important;
-    }
+/* 1. 베이스 규격 */
+body{
+  font-family:'Pretendard',system-ui,sans-serif !important;
+  font-size:10px !important;
+  color:#111827;
+}
 
-    table{ font-size:10px !important; }
-    th{ font-size:9px !important; color:#6b7280 !important; }
-    td{ font-size:10px !important; }
-    .result-table-wrap td{ font-size:10px !important; }
+/* 2. 전체 배경 (글래스 OK, 컬러 OK) */
+.app-shell{
+  background:
+    radial-gradient(circle at top left, rgba(236,72,153,.35), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(96,165,250,.28), transparent 55%),
+    radial-gradient(circle at top right, rgba(124,58,237,.22), transparent 55%),
+    #fdf2ff !important;
+  padding:18px !important;
+}
 
-    /* =========================================
-       PREMIUM TUNING (v1)
-       ========================================= */
-    .app-shell{
-      background:
-        radial-gradient(circle at top left, rgba(236,72,153,.28), transparent 58%),
-        radial-gradient(circle at bottom right, rgba(96,165,250,.22), transparent 58%),
-        radial-gradient(circle at top right, rgba(124,58,237,.18), transparent 60%),
-        #fdf2ff !important;
-    }
+/* 3. 메인 컨테이너 (쉘과 같은 재질) */
+.inner-shell{
+  background: rgba(255,255,255,.78) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border:1px solid rgba(255,255,255,.55) !important;
+  border-radius:18px !important;
+  box-shadow:0 24px 60px rgba(15,23,42,.22) !important;
+}
 
-    .inner-shell{
-      position: relative !important;
-      background: rgba(255,255,255,.72) !important;
-      border: 1px solid rgba(255,255,255,.62) !important;
-      box-shadow:
-        0 28px 70px rgba(15,23,42,.20),
-        inset 0 1px 0 rgba(255,255,255,.55) !important;
-    }
+/* 4. 카드 통일 */
+.card{
+  background: rgba(255,255,255,.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border:1px solid rgba(148,163,184,.28) !important;
+  border-radius:16px !important;
+  box-shadow:0 10px 26px rgba(15,23,42,.12) !important;
+}
 
-    .inner-shell::before{
-      content:"" !important;
-      position:absolute !important;
-      left:14px !important;
-      right:14px !important;
-      top:10px !important;
-      height:42px !important;
-      border-radius: 14px !important;
-      background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,0)) !important;
-      pointer-events:none !important;
-      opacity:.55 !important;
-    }
+/* 5. 타이포 스케일 (어드민 기준) */
+.title-wrap h1{ font-size:14px !important; }
+.card-title{ font-size:12px !important; }
+.card-sub,
+.status,
+.header-right,
+.result-header-right,
+.no-result{ font-size:9px !important; }
 
-    .card{
-      position: relative !important;
-      background: rgba(255,255,255,.64) !important;
-      border: 1px solid rgba(255,255,255,.42) !important;
-      box-shadow:
-        0 14px 34px rgba(15,23,42,.10),
-        inset 0 1px 0 rgba(255,255,255,.50) !important;
-      backdrop-filter: blur(10px) !important;
-      -webkit-backdrop-filter: blur(10px) !important;
-    }
+/* 6. 입력 / 버튼 (pill 유지 + 통일감) */
+.input-wrap input[type="text"]{
+  font-size:10px !important;
+  padding:8px 36px 8px 30px !important;
+  border-radius:14px !important;
+  background: rgba(255,255,255,.75) !important;
+}
 
-    .card::before{
-      content:"" !important;
-      position:absolute !important;
-      left:10px !important;
-      right:10px !important;
-      top:8px !important;
-      height:22px !important;
-      border-radius: 12px !important;
-      background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0)) !important;
-      pointer-events:none !important;
-      opacity:.35 !important;
-    }
+button#searchBtn{
+  font-size:10px !important;
+  padding:8px 14px !important;
+  border-radius:14px !important;
+  background: linear-gradient(135deg,#7c3aed,#ec4899) !important;
+  box-shadow:0 10px 25px rgba(124,58,237,.35) !important;
+}
 
-    button#searchBtn{
-      box-shadow:
-        0 14px 34px rgba(124,58,237,.30),
-        inset 0 1px 0 rgba(255,255,255,.35) !important;
-    }
+.btn-secondary{
+  font-size:10px !important;
+  padding:8px 12px !important;
+  border-radius:14px !important;
+}
 
-    .input-wrap input[type="text"]{
-      background: rgba(255,255,255,.66) !important;
-      border: 1px solid rgba(255,255,255,.35) !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.35) !important;
-    }
+/* 7. 테이블 */
+table{ font-size:10px !important; }
+th{ font-size:9px !important; color:#6b7280 !important; }
+td{ font-size:10px !important; }
 
-    .input-wrap input[type="text"]:focus{
-      border-color: rgba(124,58,237,.45) !important;
-      box-shadow:
-        0 0 0 3px rgba(124,58,237,.14),
-        0 14px 30px rgba(15,23,42,.10) !important;
-    }
   </style>
 </head>
-
 <body>
   <div class="app-shell">
     <div class="inner-shell">
@@ -708,10 +762,10 @@
             </h1>
           </div>
         </div>
-
         <div class="header-right">
-          <div class="pill-label"></div>
-          <div style="margin-top:4px;">
+          <div class="pill-label">
+          </div>
+          <div style="margin-top: 4px;">
             <span id="stockInfo">로딩 중...</span>
           </div>
         </div>
@@ -720,8 +774,10 @@
       <div class="content-row">
         <!-- 검색 카드 -->
         <div class="card card-search">
-          <h2 class="card-title"><span class="icon">🔍</span>검색</h2>
-
+          <h2 class="card-title">
+            <span class="icon">🔍</span>
+            검색
+          </h2>
           <div class="search-box">
             <div class="input-wrap">
               <span class="input-icon-left">⌨️</span>
@@ -731,48 +787,68 @@
 
             <div class="button-row">
               <button id="searchBtn" disabled>
-                <span class="btn-icon">✨</span>검색
+                <span class="btn-icon">✨</span>
+                검색
               </button>
 
-              <button type="button" id="resetBtn" class="btn-secondary">↺ 초기화</button>
+              <button type="button" id="resetBtn" class="btn-secondary">
+                ↺ 초기화
+              </button>
 
-              <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;white-space:nowrap;">
+              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
                 <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
                 창고
               </label>
 
-              <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;white-space:nowrap;">
+              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
                 <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
                 소재
               </label>
 
-              <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;white-space:nowrap;">
+              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
                 <input type="checkbox" id="toggleInStockOnly" style="transform:scale(0.9);" />
                 재고 있음만
               </label>
             </div>
 
-            <div class="status" id="status">데이터 불러오는 중...</div>
+            <div class="status" id="status">
+              데이터 불러오는 중...
+            </div>
           </div>
         </div>
 
         <!-- 결과 카드 -->
         <div class="card result-card">
           <div class="result-header-row">
-            <h2 class="card-title"><span class="icon">📋</span>검색 결과</h2>
+            <h2 class="card-title">
+              <span class="icon">📋</span>
+              검색 결과
+            </h2>
             <div class="result-header-right">
-              <span id="resultInfo" style="font-size:11px;">아직 검색 전이에요.</span>
+              <span id="resultInfo" style="font-size:11px;">
+                아직 검색 전이에요.
+              </span>
             </div>
           </div>
 
           <div id="opLegend" class="op-legend">
-            <span class="op-legend-item"><span class="op-legend-dot on"></span> 운영</span>
-            <span class="op-legend-item"><span class="op-legend-dot end"></span> 소진 후 종료</span>
-            <span class="op-legend-item"><span class="op-legend-dot stop"></span> 단종</span>
-            <span class="op-legend-item"><span class="op-legend-dot pause"></span> 일시 중단</span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot on"></span> 운영
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot end"></span> 소진 후 종료
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot stop"></span> 단종
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot pause"></span> 일시 중단
+            </span>
           </div>
 
-          <div id="result"><div class="no-result"></div></div>
+          <div id="result">
+            <div class="no-result"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -854,7 +930,10 @@
     }
 
     function parseCSV(text) {
-      const parsed = Papa.parse(text, { header: false, skipEmptyLines: true });
+      const parsed = Papa.parse(text, {
+        header: false,
+        skipEmptyLines: true
+      });
       return parsed.data;
     }
 
@@ -862,7 +941,9 @@
       if (!toastEl) return;
       toastEl.textContent = msg;
       toastEl.classList.add('show');
-      setTimeout(() => toastEl.classList.remove('show'), 1400);
+      setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 1400);
     }
 
     function updateLegendVisibility() {
@@ -932,17 +1013,23 @@
         const qty = Number(qtyRaw);
         if (isNaN(qty)) continue;
 
-        if (!stockEntriesByColorCode[colorCode]) stockEntriesByColorCode[colorCode] = [];
+        if (!stockEntriesByColorCode[colorCode]) {
+          stockEntriesByColorCode[colorCode] = [];
+        }
         stockEntriesByColorCode[colorCode].push({ warehouse, size, qty });
 
-        if (!sizeByColorCode[colorCode] && size) sizeByColorCode[colorCode] = size;
+        if (!sizeByColorCode[colorCode] && size) {
+          sizeByColorCode[colorCode] = size;
+        }
       }
     }
 
     async function loadOperationStatus() {
       const res = await fetch(OPER_CSV_URL);
-      if (!res.ok) return;
-
+      if (!res.ok) {
+        console.log('운영 여부 시트 로드 실패 상태코드:', res.status);
+        return;
+      }
       const text = await res.text();
       const rows = parseCSV(text);
       if (rows.length < 2) return;
@@ -963,7 +1050,11 @@
         searchBtn.disabled = true;
         keywordInput.disabled = true;
 
-        await Promise.all([loadProducts(), loadStock(), loadOperationStatus()]);
+        await Promise.all([
+          loadProducts(),
+          loadStock(),
+          loadOperationStatus()
+        ]);
 
         statusEl.innerHTML = `데이터 로드 완료. <strong>상품 ${products.length}개</strong>`;
         searchBtn.disabled = false;
@@ -985,6 +1076,7 @@
       if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
       else if (normalized.startsWith('소진후종료')) cls += 'op-status-dot--end';
       else if (normalized.startsWith('단종')) cls += 'op-status-dot--stop';
+      else if (normalized.startsWith('일시중단')) cls += 'op-status-dot--pause';
       else cls += 'op-status-dot--pause';
 
       return `<span class="${cls}" title="${escapeHtml(s)}"></span>`;
@@ -997,8 +1089,10 @@
     function highlightText(text, keyword) {
       const base = escapeHtml(text || '');
       if (!keyword) return base;
+
       const kw = keyword.trim();
       if (!kw) return base;
+
       const pattern = new RegExp(escapeRegExp(kw), 'gi');
       return base.replace(pattern, match => `<mark class="kw-mark">${match}</mark>`);
     }
@@ -1042,7 +1136,9 @@
       if (key === 'stock') {
         const aNum = (typeof a.stockNum === 'number') ? a.stockNum : -1;
         const bNum = (typeof b.stockNum === 'number') ? b.stockNum : -1;
-        if (aNum !== bNum) return (aNum < bNum ? -1 : 1) * direction;
+        if (aNum !== bNum) {
+          return (aNum < bNum ? -1 : 1) * direction;
+        }
         return tieBreak(a, b);
       }
 
@@ -1050,15 +1146,40 @@
       let valB = '';
 
       switch (key) {
-        case 'productName': valA = a.productName || ''; valB = b.productName || ''; break;
-        case 'colorName':   valA = a.colorName || '';   valB = b.colorName || ''; break;
-        case 'barcode':     valA = a.barcode || '';     valB = b.barcode || ''; break;
-        case 'productCode': valA = a.productCode || ''; valB = b.productCode || ''; break;
-        case 'colorCode':   valA = a.colorCode || '';   valB = b.colorCode || ''; break;
-        case 'size':        valA = a.size || '';        valB = b.size || ''; break;
-        case 'material':    valA = a.material || '';    valB = b.material || ''; break;
-        case 'warehouse':   valA = a.warehouse || '';   valB = b.warehouse || ''; break;
-        default: return tieBreak(a, b);
+        case 'productName':
+          valA = a.productName || '';
+          valB = b.productName || '';
+          break;
+        case 'colorName':
+          valA = a.colorName || '';
+          valB = b.colorName || '';
+          break;
+        case 'barcode':
+          valA = a.barcode || '';
+          valB = b.barcode || '';
+          break;
+        case 'productCode':
+          valA = a.productCode || '';
+          valB = b.productCode || '';
+          break;
+        case 'colorCode':
+          valA = a.colorCode || '';
+          valB = b.colorCode || '';
+          break;
+        case 'size':
+          valA = a.size || '';
+          valB = b.size || '';
+          break;
+        case 'material':
+          valA = a.material || '';
+          valB = b.material || '';
+          break;
+        case 'warehouse':
+          valA = a.warehouse || '';
+          valB = b.warehouse || '';
+          break;
+        default:
+          return tieBreak(a, b);
       }
 
       const primary = cmpString(valA, valB);
@@ -1077,7 +1198,9 @@
       if (!kw) {
         statusEl.textContent = '검색 키워드를 입력해주세요.';
         resultEl.innerHTML = '<div class="no-result">검색 키워드를 입력한 후 다시 시도해주세요.</div>';
-        if (resultInfoEl) resultInfoEl.textContent = '검색 전 입니다.';
+        if (resultInfoEl) {
+          resultInfoEl.textContent = '검색 전 입니다.';
+        }
         return;
       }
 
@@ -1086,13 +1209,20 @@
         const name      = (p.productName || '').toLowerCase();
         const code      = (p.productCode || '').toLowerCase();
         const colorCode = (p.colorCode   || '').toLowerCase();
-        return name.includes(lowerKw) || code.includes(lowerKw) || colorCode.includes(lowerKw);
+
+        return (
+          name.includes(lowerKw) ||
+          code.includes(lowerKw) ||
+          colorCode.includes(lowerKw)
+        );
       });
 
       if (!filteredProducts.length) {
         statusEl.textContent = `"${kw}" 검색 결과: 0개`;
         resultEl.innerHTML = '<div class="no-result">검색 결과 없음</div>';
-        if (resultInfoEl) resultInfoEl.textContent = `검색어 "${kw}" 결과 0개`;
+        if (resultInfoEl) {
+          resultInfoEl.textContent = `검색어 "${kw}" 결과 0개`;
+        }
         return;
       }
 
@@ -1102,8 +1232,11 @@
         const entries = stockEntriesByColorCode[p.colorCode] || [];
 
         let useEntries;
-        if (showWarehouse) useEntries = entries;
-        else useEntries = entries.filter(e => e.warehouse === '주희물류');
+        if (showWarehouse) {
+          useEntries = entries;
+        } else {
+          useEntries = entries.filter(e => e.warehouse === '주희물류');
+        }
 
         if (!useEntries.length) {
           rows.push({
@@ -1142,7 +1275,7 @@
           if (!isNaN(stockNum)) {
             if (stockNum >= 100) stockClass = 'stock-pill stock-pill-green';
             else if (stockNum >= 10) stockClass = 'stock-pill stock-pill-yellow';
-            else stockClass = 'stock-pill stock-pill-red';
+            else if (stockNum >= 0) stockClass = 'stock-pill stock-pill-red';
           }
 
           rows.push({
@@ -1164,12 +1297,16 @@
       });
 
       let usedRows = rows;
-      if (inStockOnly) usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
+      if (inStockOnly) {
+        usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
+      }
 
       if (!usedRows.length) {
         statusEl.innerHTML = `"${kw}" 검색 결과: <strong>0행</strong> (재고 있음만 필터 적용)`;
         resultEl.innerHTML = '<div class="no-result">조건에 맞는 재고가 없습니다.</div>';
-        if (resultInfoEl) resultInfoEl.innerHTML = `"${escapeHtml(kw)}" / 행 0개 <span class="badge-filter">재고 있음만</span>`;
+        if (resultInfoEl) {
+          resultInfoEl.innerHTML = `"${escapeHtml(kw)}" / 행 0개 <span class="badge-filter">재고 있음만</span>`;
+        }
         return;
       }
 
@@ -1178,9 +1315,12 @@
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>`;
       if (resultInfoEl) {
         const countStr = usedRows.length.toLocaleString();
-        resultInfoEl.innerHTML = inStockOnly
-          ? `"${escapeHtml(kw)}" / 행 ${countStr}개 <span class="badge-filter">재고 있음만</span>`
-          : `"${escapeHtml(kw)}" / 행 ${countStr}개`;
+        if (inStockOnly) {
+          resultInfoEl.innerHTML =
+            `"${escapeHtml(kw)}" / 행 ${countStr}개 <span class="badge-filter">재고 있음만</span>`;
+        } else {
+          resultInfoEl.textContent = `"${kw}" / 행 ${countStr}개`;
+        }
       }
 
       let headerHtml = '';
@@ -1190,12 +1330,18 @@
       headerHtml += buildHeaderCell('상품코드', 'productCode', 'col-pcode');
       headerHtml += buildHeaderCell('상품칼라코드', 'colorCode');
       headerHtml += buildHeaderCell('사이즈', 'size');
-      if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
-      if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
+
+      if (showMaterial) {
+        headerHtml += buildHeaderCell('소재', 'material');
+      }
+      if (showWarehouse) {
+        headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
+      }
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
 
       let bodyHtml = '';
+
       usedRows.forEach(r => {
         const opIndicatorHtml = buildOperationIndicator(r.colorCode);
         const rawNameEsc = escapeHtml(r.rawName || '');
@@ -1228,7 +1374,7 @@
         `;
       });
 
-      resultEl.innerHTML = `
+      const html = `
         <div class="result-table-wrap">
           <div class="result-scroll">
             <table>
@@ -1238,7 +1384,7 @@
           </div>
         </div>
       `;
-
+      resultEl.innerHTML = html;
       updateLegendVisibility();
       attachTableHeaderEvents();
     }
@@ -1255,9 +1401,16 @@
 
         if (key) {
           th.addEventListener('click', (e) => {
-            if (e.target.classList.contains('resize-handle') || e.target.closest('.resize-handle')) return;
-            if (sortKey === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
-            else { sortKey = key; sortDir = 'asc'; }
+            if (e.target.classList.contains('resize-handle') ||
+                e.target.closest('.resize-handle')) {
+              return;
+            }
+            if (sortKey === key) {
+              sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
+            } else {
+              sortKey = key;
+              sortDir = 'asc';
+            }
             search();
           });
         }
@@ -1288,8 +1441,14 @@
         const dx = ev.pageX - startX;
         const newWidth = Math.max(60, startWidth + dx);
 
-        if (headCells[colIndex]) headCells[colIndex].style.width = newWidth + 'px';
-        bodyRows.forEach(row => { if (row.cells[colIndex]) row.cells[colIndex].style.width = newWidth + 'px'; });
+        if (headCells[colIndex]) {
+          headCells[colIndex].style.width = newWidth + 'px';
+        }
+        bodyRows.forEach(row => {
+          if (row.cells[colIndex]) {
+            row.cells[colIndex].style.width = newWidth + 'px';
+          }
+        });
       }
 
       function onMouseUp() {
@@ -1305,9 +1464,11 @@
       document.body.style.userSelect = 'none';
     }
 
-    // 이벤트 핸들러
+    // 이벤트 핸들러들
     searchBtn.addEventListener('click', search);
-    keywordInput.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+    keywordInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') search();
+    });
 
     toggleMaterialInput.addEventListener('change', () => {
       showMaterial = toggleMaterialInput.checked;
@@ -1324,6 +1485,7 @@
       if (keywordInput.value.trim()) search();
     });
 
+    // 초기화 버튼
     resetBtn.addEventListener('click', () => {
       keywordInput.value = '';
       showMaterial = false;
@@ -1340,7 +1502,9 @@
 
       statusEl.textContent = '검색 키워드를 입력해주세요.';
       resultEl.innerHTML = '<div class="no-result">키워드를 입력하고 검색을 눌러주세요.</div>';
-      if (resultInfoEl) resultInfoEl.textContent = '초기 상태입니다.';
+      if (resultInfoEl) {
+        resultInfoEl.textContent = '초기 상태입니다.';
+      }
     });
 
     // 상품명 클릭 → 원래 상품명 복사
@@ -1365,21 +1529,34 @@
         ta.value = textToCopy;
         document.body.appendChild(ta);
         ta.select();
-        try { document.execCommand('copy'); showToast('원래 상품명을 복사했어요.'); }
-        catch { showToast('복사에 실패했어요.'); }
+        try {
+          document.execCommand('copy');
+          showToast('원래 상품명을 복사했어요.');
+        } catch (err) {
+          showToast('복사에 실패했어요.');
+        }
         document.body.removeChild(ta);
       }
     });
 
-    // 타이틀 클릭 → 사이트 검색
+    // 타이틀/로고 클릭 → 사이트 검색 페이지
     document.addEventListener('DOMContentLoaded', () => {
       const titleEl = document.querySelector('.title-wrap h1');
-      if (titleEl) titleEl.addEventListener('click', () => {
-        window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
-      });
+      if (titleEl) {
+        titleEl.addEventListener('click', () => {
+          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+        });
+      }
+
+      const logoPill = document.querySelector('.logo-pill');
+      if (logoPill) {
+        logoPill.addEventListener('click', () => {
+          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+        });
+      }
     });
 
-    // 재고 pill 클릭 → 검색 후 첫 상품으로 이동 (주의: 크로스 도메인 제한 가능)
+    // 재고 pill 클릭 → 검색 후 첫 상품으로 이동
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
@@ -1388,28 +1565,25 @@
       if (!productName) return;
 
       const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
+
       const newTab = window.open(searchUrl, "_blank");
 
-      try {
-        newTab.onload = async () => {
-          try {
-            const firstProductLink = newTab.document.querySelector(".prdList .thumbnail a");
-            if (firstProductLink) {
-              const href = firstProductLink.href.startsWith("http")
-                ? firstProductLink.href
-                : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
-              newTab.location.href = href;
-            } else {
-              alert(`"${productName}" 검색 결과가 없습니다.`);
-            }
-          } catch (err) {
-            console.error(err);
-            alert("상품 상세페이지로 이동할 수 없습니다.");
+      newTab.onload = async () => {
+        try {
+          const firstProductLink = newTab.document.querySelector(".prdList .thumbnail a");
+          if (firstProductLink) {
+            const href = firstProductLink.href.startsWith("http") 
+              ? firstProductLink.href 
+              : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
+            newTab.location.href = href;
+          } else {
+            alert(`"${productName}" 검색 결과가 없습니다.`);
           }
-        };
-      } catch (e2) {
-        console.log(e2);
-      }
+        } catch (err) {
+          console.error(err);
+          alert("상품 상세페이지로 이동할 수 없습니다.");
+        }
+      };
     });
 
     // 단축키: Ctrl+K / Cmd+K / /
@@ -1434,3 +1608,9 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
