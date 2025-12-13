@@ -588,11 +588,14 @@
         white-space: normal;
       }
     }
-    /* ===== admin 공통 스타일 최소 적용 (테스트용) ===== */
+/* ===== ADMIN BASE FONT (FIX) ===== */
 body{
-  font-family: 'Pretendard', system-ui, sans-serif;
-  font-size: 10px;
+  font-family:'Pretendard',system-ui,sans-serif !important;
+  font-size:13px !important;   /* 👈 핵심 */
+  line-height:1.45;
+  color:#111827;
 }
+
 
 :root{
   --primary: #7c3aed; /* admin 사이드바 보라 톤 */
@@ -1608,6 +1611,7 @@ td{ font-size:10px !important; }
   </script>
 </body>
 </html>
+
 
 
 
