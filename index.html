@@ -670,6 +670,83 @@ button#searchBtn{
 table{ font-size:10px !important; }
 th{ font-size:9px !important; color: var(--text-muted) !important; }
 .result-table-wrap td{ font-size:10px !important; }
+/* ===============================
+   SEARCH FINAL – ADMIN UNIFIED
+   기준 페이지 (복제용)
+================================ */
+
+/* 1. 베이스 규격 */
+body{
+  font-family:'Pretendard',system-ui,sans-serif !important;
+  font-size:10px !important;
+  color:#111827;
+}
+
+/* 2. 전체 배경 (글래스 OK, 컬러 OK) */
+.app-shell{
+  background:
+    radial-gradient(circle at top left, rgba(236,72,153,.35), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(96,165,250,.28), transparent 55%),
+    radial-gradient(circle at top right, rgba(124,58,237,.22), transparent 55%),
+    #fdf2ff !important;
+  padding:18px !important;
+}
+
+/* 3. 메인 컨테이너 (쉘과 같은 재질) */
+.inner-shell{
+  background: rgba(255,255,255,.78) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border:1px solid rgba(255,255,255,.55) !important;
+  border-radius:18px !important;
+  box-shadow:0 24px 60px rgba(15,23,42,.22) !important;
+}
+
+/* 4. 카드 통일 */
+.card{
+  background: rgba(255,255,255,.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border:1px solid rgba(148,163,184,.28) !important;
+  border-radius:16px !important;
+  box-shadow:0 10px 26px rgba(15,23,42,.12) !important;
+}
+
+/* 5. 타이포 스케일 (어드민 기준) */
+.title-wrap h1{ font-size:14px !important; }
+.card-title{ font-size:12px !important; }
+.card-sub,
+.status,
+.header-right,
+.result-header-right,
+.no-result{ font-size:9px !important; }
+
+/* 6. 입력 / 버튼 (pill 유지 + 통일감) */
+.input-wrap input[type="text"]{
+  font-size:10px !important;
+  padding:8px 36px 8px 30px !important;
+  border-radius:14px !important;
+  background: rgba(255,255,255,.75) !important;
+}
+
+button#searchBtn{
+  font-size:10px !important;
+  padding:8px 14px !important;
+  border-radius:14px !important;
+  background: linear-gradient(135deg,#7c3aed,#ec4899) !important;
+  box-shadow:0 10px 25px rgba(124,58,237,.35) !important;
+}
+
+.btn-secondary{
+  font-size:10px !important;
+  padding:8px 12px !important;
+  border-radius:14px !important;
+}
+
+/* 7. 테이블 */
+table{ font-size:10px !important; }
+th{ font-size:9px !important; color:#6b7280 !important; }
+td{ font-size:10px !important; }
 
   </style>
 </head>
@@ -1531,6 +1608,7 @@ th{ font-size:9px !important; color: var(--text-muted) !important; }
   </script>
 </body>
 </html>
+
 
 
 
