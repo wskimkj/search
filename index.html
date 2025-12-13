@@ -693,6 +693,51 @@
         0 0 0 3px rgba(124,58,237,.14),
         0 14px 30px rgba(15,23,42,.10) !important;
     }
+    /* ===== ADMIN LAYOUT RULE (ALL PAGES) ===== */
+:root{
+  --page-pad: 18px;
+  --page-max: 1400px;
+}
+
+html, body{
+  height:100%;
+}
+
+body{
+  padding: var(--page-pad) !important;
+  margin: 0 !important;
+  display: block !important;   /* flex center 방지 */
+}
+
+/* 페이지 최상위 래퍼 */
+.container,
+.app-shell{
+  width:100% !important;
+  max-width: var(--page-max) !important;
+  margin: 0 auto !important;
+}
+
+/* 메인 카드/유리판 */
+.card,
+.inner-shell{
+  min-height: calc(100vh - (var(--page-pad) * 2)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 결과 영역은 남는 높이 채우기 */
+.table-wrapper,
+.result-card,
+.result-area,
+#tableWrapper{
+  flex: 1 1 auto !important;
+}
+
+/* 페이지마다 다르던 높이 제한 제거 */
+.table-wrapper{
+  max-height: none !important;
+}
+
   </style>
 </head>
 
@@ -1434,3 +1479,4 @@
   </script>
 </body>
 </html>
+
