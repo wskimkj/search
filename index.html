@@ -595,6 +595,79 @@ body{
 :root{
   --primary: #7c3aed; /* admin 사이드바 보라 톤 */
 }
+/* ===== 통일감 체감 패치(글래스 유지) ===== */
+:root{
+  /* admin 쉘 톤과 맞추기 */
+  --accent: #7c3aed;        /* 보라 포인트 */
+  --text-main:#111827;
+  --text-muted:#6b7280;
+
+  /* 통일 규격 */
+  --radius-xl: 18px;
+  --shadow-soft: 0 18px 45px rgba(15,23,42,0.18);
+}
+
+/* 폰트/스케일 통일(체감 포인트) */
+body{ font-size:10px !important; }
+.title-wrap h1{ font-size:14px !important; }      /* 기존 19px -> 14px */
+.title-wrap p{ font-size:9px !important; }        /* 기존 12px -> 9px */
+.card-title{ font-size:12px !important; }         /* 기존 13px -> 12px */
+.card-sub, .status, .header-right, .pill-label{ font-size:9px !important; }
+
+/* 배경/글래스 톤 통일(감성은 유지) */
+.app-shell{
+  background: var(--bg-gradient) !important;
+  padding: 18px !important;
+}
+.inner-shell{
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.55) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+/* 카드 통일 */
+.card{
+  border-radius: 16px !important;
+  background: rgba(255,255,255,0.70) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(148,163,184,0.28) !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10) !important;
+}
+.card-search{
+  border-radius: 16px !important;
+  padding: 10px 12px !important;
+}
+
+/* 입력/버튼 규격 통일 (pill 감성은 유지하되 “같은 제품” 느낌) */
+.input-wrap input[type="text"]{
+  font-size:10px !important;
+  padding: 8px 38px 8px 30px !important;
+  border-radius: 14px !important; /* 999px -> 14px 로 통일감 */
+  background: rgba(255,255,255,0.70) !important;
+}
+.input-wrap input::placeholder{ font-size:9px !important; }
+
+button#searchBtn{
+  font-size:10px !important;
+  padding: 8px 14px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #7c3aed, #ec4899) !important; /* 쉘 그라데이션과 통일 */
+  box-shadow: 0 10px 25px rgba(124,58,237,0.30) !important;
+}
+.btn-secondary{
+  font-size:10px !important;
+  padding: 8px 12px !important;
+  border-radius: 14px !important;
+}
+
+/* 테이블 폰트/헤더 톤 통일 */
+table{ font-size:10px !important; }
+th{ font-size:9px !important; color: var(--text-muted) !important; }
+.result-table-wrap td{ font-size:10px !important; }
 
   </style>
 </head>
@@ -1456,6 +1529,7 @@ body{
   </script>
 </body>
 </html>
+
 
 
 
