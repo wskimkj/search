@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <link rel="stylesheet" href="https://wskimkj.github.io/admin/css/common.css">
 
   <meta charset="UTF-8">
   <title>상품 조회</title>
@@ -8,6 +9,9 @@
   <!-- 파비콘 -->
   <link rel="icon" type="image/png" href="android-chrome-512x512 (1).ico">
 
+  <!-- 폰트 -->
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 
   <!-- CSV 파서 -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -582,168 +586,15 @@
         white-space: normal;
       }
     }
-/* ===== ADMIN BASE FONT (FIX) ===== */
+    /* ===== admin 공통 스타일 최소 적용 (테스트용) ===== */
 body{
-  font-family:'Pretendard',system-ui,sans-serif !important;
-  font-size:13px !important;   /* 👈 핵심 */
-  line-height:1.45;
-  color:#111827;
+  font-family: 'Pretendard', system-ui, sans-serif;
+  font-size: 10px;
 }
-
 
 :root{
   --primary: #7c3aed; /* admin 사이드바 보라 톤 */
 }
-/* ===== 통일감 체감 패치(글래스 유지) ===== */
-:root{
-  /* admin 쉘 톤과 맞추기 */
-  --accent: #7c3aed;        /* 보라 포인트 */
-  --text-main:#111827;
-  --text-muted:#6b7280;
-
-  /* 통일 규격 */
-  --radius-xl: 18px;
-  --shadow-soft: 0 18px 45px rgba(15,23,42,0.18);
-}
-
-/* 폰트/스케일 통일(체감 포인트) */
-body{ font-size:10px !important; }
-.title-wrap h1{ font-size:14px !important; }      /* 기존 19px -> 14px */
-.title-wrap p{ font-size:9px !important; }        /* 기존 12px -> 9px */
-.card-title{ font-size:12px !important; }         /* 기존 13px -> 12px */
-.card-sub, .status, .header-right, .pill-label{ font-size:9px !important; }
-
-/* 배경/글래스 톤 통일(감성은 유지) */
-.app-shell{
-  background: var(--bg-gradient) !important;
-  padding: 18px !important;
-}
-.inner-shell{
-  border-radius: 18px !important;
-  background: rgba(255,255,255,0.78) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border: 1px solid rgba(255,255,255,0.55) !important;
-  box-shadow: var(--shadow-soft) !important;
-}
-
-/* 카드 통일 */
-.card{
-  border-radius: 16px !important;
-  background: rgba(255,255,255,0.70) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(148,163,184,0.28) !important;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10) !important;
-}
-.card-search{
-  border-radius: 16px !important;
-  padding: 10px 12px !important;
-}
-
-/* 입력/버튼 규격 통일 (pill 감성은 유지하되 “같은 제품” 느낌) */
-.input-wrap input[type="text"]{
-  font-size:10px !important;
-  padding: 8px 38px 8px 30px !important;
-  border-radius: 14px !important; /* 999px -> 14px 로 통일감 */
-  background: rgba(255,255,255,0.70) !important;
-}
-.input-wrap input::placeholder{ font-size:9px !important; }
-
-button#searchBtn{
-  font-size:10px !important;
-  padding: 8px 14px !important;
-  border-radius: 14px !important;
-  background: linear-gradient(135deg, #7c3aed, #ec4899) !important; /* 쉘 그라데이션과 통일 */
-  box-shadow: 0 10px 25px rgba(124,58,237,0.30) !important;
-}
-.btn-secondary{
-  font-size:10px !important;
-  padding: 8px 12px !important;
-  border-radius: 14px !important;
-}
-
-/* 테이블 폰트/헤더 톤 통일 */
-table{ font-size:10px !important; }
-th{ font-size:9px !important; color: var(--text-muted) !important; }
-.result-table-wrap td{ font-size:10px !important; }
-/* ===============================
-   SEARCH FINAL – ADMIN UNIFIED
-   기준 페이지 (복제용)
-================================ */
-
-/* 1. 베이스 규격 */
-body{
-  font-family:'Pretendard',system-ui,sans-serif !important;
-  font-size:10px !important;
-  color:#111827;
-}
-
-/* 2. 전체 배경 (글래스 OK, 컬러 OK) */
-.app-shell{
-  background:
-    radial-gradient(circle at top left, rgba(236,72,153,.35), transparent 55%),
-    radial-gradient(circle at bottom right, rgba(96,165,250,.28), transparent 55%),
-    radial-gradient(circle at top right, rgba(124,58,237,.22), transparent 55%),
-    #fdf2ff !important;
-  padding:18px !important;
-}
-
-/* 3. 메인 컨테이너 (쉘과 같은 재질) */
-.inner-shell{
-  background: rgba(255,255,255,.78) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  border:1px solid rgba(255,255,255,.55) !important;
-  border-radius:18px !important;
-  box-shadow:0 24px 60px rgba(15,23,42,.22) !important;
-}
-
-/* 4. 카드 통일 */
-.card{
-  background: rgba(255,255,255,.70) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border:1px solid rgba(148,163,184,.28) !important;
-  border-radius:16px !important;
-  box-shadow:0 10px 26px rgba(15,23,42,.12) !important;
-}
-
-/* 5. 타이포 스케일 (어드민 기준) */
-.title-wrap h1{ font-size:14px !important; }
-.card-title{ font-size:12px !important; }
-.card-sub,
-.status,
-.header-right,
-.result-header-right,
-.no-result{ font-size:9px !important; }
-
-/* 6. 입력 / 버튼 (pill 유지 + 통일감) */
-.input-wrap input[type="text"]{
-  font-size:10px !important;
-  padding:8px 36px 8px 30px !important;
-  border-radius:14px !important;
-  background: rgba(255,255,255,.75) !important;
-}
-
-button#searchBtn{
-  font-size:10px !important;
-  padding:8px 14px !important;
-  border-radius:14px !important;
-  background: linear-gradient(135deg,#7c3aed,#ec4899) !important;
-  box-shadow:0 10px 25px rgba(124,58,237,.35) !important;
-}
-
-.btn-secondary{
-  font-size:10px !important;
-  padding:8px 12px !important;
-  border-radius:14px !important;
-}
-
-/* 7. 테이블 */
-table{ font-size:10px !important; }
-th{ font-size:9px !important; color:#6b7280 !important; }
-td{ font-size:10px !important; }
 
   </style>
 </head>
@@ -1605,11 +1456,6 @@ td{ font-size:10px !important; }
   </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
