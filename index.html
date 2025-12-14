@@ -595,6 +595,29 @@ body{
 :root{
   --primary: #7c3aed; /* admin 사이드바 보라 톤 */
 }
+.chip-group{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.chip-input{
+  position:absolute;
+  opacity:0;
+}
+
+.chip{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(248,187,208,.7);
+  cursor:pointer;
+  font-size:13px;
+}
+
+.chip-input:checked + .chip{
+  background: rgba(244,114,182,.15);
+  border-color: rgba(244,114,182,.7);
+}
 
   </style>
 </head>
@@ -633,31 +656,17 @@ body{
               <span class="input-icon-right">Enter ↵</span>
             </div>
 
-            <div class="button-row">
-              <button id="searchBtn" disabled>
-                <span class="btn-icon">✨</span>
-                검색
-              </button>
+            <div class="chip-group">
+  <input class="chip-input" type="checkbox" id="warehouse">
+  <label class="chip" for="warehouse">창고</label>
 
-              <button type="button" id="resetBtn" class="btn-secondary">
-                ↺ 초기화
-              </button>
+  <input class="chip-input" type="checkbox" id="material">
+  <label class="chip" for="material">소재</label>
 
-              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-                <input type="checkbox" id="toggleWarehouse" style="transform:scale(0.9);" />
-                창고
-              </label>
+  <input class="chip-input" type="checkbox" id="stock">
+  <label class="chip" for="stock">재고 있음</label>
+</div>
 
-              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-                <input type="checkbox" id="toggleMaterial" style="transform:scale(0.9);" />
-                소재
-              </label>
-
-              <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-size:11px; white-space:nowrap;">
-                <input type="checkbox" id="toggleInStockOnly" style="transform:scale(0.9);" />
-                재고 있음만
-              </label>
-            </div>
 
             <div class="status" id="status">
               데이터 불러오는 중...
@@ -1453,9 +1462,18 @@ body{
     });
 
     init();
+
+    document.querySelector('#searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    doSearch(); // 기존 검색 함수
+  }
+});
+
   </script>
 </body>
 </html>
+
 
 
 
