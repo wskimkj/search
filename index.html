@@ -551,7 +551,7 @@ th.sortable-active{ background: rgba(255,143,188,.22); }
           <div class="search-box">
             <div class="input-wrap">
               <span class="input-icon-left">⌨️</span>
-              <input type="text" id="keyword" placeholder="(예: 볼드린, 벨루오, 상품코드, 칼라코드 등)" />
+              <input type="text" id="keyword" placeholder="(예: 상품명, 상품코드, 칼라코드 등)" />
               <span class="input-icon-right">Enter ↵</span>
             </div>
 
@@ -564,7 +564,7 @@ th.sortable-active{ background: rgba(255,143,188,.22); }
               <label class="chip" for="material">소재</label>
 
               <input class="chip-input" type="checkbox" id="stock">
-              <label class="chip" for="stock">재고 있음</label>
+              <label class="chip" for="stock">재고</label>
             </div>
 
             <div class="status" id="status">
@@ -577,12 +577,9 @@ th.sortable-active{ background: rgba(255,143,188,.22); }
         <div class="card result-card">
           <div class="result-header-row">
             <h2 class="card-title">
-              <span class="icon">📋</span>
-              검색 결과
+              <span class="icon">🤍</span>
+              Result
             </h2>
-            <div class="result-header-right">
-              <span id="resultInfo" style="font-size:11px;">아직 검색 전이에요.</span>
-            </div>
           </div>
 
           <div id="opLegend" class="op-legend">
@@ -608,7 +605,7 @@ th.sortable-active{ background: rgba(255,143,188,.22); }
     </div>
   </div>
 
-  <div id="toast" class="toast">원래 상품명을 클립보드에 복사했어요.</div>
+  <div id="toast" class="toast">복사</div>
 
   <script>
     // ===== 시트 설정 =====
@@ -811,7 +808,7 @@ th.sortable-active{ background: rgba(255,143,188,.22); }
           loadOperationStatus()
         ]);
 
-        statusEl.innerHTML = `데이터 로드 완료. <strong>상품 ${products.length}개</strong>`;
+        statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>`;
         keywordInput.disabled = false;
       } catch (err) {
         console.error(err);
@@ -1294,4 +1291,5 @@ th.sortable-active{ background: rgba(255,143,188,.22); }
   </script>
 </body>
 </html>
+
 
