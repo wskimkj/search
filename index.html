@@ -17,13 +17,12 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
  <style>
-/* ===================== Pastel Pink UI Theme (디자인만 교체 / 기능 그대로) ===================== */
-/* ===================== FINAL / SAFE CSS (디자인만, 레이아웃 복구 버전) ===================== */
+/* ===================== FINAL CSS (기능 유지 / 레이아웃 정상 / pill 복구) ===================== */
 :root{
   --page-bg: #f7f4ff;
   --page-bg2:#eef6ff;
 
-  --card-bg: rgba(255,255,255,.86);
+  --card-bg: rgba(255,255,255,.88);
   --card-stroke: rgba(170,150,230,.22);
 
   --text-main: #2f2a3a;
@@ -39,6 +38,7 @@
 
 *{box-sizing:border-box;}
 html,body{height:100%;}
+
 body{
   margin:0;
   font-family:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -93,7 +93,7 @@ body{
 
 /* ===== cards ===== */
 .card{
-  background:rgba(255,255,255,.9);
+  background:#fff;
   border:1px solid var(--card-stroke);
   border-radius:22px;
   box-shadow:var(--shadow-card);
@@ -104,14 +104,23 @@ body{
   display:flex;
   gap:14px;
   padding:12px 14px;
+  align-items:flex-start;
 }
 .card-title{
   font-size:13px;
   font-weight:700;
   margin:0;
+  white-space:nowrap;
 }
-.search-box{flex:1;}
-.input-wrap{position:relative;}
+.search-box{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.input-wrap{
+  position:relative;
+}
 .input-wrap input{
   width:100%;
   padding:12px 42px 12px 34px;
@@ -139,23 +148,46 @@ body{
   color:#999;
 }
 
-/* ===== chips ===== */
-.chip-group{display:flex;gap:10px;flex-wrap:wrap;}
+/* ===== chips (창고 / 소재 / 재고) ===== */
+.chip-group{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
 .chip-input{display:none;}
 .chip{
-  padding:8px 12px;
+  height:34px;
+  padding:0 14px;
   border-radius:999px;
   border:1px solid rgba(170,150,230,.25);
   background:#fff;
   cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+}
+.chip::before{
+  content:"";
+  width:14px;
+  height:14px;
+  border-radius:6px;
+  border:1.5px solid rgba(170,150,230,.35);
 }
 .chip-input:checked + .chip{
   background:rgba(255,143,188,.25);
-  border-color:rgba(255,143,188,.4);
+  border-color:rgba(255,143,188,.45);
+}
+.chip-input:checked + .chip::before{
+  background:var(--pink);
+  border-color:var(--pink);
 }
 
-/* ===== result header ===== */
-.result-card{padding-top:14px;}
+/* ===== result ===== */
+.result-card{
+  padding-top:14px;
+}
 .result-header-row{
   display:flex;
   justify-content:space-between;
@@ -166,28 +198,22 @@ body{
   color:var(--text-muted);
 }
 
-/* ===== op legend (🔥 복구 핵심) ===== */
+/* ===== op legend (운영 / 소진후종료 / 단종 / 일시중단) ===== */
 #opLegend.op-legend{
-  display:none;          /* JS가 데이터 있으면 flex로 변경 */
+  display:none; /* JS가 데이터 있으면 flex */
   margin:6px 0 10px;
-  padding:0;
-  background:none;
-  border:0;
-  box-shadow:none;
   gap:12px;
 }
 #opLegend .op-legend-item{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  font-size:11px;
+  font-size:12px;
   color:var(--text-muted);
-  padding:0;
 }
-#opLegend .op-legend-item::before{content:none;}
 .op-legend-dot{
-  width:9px;
-  height:9px;
+  width:10px;
+  height:10px;
   border-radius:50%;
   border:2px solid #fff;
   box-shadow:0 0 0 1px rgba(170,150,230,.25);
@@ -203,11 +229,14 @@ body{
   overflow:hidden;
   border:1px solid rgba(170,150,230,.18);
 }
-.result-scroll{max-height:520px;overflow:auto;}
+.result-scroll{
+  max-height:520px;
+  overflow:auto;
+}
 table{
   width:100%;
   border-collapse:collapse;
-  table-layout:auto;   /* 🔥 어긋남 방지 */
+  table-layout:auto; /* 🔥 리사이즈/정렬 핵심 */
   font-size:12px;
 }
 th,td{
@@ -219,20 +248,50 @@ th{
   position:sticky;
   top:0;
   z-index:2;
+  user-select:none;
 }
 tr:nth-child(even) td{background:#faf9fe;}
 tr:hover td{background:rgba(255,143,188,.18);}
 
-/* ===== product cell ===== */
+/* ===== column resize ===== */
+th{ position:sticky; }
+.resize-handle{
+  position:absolute;
+  top:0;
+  right:0;
+  width:10px;
+  height:100%;
+  cursor:col-resize;
+}
+.resize-handle::after{
+  content:"";
+  position:absolute;
+  top:20%;
+  bottom:20%;
+  left:50%;
+  width:1px;
+  transform:translateX(-50%);
+  background:rgba(170,150,230,.35);
+  opacity:0;
+}
+th:hover .resize-handle::after{opacity:1;}
+th.sortable{cursor:pointer; position:relative;}
+.sort-indicator{
+  margin-left:4px;
+  font-size:10px;
+  color:var(--pink);
+}
+
+/* ===== product name / status dot ===== */
 .product-name-cell{
   position:relative;
-  padding-left:26px;
+  padding-left:28px;
 }
 .op-status-dot{
   position:absolute;
   left:10px;
   top:50%;
-  transform:translateY(-48%);
+  transform:translateY(-50%);
 }
 
 /* ===== stock pill ===== */
@@ -245,7 +304,9 @@ tr:hover td{background:rgba(255,143,188,.18);}
   gap:6px;
 }
 .stock-pill-dot{
-  width:6px;height:6px;border-radius:50%;
+  width:6px;
+  height:6px;
+  border-radius:50%;
 }
 .stock-pill-green{background:#e9fbf3;}
 .stock-pill-green .stock-pill-dot{background:#22c55e;}
@@ -255,14 +316,11 @@ tr:hover td{background:rgba(255,143,188,.18);}
 .stock-pill-red .stock-pill-dot{background:#ff8fbc;}
 
 /* ===== misc ===== */
-.kw-mark{
-  background:yellow;
-  padding:0 2px;
-}
+.kw-mark{background:yellow;padding:0 2px;}
 #toast{
   position:fixed;
-  bottom:18px;
   right:18px;
+  bottom:18px;
   padding:10px 12px;
   border-radius:14px;
   background:#fff;
@@ -270,129 +328,12 @@ tr:hover td{background:rgba(255,143,188,.18);}
   opacity:0;
 }
 #toast.show{opacity:1;}
-/* ✅ 컬럼 너비 조절(리사이즈) 기능 복구 */
-th{
-  position: sticky; /* 이미 있지만 혹시 덮였을까봐 */
-  top: 0;
-}
-
-thead th{
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-/* 리사이즈 핸들 */
-thead th{
-  position: sticky;
-}
-thead th{
-  /* 핸들 absolute 기준 */
-  position: sticky;
-}
-thead th{
-  /* sticky + handle을 위해 relative 필요 */
-  position: sticky;
-}
-thead th{
-  /* 최종: sticky 유지 + relative 같이 */
-  position: sticky;
-}
-thead th{
-  /* sticky는 유지되고, relative은 별도 지정 */
-}
-thead th{ position: sticky; }
-thead th{ position: sticky; }
-
-/* 실제로 필요한 건 이거 두 줄 */
-thead th{ position: sticky; }
-thead th{ position: sticky; } /* (중복처럼 보여도 무시해도 됨) */
-
-/* ✅ 핵심 */
-thead th{ position: sticky; }
-thead th{ z-index: 2; }
-thead th{ background:#fff; }
-
-/* 리사이즈를 위해 relative 지정 (sticky랑 같이 써도 됨) */
-thead th{ position: sticky; }
-thead th{ top:0; }
-thead th{ }
-thead th{}
-
-/* ---- 여기부터 진짜 복구 코드 ---- */
-thead th{
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-thead th{
-  /* handle absolute 기준 */
-  position: sticky;
-}
-thead th{
-  /* sticky 유지하면서 relative도 필요 -> wrapper가 아니라 th 자체에 relative */
-  /* sticky 요소도 relative처럼 absolute 기준이 됩니다. 그래도 확실히 하려면 아래 추가 */
-}
-thead th{
-  /* 가장 안전한 방식: pseudo wrapper 없이 th에 relative 부여 */
-  /* (sticky와 충돌 없음) */
-  position: sticky;
-}
-thead th{}
-
-/* ⭐ 최종 간단 버전(이거만 있으면 됨) */
-thead th{
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-thead th{
-  /* absolute 기준 */
-  position: sticky;
-}
-thead th{
-  /* handle 위치를 위해 */
-  /* sticky는 position이므로 absolute 기준이 됨 */
-}
-
-/* 리사이즈 핸들 스타일 */
-.resize-handle{
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 10px;
-  height: 100%;
-  cursor: col-resize;
-  user-select: none;
-  background: transparent;
-}
-
-/* 핸들 영역이 잘 보이도록(선택) */
-.resize-handle::after{
-  content:"";
-  position:absolute;
-  top: 20%;
-  bottom: 20%;
-  left: 50%;
-  width: 1px;
-  transform: translateX(-50%);
-  background: rgba(170,150,230,.35);
-  opacity: 0;
-  transition: opacity .15s ease;
-}
-th:hover .resize-handle::after{ opacity: 1; }
-
-/* 정렬 클릭은 th에서, 리사이즈는 핸들에서 */
-th.sortable{ cursor: pointer; user-select:none; position: relative; }
-th.sortable-active{ background: rgba(255,143,188,.18); }
-.sort-indicator{ margin-left:4px; font-size:10px; opacity:.9; color: rgba(255,143,188,.95); }
 
 /* ===== responsive ===== */
 @media(max-width:860px){
   .header{flex-direction:column;gap:10px;}
   .card-search{flex-direction:column;}
 }
-
 
 </style>
 
@@ -1167,6 +1108,7 @@ th.sortable-active{ background: rgba(255,143,188,.18); }
   </script>
 </body>
 </html>
+
 
 
 
