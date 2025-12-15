@@ -314,6 +314,20 @@ th.sortable{cursor:pointer; position:relative;}
 .stock-pill-yellow .stock-pill-dot{background:#facc15;}
 .stock-pill-red{background:#ffe4ee;}
 .stock-pill-red .stock-pill-dot{background:#ff8fbc;}
+/* ===== 상품명 앞 상태 점 색상 (이게 빠져 있었음) ===== */
+.op-status-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  border:2px solid #fff;
+  box-shadow:0 0 0 1px rgba(170,150,230,.25);
+}
+
+/* 상태별 색 (이게 핵심) */
+.op-status-dot--on    { background:#22c55e; } /* 운영 */
+.op-status-dot--end   { background:#f97316; } /* 소진 후 종료 */
+.op-status-dot--stop  { background:#ef4444; } /* 단종 */
+.op-status-dot--pause { background:#eab308; } /* 일시 중단 */
 
 /* ===== misc ===== */
 .kw-mark{background:yellow;padding:0 2px;}
@@ -1108,6 +1122,7 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
 
 
 
