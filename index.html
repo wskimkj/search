@@ -98,6 +98,27 @@ body{
   border-radius:22px;
   box-shadow:var(--shadow-card);
 }
+/* ✅ 검색 타이틀 제거했으니 search 카드 정렬 보정 */
+.card-search{
+  align-items: stretch;
+}
+
+/* ✅ Result 영역이 빈데도 커 보이는 현상 방지 */
+.result-card{
+  padding: 14px 16px 16px;   /* 카드 안쪽 정리 */
+}
+
+#result{
+  min-height: 0 !important;
+}
+
+/* 안내문구(검색 전/결과 없음) 스타일 */
+.no-result{
+  padding: 14px 0;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
 
 /* ===== search ===== */
 .card-search{
@@ -375,10 +396,7 @@ th.sortable{cursor:pointer; position:relative;}
       <div class="content-row">
         <!-- 검색 카드 -->
         <div class="card card-search">
-          <h2 class="card-title">
-            <span class="icon">🔍</span>
-            검색
-          </h2>
+        
           <div class="search-box">
             <div class="input-wrap">
               <span class="input-icon-left">⌨️</span>
@@ -1122,6 +1140,7 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
 
 
 
