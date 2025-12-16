@@ -383,6 +383,76 @@ th.sortable{cursor:pointer; position:relative;}
   .header{flex-direction:column;gap:10px;}
   .card-search{flex-direction:column;}
 }
+/* ===== slim search bar (Information 페이지 느낌으로 통일) ===== */
+.input-wrap.slim{
+  position:relative;
+}
+
+.input-wrap.slim input{
+  height: 42px;                 /* 얄쌍 */
+  padding: 0 78px 0 42px;       /* 좌(아이콘) / 우(Enter+X) */
+  border-radius: 999px;
+  border: 1px solid rgba(170,150,230,.22);
+  background: rgba(245,243,251,.75);
+  font-size: 13px;
+}
+
+.input-wrap.slim input:focus{
+  outline:none;
+  border-color: rgba(255,143,188,.55);
+  box-shadow: 0 0 0 4px rgba(255,143,188,.16);
+}
+
+/* 왼쪽 돋보기 */
+.input-wrap.slim .input-icon-left{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  height:18px;
+  opacity:.95;
+}
+.icon-search{ width:18px; height:18px; display:block; }
+
+/* 오른쪽 Enter ↵ (작게/얌전하게) */
+.input-wrap.slim .input-icon-right{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:11px;
+  color: rgba(110,106,130,.55);
+  pointer-events:none;
+}
+
+/* X 버튼 (Enter 왼쪽) */
+.clear-btn{
+  position:absolute;
+  right:52px;
+  top:50%;
+  transform:translateY(-50%);
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.18);
+  background: rgba(255,255,255,.65);
+  color: rgba(110,106,130,.75);
+  font-size:16px;
+  line-height:1;
+  cursor:pointer;
+  display:none; /* 입력 있을 때만 표시 */
+}
+.clear-btn:hover{
+  background: rgba(255,143,188,.12);
+  border-color: rgba(255,143,188,.22);
+}
+
+/* 기존 ⌨️ 텍스트 아이콘은 완전 제거(혹시 남아있을 때 대비) */
+.input-wrap .input-icon-left{ font-size:0; }
 
 </style>
 
@@ -1165,6 +1235,7 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
 
 
 
