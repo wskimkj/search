@@ -412,11 +412,22 @@ th.sortable{cursor:pointer; position:relative;}
         <div class="card card-search">
         
           <div class="search-box">
-            <div class="input-wrap">
-              <span class="input-icon-left">⌨️</span>
-              <input type="text" id="keyword" placeholder="(예: 상품명, 상품코드, 칼라코드 등)" />
-              <span class="input-icon-right">Enter ↵</span>
-            </div>
+           <div class="input-wrap slim">
+  <span class="input-icon-left" aria-hidden="true">
+    <!-- 돋보기 아이콘 -->
+    <svg class="icon-search" viewBox="0 0 24 24" fill="none">
+      <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="rgba(110,106,130,.55)" stroke-width="2"/>
+      <path d="M20 20l-3.5-3.5" stroke="rgba(255,143,188,.80)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </span>
+
+  <input type="text" id="keyword" placeholder="(예: 상품명, 상품코드, 칼라코드 등)" />
+
+  <button type="button" id="clearKeyword" class="clear-btn" aria-label="검색어 지우기">×</button>
+
+  <span class="input-icon-right">Enter ↵</span>
+</div>
+
 
             <!-- ✅ 체크박스 → 칩 토글 -->
             <div class="chip-group">
@@ -1154,6 +1165,7 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
 
 
 
