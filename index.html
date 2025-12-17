@@ -450,6 +450,38 @@ th.sortable{cursor:pointer; position:relative;}
   background: rgba(255,143,188,.12);
   border-color: rgba(255,143,188,.22);
 }
+.type-pills{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.type-pill{
+  height:34px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.25);
+  background:#fff;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  font-size:13px;
+  user-select:none;
+  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+}
+
+.type-pill input{
+  display:none;
+}
+
+.type-pill.active{
+  background:rgba(255,143,188,.25);
+  border-color:rgba(255,143,188,.45);
+}
+
+.type-pill:active{
+  transform: scale(.98);
+}
 
 /* 기존 ⌨️ 텍스트 아이콘은 완전 제거(혹시 남아있을 때 대비) */
 .input-wrap .input-icon-left{ font-size:0; }
@@ -499,17 +531,24 @@ th.sortable{cursor:pointer; position:relative;}
 </div>
 
 
-            <!-- ✅ 체크박스 → 칩 토글 -->
-            <div class="chip-group">
-              <input class="chip-input" type="checkbox" id="warehouse">
-              <label class="chip" for="warehouse">창고</label>
+<div class="type-pills" id="filterPills">
+  <label class="type-pill" for="warehouse">
+    <input type="checkbox" id="warehouse">
+    창고
+  </label>
 
-              <input class="chip-input" type="checkbox" id="material">
-              <label class="chip" for="material">소재</label>
+  <label class="type-pill" for="material">
+    <input type="checkbox" id="material">
+    소재
+  </label>
 
-              <input class="chip-input" type="checkbox" id="stock">
-              <label class="chip" for="stock">재고</label>
-            </div>
+  <label class="type-pill" for="stock">
+    <input type="checkbox" id="stock">
+    재고
+  </label>
+</div>
+
+
 
             <div class="status" id="status">
               데이터 불러오는 중...
@@ -1230,10 +1269,28 @@ th.sortable{cursor:pointer; position:relative;}
       }
     });
 
+    
+
     init();
+
+
+    function syncPillActiveByInput(inputEl){
+  const label = inputEl.closest('.type-pill');
+  if (!label) return;
+  label.classList.toggle('active', inputEl.checked);
+}
+
+// 초기 상태 반영 + 변경될 때마다 반영
+[ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
+  if (!inp) return;
+  syncPillActiveByInput(inp);
+  inp.addEventListener('change', () => syncPillActiveByInput(inp));
+});
+
   </script>
 </body>
 </html>
+
 
 
 
