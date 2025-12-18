@@ -363,7 +363,7 @@ th.sortable{cursor:pointer; position:relative;}
   opacity:0;
 }
 #toast.show{opacity:1;}
-   
+
 /* ✅ "상품 4117개" (status) 크기 줄이기 */
 #status{
   font-size: 12px !important;
@@ -485,7 +485,6 @@ th.sortable{cursor:pointer; position:relative;}
 
 /* 기존 ⌨️ 텍스트 아이콘은 완전 제거(혹시 남아있을 때 대비) */
 .input-wrap .input-icon-left{ font-size:0; }
-
 </style>
 
 </head>
@@ -512,43 +511,40 @@ th.sortable{cursor:pointer; position:relative;}
       <div class="content-row">
         <!-- 검색 카드 -->
         <div class="card card-search">
-        
+
           <div class="search-box">
-           <div class="input-wrap slim">
-  <span class="input-icon-left" aria-hidden="true">
-    <!-- 돋보기 아이콘 -->
-    <svg class="icon-search" viewBox="0 0 24 24" fill="none">
-      <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="rgba(110,106,130,.55)" stroke-width="2"/>
-      <path d="M20 20l-3.5-3.5" stroke="rgba(255,143,188,.80)" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  </span>
+            <div class="input-wrap slim">
+              <span class="input-icon-left" aria-hidden="true">
+                <!-- 돋보기 아이콘 -->
+                <svg class="icon-search" viewBox="0 0 24 24" fill="none">
+                  <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="rgba(110,106,130,.55)" stroke-width="2"/>
+                  <path d="M20 20l-3.5-3.5" stroke="rgba(255,143,188,.80)" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
 
-  <input type="text" id="keyword" placeholder="(예: 상품명, 상품코드, 칼라코드 등)" />
+              <input type="text" id="keyword" placeholder="(예: 상품명, 상품코드, 칼라코드 등)" />
 
-  <button type="button" id="clearKeyword" class="clear-btn" aria-label="검색어 지우기">×</button>
+              <button type="button" id="clearKeyword" class="clear-btn" aria-label="검색어 지우기">×</button>
 
-  <span class="input-icon-right">Enter ↵</span>
-</div>
+              <span class="input-icon-right">Enter ↵</span>
+            </div>
 
+            <div class="type-pills" id="filterPills">
+              <label class="type-pill" for="warehouse">
+                <input type="checkbox" id="warehouse">
+                창고
+              </label>
 
-<div class="type-pills" id="filterPills">
-  <label class="type-pill" for="warehouse">
-    <input type="checkbox" id="warehouse">
-    창고
-  </label>
+              <label class="type-pill" for="material">
+                <input type="checkbox" id="material">
+                소재
+              </label>
 
-  <label class="type-pill" for="material">
-    <input type="checkbox" id="material">
-    소재
-  </label>
-
-  <label class="type-pill" for="stock">
-    <input type="checkbox" id="stock">
-    재고
-  </label>
-</div>
-
-
+              <label class="type-pill" for="stock">
+                <input type="checkbox" id="stock">
+                재고
+              </label>
+            </div>
 
             <div class="status" id="status">
               데이터 불러오는 중...
@@ -636,7 +632,7 @@ th.sortable{cursor:pointer; position:relative;}
 
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
-    const resultInfoEl = document.getElementById('resultInfo');
+    const resultInfoEl = document.getElementById('resultInfo'); // (현재 DOM에 없어서 null일 수 있음)
 
     const regexBracket = /\[[^\]]*\]/g;
     const regexSeason  = /^\s*[0-9]{2}\s*(FW|SS)\s*/i;
@@ -1036,7 +1032,8 @@ th.sortable{cursor:pointer; position:relative;}
       headerHtml += buildHeaderCell('사이즈', 'size');
 
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
-      if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
+      if (showWarehouse) header
+            if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
 
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
@@ -1220,36 +1217,78 @@ th.sortable{cursor:pointer; position:relative;}
       }
     });
 
-    // 재고 pill 클릭 → 검색 후 첫 상품으로 이동
+    // ✅✅ (교체된 기능) 재고 pill 클릭 → "첫 상품 상세페이지"로 바로 이동 (옵션2)
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
 
-      const productName = cell.dataset.productName;
+      const productName = (cell.dataset.productName || "").trim();
       if (!productName) return;
 
-      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(productName)}`;
-      const newTab = window.open(searchUrl, "_blank");
-
-      // 다른 도메인이라 접근 제한될 수 있음(브라우저 정책). 실패해도 검색 탭은 열림.
-      try {
-        newTab.onload = async () => {
-          try {
-            const firstProductLink = newTab.document.querySelector(".prdList .thumbnail a");
-            if (firstProductLink) {
-              const href = firstProductLink.href.startsWith("http")
-                ? firstProductLink.href
-                : `https://whitesands.co.kr${firstProductLink.getAttribute("href")}`;
-              newTab.location.href = href;
-            } else {
-              alert(`"${productName}" 검색 결과가 없습니다.`);
-            }
-          } catch (err) {
-            console.error(err);
-          }
-        };
-      } catch (e) {}
+      await openFirstProductDetail(productName);
     });
+
+    // ✅ 옵션2: 검색 결과 HTML에서 첫 상품 링크 뽑아 상세로 이동
+    async function openFirstProductDetail(keyword){
+      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
+
+      // ⚠️ 정적 페이지에서 whitesands 도메인 HTML을 직접 fetch하면 CORS로 막힐 확률이 큼
+      // HTML 읽기용 프록시 사용 (실패 시 옵션1로 폴백)
+      const proxyUrl = `https://r.jina.ai/${searchUrl}`;
+
+      try{
+        showToast('첫 상품 찾는 중...');
+
+        const res = await fetch(proxyUrl, { cache: 'no-store' });
+        if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
+
+        const html = await res.text();
+        const firstHref = extractFirstProductHref(html);
+
+        if (!firstHref){
+          showToast('첫 상품을 못 찾았어요. 검색 페이지로 열었어요.');
+          window.open(searchUrl, '_blank'); // fallback (옵션1)
+          return;
+        }
+
+        const detailUrl = firstHref.startsWith('http')
+          ? firstHref
+          : `https://whitesands.co.kr${firstHref.startsWith('/') ? '' : '/'}${firstHref}`;
+
+        window.open(detailUrl, '_blank');
+        showToast('첫 상품 상세로 이동!');
+      }catch(err){
+        console.error(err);
+        showToast('이동 실패 → 검색 페이지로 열었어요.');
+        window.open(searchUrl, '_blank'); // fallback (옵션1)
+      }
+    }
+
+    // 검색 결과 HTML에서 첫 상품 링크 추출
+    function extractFirstProductHref(html){
+      if (!html) return '';
+
+      // 1) product_no 기반 상세 링크 우선
+      let m = html.match(/href\s*=\s*["']([^"']*product\/detail\.html\?product_no=\d+[^"']*)["']/i);
+      if (m && m[1]) return decodeHtmlEntities(m[1]);
+
+      // 2) “보기좋은 URL” 형태
+      m = html.match(/href\s*=\s*["'](\/product\/[^"']+\/\d+\/[^"']*)["']/i);
+      if (m && m[1]) return decodeHtmlEntities(m[1]);
+
+      // 3) 마지막 fallback: /product/ 로 시작하는 링크 중 첫 번째
+      m = html.match(/href\s*=\s*["'](\/product\/[^"']+)["']/i);
+      if (m && m[1]) return decodeHtmlEntities(m[1]);
+
+      return '';
+    }
+
+    function decodeHtmlEntities(str){
+      if (!str) return '';
+      const ta = document.createElement('textarea');
+      ta.innerHTML = str;
+      return ta.value;
+    }
 
     // 단축키: Ctrl+K / Cmd+K / /
     document.addEventListener('keydown', (e) => {
@@ -1269,39 +1308,21 @@ th.sortable{cursor:pointer; position:relative;}
       }
     });
 
-    
-
     init();
 
-
     function syncPillActiveByInput(inputEl){
-  const label = inputEl.closest('.type-pill');
-  if (!label) return;
-  label.classList.toggle('active', inputEl.checked);
-}
+      const label = inputEl.closest('.type-pill');
+      if (!label) return;
+      label.classList.toggle('active', inputEl.checked);
+    }
 
-// 초기 상태 반영 + 변경될 때마다 반영
-[ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
-  if (!inp) return;
-  syncPillActiveByInput(inp);
-  inp.addEventListener('change', () => syncPillActiveByInput(inp));
-});
-
+    // 초기 상태 반영 + 변경될 때마다 반영
+    [ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
+      if (!inp) return;
+      syncPillActiveByInput(inp);
+      inp.addEventListener('change', () => syncPillActiveByInput(inp));
+    });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
