@@ -1032,7 +1032,6 @@ th.sortable{cursor:pointer; position:relative;}
       headerHtml += buildHeaderCell('사이즈', 'size');
 
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
-      if (showWarehouse) header
             if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
 
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
@@ -1228,41 +1227,89 @@ th.sortable{cursor:pointer; position:relative;}
       await openFirstProductDetail(productName);
     });
 
-    // ✅ 옵션2: 검색 결과 HTML에서 첫 상품 링크 뽑아 상세로 이동
-    async function openFirstProductDetail(keyword){
-      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
 
-      // ⚠️ 정적 페이지에서 whitesands 도메인 HTML을 직접 fetch하면 CORS로 막힐 확률이 큼
-      // HTML 읽기용 프록시 사용 (실패 시 옵션1로 폴백)
-      const proxyUrl = `https://r.jina.ai/${searchUrl}`;
+    // ✅ 전역에 추가
+const detailUrlCache = new Map();
+const CACHE_KEY = 'ws_detail_cache_v1';
+let inflightCtrl = null;
 
-      try{
-        showToast('첫 상품 찾는 중...');
+// 로드 시 sessionStorage 캐시 복원
+try {
+  const saved = sessionStorage.getItem(CACHE_KEY);
+  if (saved) {
+    const obj = JSON.parse(saved);
+    Object.entries(obj).forEach(([k, v]) => detailUrlCache.set(k, v));
+  }
+} catch {}
 
-        const res = await fetch(proxyUrl, { cache: 'no-store' });
-        if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
+// 저장 함수
+function persistCache(){
+  try{
+    const obj = Object.fromEntries(detailUrlCache.entries());
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(obj));
+  }catch{}
+}
 
-        const html = await res.text();
-        const firstHref = extractFirstProductHref(html);
+// ✅ 교체: openFirstProductDetail
+async function openFirstProductDetail(keyword){
+  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
+  const proxyUrl  = `https://r.jina.ai/${searchUrl}`;
 
-        if (!firstHref){
-          showToast('첫 상품을 못 찾았어요. 검색 페이지로 열었어요.');
-          window.open(searchUrl, '_blank'); // fallback (옵션1)
-          return;
-        }
+  // 1) 캐시 hit면 즉시 오픈
+  const cached = detailUrlCache.get(keyword);
+  if (cached){
+    window.open(cached, '_blank');
+    showToast('상세(캐시)로 이동!');
+    return;
+  }
 
-        const detailUrl = firstHref.startsWith('http')
-          ? firstHref
-          : `https://whitesands.co.kr${firstHref.startsWith('/') ? '' : '/'}${firstHref}`;
+  // 2) 연타/중복 요청 끊기
+  if (inflightCtrl) inflightCtrl.abort();
+  inflightCtrl = new AbortController();
 
-        window.open(detailUrl, '_blank');
-        showToast('첫 상품 상세로 이동!');
-      }catch(err){
-        console.error(err);
-        showToast('이동 실패 → 검색 페이지로 열었어요.');
-        window.open(searchUrl, '_blank'); // fallback (옵션1)
+  try{
+    showToast('첫 상품 찾는 중...');
+
+    const res = await fetch(proxyUrl, {
+      // 🔥 no-store 삭제 → 캐시 활용
+      signal: inflightCtrl.signal,
+      headers: {
+        // Jina 캐시 허용(초): 예) 6시간
+        'x-cache-tolerance': '21600'
       }
+    });
+
+    if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
+
+    const html = await res.text();
+    const firstHref = extractFirstProductHref(html);
+
+    if (!firstHref){
+      showToast('첫 상품을 못 찾았어요. 검색페이지로 열었어요.');
+      window.open(searchUrl, '_blank');
+      return;
     }
+
+    const detailUrl = firstHref.startsWith('http')
+      ? firstHref
+      : `https://whitesands.co.kr${firstHref.startsWith('/') ? '' : '/'}${firstHref}`;
+
+    // 3) 캐시 저장
+    detailUrlCache.set(keyword, detailUrl);
+    persistCache();
+
+    window.open(detailUrl, '_blank');
+    showToast('첫 상품 상세로 이동!');
+  } catch(err){
+    if (err.name === 'AbortError') return;
+    console.error(err);
+    showToast('이동 실패 → 검색 페이지로 열었어요.');
+    window.open(searchUrl, '_blank');
+  } finally {
+    inflightCtrl = null;
+  }
+}
+
 
     // 검색 결과 HTML에서 첫 상품 링크 추출
     function extractFirstProductHref(html){
@@ -1325,3 +1372,4 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
