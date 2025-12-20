@@ -489,7 +489,73 @@ th.sortable{cursor:pointer; position:relative;}
 /* util */
 .text-right{ text-align:right; }
 .text-center{ text-align:center; }
-</style>
+
+/* ===========================
+   ✅✅ 미리보기 모달 (product_no 있을 때 사용)
+   =========================== */
+.pv-modal{ position:fixed; inset:0; display:none; z-index:9999; }
+.pv-modal.show{ display:block; }
+.pv-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
+
+.pv-panel{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:min(1100px, 92vw);
+  height:min(86vh, 900px);
+  background:#fff;
+  border-radius:18px;
+  border:1px solid rgba(170,150,230,.22);
+  box-shadow:0 18px 50px rgba(30,18,60,.18);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.pv-topbar{
+  height:46px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 12px 0 14px;
+  border-bottom:1px solid rgba(170,150,230,.18);
+  background:rgba(245,243,251,.75);
+}
+.pv-title{ font-size:13px; font-weight:700; color:var(--text-main); }
+.pv-actions{ display:flex; gap:8px; align-items:center; }
+.pv-btn{
+  height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.22);
+  background:#fff;
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:none;
+  color:var(--text-main);
+  display:inline-flex;
+  align-items:center;
+}
+.pv-btn:hover{
+  background: rgba(255,143,188,.12);
+  border-color: rgba(255,143,188,.22);
+}
+.pv-body{ position:relative; flex:1; }
+.pv-loading{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  color:var(--text-muted);
+  background:rgba(255,255,255,.85);
+  z-index:2;
+}
+.pv-frame{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+ </style>
 
 </head>
 
@@ -589,6 +655,25 @@ th.sortable{cursor:pointer; position:relative;}
 
   <div id="toast" class="toast">복사</div>
 
+  <!-- ✅✅ 미리보기 모달 -->
+  <div id="previewModal" class="pv-modal" aria-hidden="true">
+    <div class="pv-backdrop"></div>
+    <div class="pv-panel" role="dialog" aria-modal="true">
+      <div class="pv-topbar">
+        <div class="pv-title">상품 미리보기</div>
+        <div class="pv-actions">
+          <a id="pvOpenNewTab" class="pv-btn" href="#" target="_blank" rel="noopener">새창</a>
+          <button type="button" id="pvClose" class="pv-btn">닫기</button>
+        </div>
+      </div>
+
+      <div class="pv-body">
+        <div id="pvLoading" class="pv-loading">불러오는 중…</div>
+        <iframe id="pvFrame" class="pv-frame" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ===== 시트 설정 =====
     const PRODUCT_SHEET_ID = '1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc';
@@ -618,6 +703,9 @@ th.sortable{cursor:pointer; position:relative;}
     let inStockOnly = false;
     let opStatusByColorCode = {};
 
+    // ✅ J열(상품번호) 매핑: colorCode -> productNo
+    let productNoByColorCode = {};
+
     let sortKey = 'productName';
     let sortDir = 'asc';
 
@@ -638,6 +726,14 @@ th.sortable{cursor:pointer; position:relative;}
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
     const resultInfoEl = document.getElementById('resultInfo'); // (현재 DOM에 없어서 null일 수 있음)
+
+    // ✅ 미리보기 모달 DOM
+    const previewModalEl = document.getElementById('previewModal');
+    const pvBackdropEl = previewModalEl ? previewModalEl.querySelector('.pv-backdrop') : null;
+    const pvCloseEl = document.getElementById('pvClose');
+    const pvFrameEl = document.getElementById('pvFrame');
+    const pvLoadingEl = document.getElementById('pvLoading');
+    const pvOpenNewTabEl = document.getElementById('pvOpenNewTab');
 
     const regexBracket = /\[[^\]]*\]/g;
     const regexSeason  = /^\s*[0-9]{2}\s*(FW|SS)\s*/i;
@@ -688,6 +784,48 @@ th.sortable{cursor:pointer; position:relative;}
       opLegendEl.style.display = hasData ? 'flex' : 'none';
     }
 
+    // ✅ 미리보기 모달 열기/닫기
+    function openPreviewByProductNo(productNo){
+      if (!previewModalEl || !pvFrameEl || !pvLoadingEl || !pvOpenNewTabEl) {
+        // 모달 DOM이 없으면 새창 fallback
+        window.open(`https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(productNo)}`, '_blank');
+        return;
+      }
+
+      const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(productNo)}`;
+
+      pvLoadingEl.style.display = 'flex';
+      pvFrameEl.src = url;
+      pvOpenNewTabEl.href = url;
+
+      previewModalEl.classList.add('show');
+      previewModalEl.setAttribute('aria-hidden', 'false');
+
+      showToast('미리보기 여는 중...');
+    }
+
+    function closePreview(){
+      if (!previewModalEl || !pvFrameEl || !pvLoadingEl) return;
+      previewModalEl.classList.remove('show');
+      previewModalEl.setAttribute('aria-hidden', 'true');
+
+      // 로딩 리셋 + iframe 정리
+      pvLoadingEl.style.display = 'flex';
+      pvFrameEl.src = 'about:blank';
+    }
+
+    if (pvFrameEl) {
+      pvFrameEl.addEventListener('load', () => {
+        if (pvLoadingEl) pvLoadingEl.style.display = 'none';
+      });
+    }
+
+    if (pvCloseEl) pvCloseEl.addEventListener('click', closePreview);
+    if (pvBackdropEl) pvBackdropEl.addEventListener('click', closePreview);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePreview();
+    });
+
     async function loadProducts() {
       const res = await fetch(PRODUCT_CSV_URL);
       if (!res.ok) throw new Error('상품 시트 로드 실패: ' + res.status);
@@ -732,6 +870,7 @@ th.sortable{cursor:pointer; position:relative;}
 
       stockEntriesByColorCode = {};
       sizeByColorCode = {};
+      productNoByColorCode = {};
 
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
@@ -742,6 +881,14 @@ th.sortable{cursor:pointer; position:relative;}
 
         const size      = (row[1] || '').trim();
         const warehouse = (row[2] || '').trim() || '미정';
+
+        // ✅ J열 = 상품번호 (0-based index: 9)
+        const productNo = (row[9] || '').toString().trim();
+        if (productNo && !productNoByColorCode[colorCode]) {
+          productNoByColorCode[colorCode] = productNo;
+        }
+
+        // 기존 로직: 재고는 K열(row[10]) 사용
         let qtyRaw      = (row[10] || '').toString().trim();
         if (!qtyRaw) continue;
 
@@ -897,7 +1044,7 @@ th.sortable{cursor:pointer; position:relative;}
     }
 
     // ===========================
-    // ✅✅ 상세 링크 캐시/프리패치(속도 개선)
+    // ✅✅ 상세 링크 캐시/프리패치(속도 개선) - fallback용 (product_no 없을 때만)
     // ===========================
     const detailUrlCache = new Map();
     const CACHE_KEY = 'ws_detail_cache_v2'; // localStorage 캐시
@@ -945,7 +1092,7 @@ th.sortable{cursor:pointer; position:relative;}
       return ta.value;
     }
 
-    // ✅ fetch 로직(캐시 채우기 전용)
+    // ✅ fetch 로직(캐시 채우기 전용) - fallback용
     async function fetchAndCacheFirstDetailUrl(keyword){
       const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
       const proxyUrl  = `https://r.jina.ai/${searchUrl}`;
@@ -976,7 +1123,7 @@ th.sortable{cursor:pointer; position:relative;}
       return detailUrl;
     }
 
-    // ✅ 후보 키워드 순차 시도: colorCode → productCode → productName
+    // ✅ 후보 키워드 순차 시도: colorCode → productCode → productName (fallback용)
     async function openFirstProductDetailWithFallback(candidates){
       // 1) 캐시 hit (후보 중 하나라도 캐시 있으면 즉시 오픈)
       for (const kw of candidates) {
@@ -995,20 +1142,18 @@ th.sortable{cursor:pointer; position:relative;}
       try{
         showToast('첫 상품 찾는 중...');
 
-        // ✅ 타임아웃(4초) - 너무 오래 걸리면 끊고 다음 후보로
+        // 타임아웃(4초) - 너무 오래 걸리면 끊고 다음 후보로 (완전 abort는 아님, 체감 방어용)
         const makeTimeoutAbort = (ms) => setTimeout(() => {
           try{ inflightCtrl?.abort(); } catch {}
         }, ms);
 
         for (const kw of candidates) {
-          // 각 후보마다 새 컨트롤러로 (이전 abort 영향 최소화)
           if (inflightCtrl) inflightCtrl.abort();
           inflightCtrl = new AbortController();
 
           const timeoutId = makeTimeoutAbort(4000);
 
           try {
-            // fetchAndCache...는 signal을 안 쓰지만, 타임아웃/연타 방어용으로 여기서 abort 처리 + 빠른 fallback
             const url = await fetchAndCacheFirstDetailUrl(kw);
             clearTimeout(timeoutId);
 
@@ -1020,11 +1165,6 @@ th.sortable{cursor:pointer; position:relative;}
             }
           } catch (err) {
             clearTimeout(timeoutId);
-            if (err.name === 'AbortError') {
-              // 타임아웃이면 다음 후보로
-              continue;
-            }
-            // 그 외 에러도 다음 후보로
             continue;
           }
         }
@@ -1038,7 +1178,7 @@ th.sortable{cursor:pointer; position:relative;}
       }
     }
 
-    // ✅ 검색 결과 렌더 후 상위 N개 프리패치(체감속도 급상승)
+    // ✅ 검색 결과 렌더 후 상위 N개 프리패치(체감속도 상승) - fallback용
     function prefetchDetailUrlsFromCurrentTable(limit = 8){
       const cells = Array.from(resultEl.querySelectorAll('.product-name-cell'));
       if (!cells.length) return;
@@ -1046,7 +1186,8 @@ th.sortable{cursor:pointer; position:relative;}
       const keys = [];
       for (const cell of cells) {
         const colorCode = (cell.dataset.colorCode || '').trim();
-        if (colorCode && !detailUrlCache.get(colorCode)) keys.push(colorCode);
+        // product_no가 있는 colorCode는 굳이 프리패치할 필요 없음
+        if (colorCode && !productNoByColorCode[colorCode] && !detailUrlCache.get(colorCode)) keys.push(colorCode);
         if (keys.length >= limit) break;
       }
       if (!keys.length) return;
@@ -1103,6 +1244,7 @@ th.sortable{cursor:pointer; position:relative;}
 
       filteredProducts.forEach(p => {
         const entries = stockEntriesByColorCode[p.colorCode] || [];
+        const pno = productNoByColorCode[p.colorCode] || '';
 
         let useEntries;
         if (showWarehouse) {
@@ -1125,7 +1267,8 @@ th.sortable{cursor:pointer; position:relative;}
             stockStr:    '',
             stockClass:  '',
             rawName:     p.rawName     || '',
-            colorCodeKey: p.colorCode  || ''
+            colorCodeKey: p.colorCode  || '',
+            productNo:   pno
           });
           return;
         }
@@ -1164,7 +1307,8 @@ th.sortable{cursor:pointer; position:relative;}
             stockStr,
             stockClass,
             rawName:     p.rawName     || '',
-            colorCodeKey: p.colorCode  || ''
+            colorCodeKey: p.colorCode  || '',
+            productNo:   pno
           });
         });
       });
@@ -1220,9 +1364,9 @@ th.sortable{cursor:pointer; position:relative;}
 
         const hasStock = r.stockStr && r.stockClass;
 
-        // ✅✅ stock pill 클릭 속도 개선용 data: colorCode/productCode/productName 다 심음
         const stockCellInner = hasStock ? `
           <span class="stock-cell"
+                data-product-no="${escapeHtml(r.productNo || '')}"
                 data-product-name="${escapeHtml(r.productName)}"
                 data-product-code="${escapeHtml(r.productCode)}"
                 data-color-code="${escapeHtml(r.colorCodeKey || '')}">
@@ -1263,7 +1407,7 @@ th.sortable{cursor:pointer; position:relative;}
       updateLegendVisibility();
       attachTableHeaderEvents();
 
-      // ✅✅ 렌더 후 상위 N개 프리패치
+      // ✅ 렌더 후 상위 N개 프리패치 (product_no 없는 것만)
       prefetchDetailUrlsFromCurrentTable(8);
     }
 
@@ -1397,11 +1541,22 @@ th.sortable{cursor:pointer; position:relative;}
       }
     });
 
-    // ✅✅ 재고 pill 클릭 → colorCode → productCode → productName 순으로 상세 링크 찾기
+    // ✅✅ 재고 pill 클릭:
+    // 1) product_no 있으면 => 미리보기 모달(빠름)
+    // 2) 없으면 => 기존 fallback(느림) 유지
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
 
+      const productNo = (cell.dataset.productNo || "").trim();
+
+      // ✅ 1순위: 상품번호가 있으면 즉시 미리보기(또는 새창으로 바꾸고 싶으면 openPreviewByProductNo 대신 window.open)
+      if (productNo) {
+        openPreviewByProductNo(productNo);
+        return;
+      }
+
+      // ❗ 2순위: 기존 fallback
       const colorCode   = (cell.dataset.colorCode || "").trim();
       const productCode = (cell.dataset.productCode || "").trim();
       const productName = (cell.dataset.productName || "").trim();
@@ -1440,7 +1595,6 @@ th.sortable{cursor:pointer; position:relative;}
       keywordInput.value = '';
       updateClearBtn();
       keywordInput.focus();
-      // 결과는 유지 or 비우기 선택 가능: 여기선 안내만
       statusEl.textContent = '검색 키워드를 입력해주세요.';
       resultEl.innerHTML = '<div class="no-result">검색 키워드를 입력한 후 다시 시도해주세요.</div>';
     });
