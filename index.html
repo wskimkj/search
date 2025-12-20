@@ -485,6 +485,10 @@ th.sortable{cursor:pointer; position:relative;}
 
 /* 기존 ⌨️ 텍스트 아이콘은 완전 제거(혹시 남아있을 때 대비) */
 .input-wrap .input-icon-left{ font-size:0; }
+
+/* util */
+.text-right{ text-align:right; }
+.text-center{ text-align:center; }
 </style>
 
 </head>
@@ -624,6 +628,7 @@ th.sortable{cursor:pointer; position:relative;}
     const stockInfoEl = document.getElementById('stockInfo');
 
     const keywordInput = document.getElementById('keyword');
+    const clearBtn = document.getElementById('clearKeyword');
 
     // ✅ 칩 토글 input (id가 material/warehouse/stock 임)
     const toggleMaterialInput = document.getElementById('material');
@@ -891,6 +896,174 @@ th.sortable{cursor:pointer; position:relative;}
       return tieBreak(a, b);
     }
 
+    // ===========================
+    // ✅✅ 상세 링크 캐시/프리패치(속도 개선)
+    // ===========================
+    const detailUrlCache = new Map();
+    const CACHE_KEY = 'ws_detail_cache_v2'; // localStorage 캐시
+    let inflightCtrl = null;
+
+    // localStorage 캐시 복원
+    try {
+      const saved = localStorage.getItem(CACHE_KEY);
+      if (saved) {
+        const obj = JSON.parse(saved);
+        Object.entries(obj).forEach(([k, v]) => detailUrlCache.set(k, v));
+      }
+    } catch {}
+
+    function persistCache(){
+      try{
+        const obj = Object.fromEntries(detailUrlCache.entries());
+        localStorage.setItem(CACHE_KEY, JSON.stringify(obj));
+      }catch{}
+    }
+
+    // 검색 결과 HTML에서 첫 상품 링크 추출
+    function extractFirstProductHref(html){
+      if (!html) return '';
+
+      // 1) product_no 기반 상세 링크 우선
+      let m = html.match(/href\s*=\s*["']([^"']*product\/detail\.html\?product_no=\d+[^"']*)["']/i);
+      if (m && m[1]) return decodeHtmlEntities(m[1]);
+
+      // 2) “보기좋은 URL” 형태
+      m = html.match(/href\s*=\s*["'](\/product\/[^"']+\/\d+\/[^"']*)["']/i);
+      if (m && m[1]) return decodeHtmlEntities(m[1]);
+
+      // 3) 마지막 fallback: /product/ 로 시작하는 링크 중 첫 번째
+      m = html.match(/href\s*=\s*["'](\/product\/[^"']+)["']/i);
+      if (m && m[1]) return decodeHtmlEntities(m[1]);
+
+      return '';
+    }
+
+    function decodeHtmlEntities(str){
+      if (!str) return '';
+      const ta = document.createElement('textarea');
+      ta.innerHTML = str;
+      return ta.value;
+    }
+
+    // ✅ fetch 로직(캐시 채우기 전용)
+    async function fetchAndCacheFirstDetailUrl(keyword){
+      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
+      const proxyUrl  = `https://r.jina.ai/${searchUrl}`;
+
+      const cached = detailUrlCache.get(keyword);
+      if (cached) return cached;
+
+      const res = await fetch(proxyUrl, {
+        headers: {
+          // Jina 캐시 허용(초): 예) 6시간
+          'x-cache-tolerance': '21600'
+        }
+      });
+
+      if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
+
+      const html = await res.text();
+      const firstHref = extractFirstProductHref(html);
+
+      if (!firstHref) return '';
+
+      const detailUrl = firstHref.startsWith('http')
+        ? firstHref
+        : `https://whitesands.co.kr${firstHref.startsWith('/') ? '' : '/'}${firstHref}`;
+
+      detailUrlCache.set(keyword, detailUrl);
+      persistCache();
+      return detailUrl;
+    }
+
+    // ✅ 후보 키워드 순차 시도: colorCode → productCode → productName
+    async function openFirstProductDetailWithFallback(candidates){
+      // 1) 캐시 hit (후보 중 하나라도 캐시 있으면 즉시 오픈)
+      for (const kw of candidates) {
+        const cached = detailUrlCache.get(kw);
+        if (cached){
+          window.open(cached, '_blank');
+          showToast(`상세(캐시)로 이동!`);
+          return;
+        }
+      }
+
+      // 2) 사용자 클릭 연타/중복 끊기
+      if (inflightCtrl) inflightCtrl.abort();
+      inflightCtrl = new AbortController();
+
+      try{
+        showToast('첫 상품 찾는 중...');
+
+        // ✅ 타임아웃(4초) - 너무 오래 걸리면 끊고 다음 후보로
+        const makeTimeoutAbort = (ms) => setTimeout(() => {
+          try{ inflightCtrl?.abort(); } catch {}
+        }, ms);
+
+        for (const kw of candidates) {
+          // 각 후보마다 새 컨트롤러로 (이전 abort 영향 최소화)
+          if (inflightCtrl) inflightCtrl.abort();
+          inflightCtrl = new AbortController();
+
+          const timeoutId = makeTimeoutAbort(4000);
+
+          try {
+            // fetchAndCache...는 signal을 안 쓰지만, 타임아웃/연타 방어용으로 여기서 abort 처리 + 빠른 fallback
+            const url = await fetchAndCacheFirstDetailUrl(kw);
+            clearTimeout(timeoutId);
+
+            if (url) {
+              window.open(url, '_blank');
+              showToast('첫 상품 상세로 이동!');
+              inflightCtrl = null;
+              return;
+            }
+          } catch (err) {
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+              // 타임아웃이면 다음 후보로
+              continue;
+            }
+            // 그 외 에러도 다음 후보로
+            continue;
+          }
+        }
+
+        // 3) 전부 실패하면 마지막 후보로 검색페이지 오픈
+        const last = candidates[candidates.length - 1];
+        window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank');
+        showToast('상세를 못 찾아서 검색페이지로 열었어요.');
+      } finally {
+        inflightCtrl = null;
+      }
+    }
+
+    // ✅ 검색 결과 렌더 후 상위 N개 프리패치(체감속도 급상승)
+    function prefetchDetailUrlsFromCurrentTable(limit = 8){
+      const cells = Array.from(resultEl.querySelectorAll('.product-name-cell'));
+      if (!cells.length) return;
+
+      const keys = [];
+      for (const cell of cells) {
+        const colorCode = (cell.dataset.colorCode || '').trim();
+        if (colorCode && !detailUrlCache.get(colorCode)) keys.push(colorCode);
+        if (keys.length >= limit) break;
+      }
+      if (!keys.length) return;
+
+      const run = async () => {
+        for (const k of keys) {
+          try { await fetchAndCacheFirstDetailUrl(k); } catch {}
+        }
+      };
+
+      if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 1500 });
+      else setTimeout(run, 50);
+    }
+
+    // ===========================
+    // 검색
+    // ===========================
     function search() {
       const kw = keywordInput.value.trim();
       lastKeyword = kw;
@@ -1032,7 +1205,7 @@ th.sortable{cursor:pointer; position:relative;}
       headerHtml += buildHeaderCell('사이즈', 'size');
 
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
-            if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
+      if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
 
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
@@ -1046,8 +1219,13 @@ th.sortable{cursor:pointer; position:relative;}
         const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
 
         const hasStock = r.stockStr && r.stockClass;
+
+        // ✅✅ stock pill 클릭 속도 개선용 data: colorCode/productCode/productName 다 심음
         const stockCellInner = hasStock ? `
-          <span class="stock-cell" data-product-name="${escapeHtml(r.productName)}">
+          <span class="stock-cell"
+                data-product-name="${escapeHtml(r.productName)}"
+                data-product-code="${escapeHtml(r.productCode)}"
+                data-color-code="${escapeHtml(r.colorCodeKey || '')}">
             <span class="${r.stockClass}">
               <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
             </span>
@@ -1084,6 +1262,9 @@ th.sortable{cursor:pointer; position:relative;}
       resultEl.innerHTML = html;
       updateLegendVisibility();
       attachTableHeaderEvents();
+
+      // ✅✅ 렌더 후 상위 N개 프리패치
+      prefetchDetailUrlsFromCurrentTable(8);
     }
 
     function attachTableHeaderEvents() {
@@ -1216,126 +1397,20 @@ th.sortable{cursor:pointer; position:relative;}
       }
     });
 
-    // ✅✅ (교체된 기능) 재고 pill 클릭 → "첫 상품 상세페이지"로 바로 이동 (옵션2)
+    // ✅✅ 재고 pill 클릭 → colorCode → productCode → productName 순으로 상세 링크 찾기
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
 
+      const colorCode   = (cell.dataset.colorCode || "").trim();
+      const productCode = (cell.dataset.productCode || "").trim();
       const productName = (cell.dataset.productName || "").trim();
-      if (!productName) return;
 
-      await openFirstProductDetail(productName);
+      const candidates = [colorCode, productCode, productName].filter(Boolean);
+      if (!candidates.length) return;
+
+      await openFirstProductDetailWithFallback(candidates);
     });
-
-
-    // ✅ 전역에 추가
-const detailUrlCache = new Map();
-const CACHE_KEY = 'ws_detail_cache_v1';
-let inflightCtrl = null;
-
-// 로드 시 sessionStorage 캐시 복원
-try {
-  const saved = sessionStorage.getItem(CACHE_KEY);
-  if (saved) {
-    const obj = JSON.parse(saved);
-    Object.entries(obj).forEach(([k, v]) => detailUrlCache.set(k, v));
-  }
-} catch {}
-
-// 저장 함수
-function persistCache(){
-  try{
-    const obj = Object.fromEntries(detailUrlCache.entries());
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(obj));
-  }catch{}
-}
-
-// ✅ 교체: openFirstProductDetail
-async function openFirstProductDetail(keyword){
-  const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
-  const proxyUrl  = `https://r.jina.ai/${searchUrl}`;
-
-  // 1) 캐시 hit면 즉시 오픈
-  const cached = detailUrlCache.get(keyword);
-  if (cached){
-    window.open(cached, '_blank');
-    showToast('상세(캐시)로 이동!');
-    return;
-  }
-
-  // 2) 연타/중복 요청 끊기
-  if (inflightCtrl) inflightCtrl.abort();
-  inflightCtrl = new AbortController();
-
-  try{
-    showToast('첫 상품 찾는 중...');
-
-    const res = await fetch(proxyUrl, {
-      // 🔥 no-store 삭제 → 캐시 활용
-      signal: inflightCtrl.signal,
-      headers: {
-        // Jina 캐시 허용(초): 예) 6시간
-        'x-cache-tolerance': '21600'
-      }
-    });
-
-    if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
-
-    const html = await res.text();
-    const firstHref = extractFirstProductHref(html);
-
-    if (!firstHref){
-      showToast('첫 상품을 못 찾았어요. 검색페이지로 열었어요.');
-      window.open(searchUrl, '_blank');
-      return;
-    }
-
-    const detailUrl = firstHref.startsWith('http')
-      ? firstHref
-      : `https://whitesands.co.kr${firstHref.startsWith('/') ? '' : '/'}${firstHref}`;
-
-    // 3) 캐시 저장
-    detailUrlCache.set(keyword, detailUrl);
-    persistCache();
-
-    window.open(detailUrl, '_blank');
-    showToast('첫 상품 상세로 이동!');
-  } catch(err){
-    if (err.name === 'AbortError') return;
-    console.error(err);
-    showToast('이동 실패 → 검색 페이지로 열었어요.');
-    window.open(searchUrl, '_blank');
-  } finally {
-    inflightCtrl = null;
-  }
-}
-
-
-    // 검색 결과 HTML에서 첫 상품 링크 추출
-    function extractFirstProductHref(html){
-      if (!html) return '';
-
-      // 1) product_no 기반 상세 링크 우선
-      let m = html.match(/href\s*=\s*["']([^"']*product\/detail\.html\?product_no=\d+[^"']*)["']/i);
-      if (m && m[1]) return decodeHtmlEntities(m[1]);
-
-      // 2) “보기좋은 URL” 형태
-      m = html.match(/href\s*=\s*["'](\/product\/[^"']+\/\d+\/[^"']*)["']/i);
-      if (m && m[1]) return decodeHtmlEntities(m[1]);
-
-      // 3) 마지막 fallback: /product/ 로 시작하는 링크 중 첫 번째
-      m = html.match(/href\s*=\s*["'](\/product\/[^"']+)["']/i);
-      if (m && m[1]) return decodeHtmlEntities(m[1]);
-
-      return '';
-    }
-
-    function decodeHtmlEntities(str){
-      if (!str) return '';
-      const ta = document.createElement('textarea');
-      ta.innerHTML = str;
-      return ta.value;
-    }
 
     // 단축키: Ctrl+K / Cmd+K / /
     document.addEventListener('keydown', (e) => {
@@ -1355,7 +1430,20 @@ async function openFirstProductDetail(keyword){
       }
     });
 
-    init();
+    // ✅ 검색어 X 버튼
+    function updateClearBtn(){
+      if (!clearBtn) return;
+      clearBtn.style.display = keywordInput.value.trim() ? 'inline-flex' : 'none';
+    }
+    keywordInput.addEventListener('input', updateClearBtn);
+    clearBtn.addEventListener('click', () => {
+      keywordInput.value = '';
+      updateClearBtn();
+      keywordInput.focus();
+      // 결과는 유지 or 비우기 선택 가능: 여기선 안내만
+      statusEl.textContent = '검색 키워드를 입력해주세요.';
+      resultEl.innerHTML = '<div class="no-result">검색 키워드를 입력한 후 다시 시도해주세요.</div>';
+    });
 
     function syncPillActiveByInput(inputEl){
       const label = inputEl.closest('.type-pill');
@@ -1369,7 +1457,8 @@ async function openFirstProductDetail(keyword){
       syncPillActiveByInput(inp);
       inp.addEventListener('change', () => syncPillActiveByInput(inp));
     });
+
+    init();
   </script>
 </body>
 </html>
-
