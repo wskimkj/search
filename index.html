@@ -1268,7 +1268,9 @@ th.sortable{cursor:pointer; position:relative;}
 
       const productNo = (cell.dataset.productNo || "").trim();
 
-      if (productNo) {
+      // ✅ 숫자로만 이루어진 상품번호만 허용
+if (productNo && /^\d+$/.test(productNo)) {
+
         const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(productNo)}`;
         window.open(url, "_blank", "noopener,noreferrer");
         showToast("상세로 이동!");
@@ -1332,4 +1334,5 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
 
