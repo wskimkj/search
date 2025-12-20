@@ -983,6 +983,9 @@ th.sortable{cursor:pointer; position:relative;}
         const entries = stockEntriesByColorCode[p.colorCode] || [];
         const pno = productNoByColorCode[p.colorCode] || '';
 
+          if (!entries.length) return;
+
+
         let useEntries;
         if (showWarehouse) useEntries = entries;
         else useEntries = entries.filter(e => e.warehouse === '주희물류');
@@ -1329,3 +1332,4 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
