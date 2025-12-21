@@ -98,21 +98,17 @@ body{
   border-radius:22px;
   box-shadow:var(--shadow-card);
 }
-/* ✅ 검색 타이틀 제거했으니 search 카드 정렬 보정 */
 .card-search{
   align-items: stretch;
 }
 
 /* ✅ Result 영역이 빈데도 커 보이는 현상 방지 */
 .result-card{
-  padding: 14px 16px 16px;   /* 카드 안쪽 정리 */
+  padding: 14px 16px 16px;
 }
-
 #result{
   min-height: 0 !important;
 }
-
-/* 안내문구(검색 전/결과 없음) 스타일 */
 .no-result{
   padding: 14px 0;
   margin: 0;
@@ -169,42 +165,6 @@ body{
   color:#999;
 }
 
-/* ===== chips (창고 / 소재 / 재고) ===== */
-.chip-group{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.chip-input{display:none;}
-.chip{
-  height:25px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.25);
-  background:#fff;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  font-size:10px;
-}
-.chip::before{
-  content:"";
-  width:14px;
-  height:14px;
-  border-radius:6px;
-  border:1.5px solid rgba(170,150,230,.35);
-}
-.chip-input:checked + .chip{
-  background:rgba(255,143,188,.25);
-  border-color:rgba(255,143,188,.45);
-}
-.chip-input:checked + .chip::before{
-  background:var(--pink);
-  border-color:var(--pink);
-}
-
 /* ===== result ===== */
 .result-card{
   padding-top:14px;
@@ -219,9 +179,9 @@ body{
   color:var(--text-muted);
 }
 
-/* ===== op legend (운영 / 소진후종료 / 단종 / 일시중단) ===== */
+/* ===== op legend ===== */
 #opLegend.op-legend{
-  display:none; /* JS가 데이터 있으면 flex */
+  display:none;
   margin:6px 0 10px;
   gap:12px;
 }
@@ -257,12 +217,13 @@ body{
 table{
   width:100%;
   border-collapse:collapse;
-  table-layout:auto; /* 🔥 리사이즈/정렬 핵심 */
+  table-layout:auto;
   font-size:12px;
 }
 th,td{
   padding:10px 12px;
   border-bottom:1px solid rgba(170,150,230,.15);
+  vertical-align: top;
 }
 th{
   background:#fff;
@@ -335,7 +296,8 @@ th.sortable{cursor:pointer; position:relative;}
 .stock-pill-yellow .stock-pill-dot{background:#facc15;}
 .stock-pill-red{background:#ffe4ee;}
 .stock-pill-red .stock-pill-dot{background:#ff8fbc;}
-/* ===== 상품명 앞 상태 점 색상 (이게 빠져 있었음) ===== */
+
+/* ===== 상품명 앞 상태 점 색상 ===== */
 .op-status-dot{
   width:10px;
   height:10px;
@@ -343,12 +305,10 @@ th.sortable{cursor:pointer; position:relative;}
   border:2px solid #fff;
   box-shadow:0 0 0 1px rgba(170,150,230,.25);
 }
-
-/* 상태별 색 (이게 핵심) */
-.op-status-dot--on    { background:#22c55e; } /* 운영 */
-.op-status-dot--end   { background:#f97316; } /* 소진 후 종료 */
-.op-status-dot--stop  { background:#ef4444; } /* 단종 */
-.op-status-dot--pause { background:#eab308; } /* 일시 중단 */
+.op-status-dot--on    { background:#22c55e; }
+.op-status-dot--end   { background:#f97316; }
+.op-status-dot--stop  { background:#ef4444; }
+.op-status-dot--pause { background:#eab308; }
 
 /* ===== misc ===== */
 .kw-mark{background:yellow;padding:0 2px;}
@@ -371,10 +331,9 @@ th.sortable{cursor:pointer; position:relative;}
   margin-top: 6px !important;
   color: var(--text-muted) !important;
 }
-
 #status strong{
   font-size: 12px !important;
-  font-weight: 600 !important;  /* 700~800 느낌 줄이기 */
+  font-weight: 600 !important;
   color: var(--text-main) !important;
 }
 
@@ -383,27 +342,24 @@ th.sortable{cursor:pointer; position:relative;}
   .header{flex-direction:column;gap:10px;}
   .card-search{flex-direction:column;}
 }
-/* ===== slim search bar (Information 페이지 느낌으로 통일) ===== */
+
+/* ===== slim search bar ===== */
 .input-wrap.slim{
   position:relative;
 }
-
 .input-wrap.slim input{
-  height: 42px;                 /* 얄쌍 */
-  padding: 0 78px 0 42px;       /* 좌(아이콘) / 우(Enter+X) */
+  height: 42px;
+  padding: 0 78px 0 42px;
   border-radius: 999px;
   border: 1px solid rgba(170,150,230,.22);
   background: rgba(245,243,251,.75);
   font-size: 13px;
 }
-
 .input-wrap.slim input:focus{
   outline:none;
   border-color: rgba(255,143,188,.55);
   box-shadow: 0 0 0 4px rgba(255,143,188,.16);
 }
-
-/* 왼쪽 돋보기 */
 .input-wrap.slim .input-icon-left{
   position:absolute;
   left:14px;
@@ -417,8 +373,6 @@ th.sortable{cursor:pointer; position:relative;}
   opacity:.95;
 }
 .icon-search{ width:18px; height:18px; display:block; }
-
-/* 오른쪽 Enter ↵ (작게/얌전하게) */
 .input-wrap.slim .input-icon-right{
   position:absolute;
   right:14px;
@@ -428,8 +382,6 @@ th.sortable{cursor:pointer; position:relative;}
   color: rgba(110,106,130,.55);
   pointer-events:none;
 }
-
-/* X 버튼 (Enter 왼쪽) */
 .clear-btn{
   position:absolute;
   right:52px;
@@ -444,18 +396,18 @@ th.sortable{cursor:pointer; position:relative;}
   font-size:16px;
   line-height:1;
   cursor:pointer;
-  display:none; /* 입력 있을 때만 표시 */
+  display:none;
 }
 .clear-btn:hover{
   background: rgba(255,143,188,.12);
   border-color: rgba(255,143,188,.22);
 }
+
 .type-pills{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
 }
-
 .type-pill{
   height:34px;
   padding:0 14px;
@@ -469,16 +421,13 @@ th.sortable{cursor:pointer; position:relative;}
   user-select:none;
   transition: background .12s ease, border-color .12s ease, transform .06s ease;
 }
-
 .type-pill input{
   display:none;
 }
-
 .type-pill.active{
   background:rgba(255,143,188,.25);
   border-color:rgba(255,143,188,.45);
 }
-
 .type-pill:active{
   transform: scale(.98);
 }
@@ -510,7 +459,6 @@ th.sortable{cursor:pointer; position:relative;}
   display:flex;
   flex-direction:column;
 }
-
 .pv-topbar{
   height:46px;
   display:flex; align-items:center; justify-content:space-between;
@@ -555,6 +503,66 @@ th.sortable{cursor:pointer; position:relative;}
   border:0;
   display:block;
 }
+
+/* ===========================
+   ✅✅ 부가정보 아코디언(테이블 폭 유지용)
+   =========================== */
+.extra-details{
+  margin:0;
+}
+.extra-details summary{
+  list-style:none;
+  cursor:pointer;
+  user-select:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 10px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.22);
+  background: rgba(245,243,251,.75);
+  font-size:12px;
+  color: var(--text-main);
+}
+.extra-details summary::-webkit-details-marker{ display:none; }
+.extra-details summary::after{
+  content:"▾";
+  font-size:11px;
+  color: rgba(110,106,130,.75);
+}
+.extra-details[open] summary{
+  background: rgba(255,143,188,.18);
+  border-color: rgba(255,143,188,.25);
+}
+.extra-details[open] summary::after{ content:"▴"; }
+
+.extra-panel{
+  margin-top:8px;
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid rgba(170,150,230,.18);
+  background:#fff;
+}
+.extra-row{
+  display:flex;
+  gap:8px;
+  line-height:1.35;
+  margin:4px 0;
+}
+.extra-k{
+  min-width:60px;
+  font-weight:700;
+  color: rgba(110,106,130,.95);
+}
+.extra-v{
+  flex:1;
+  color: var(--text-main);
+  word-break: break-word;
+}
+.extra-empty{
+  color: rgba(110,106,130,.7);
+  font-size:12px;
+}
  </style>
 
 </head>
@@ -581,7 +589,6 @@ th.sortable{cursor:pointer; position:relative;}
       <div class="content-row">
         <!-- 검색 카드 -->
         <div class="card card-search">
-
           <div class="search-box">
             <div class="input-wrap slim">
               <span class="input-icon-left" aria-hidden="true">
@@ -613,6 +620,12 @@ th.sortable{cursor:pointer; position:relative;}
               <label class="type-pill" for="stock">
                 <input type="checkbox" id="stock">
                 재고
+              </label>
+
+              <!-- ✅✅ 부가정보 토글 -->
+              <label class="type-pill" for="extra">
+                <input type="checkbox" id="extra">
+                부가정보
               </label>
             </div>
 
@@ -685,12 +698,18 @@ th.sortable{cursor:pointer; position:relative;}
     const OPER_SHEET_ID = '1F4EC5w1VPmFpwSbw0LuIv5QkwSSs8YkCBPZKY3h-z64';
     const OPER_GID = '2108422262';
 
+    // ✅✅ 부가정보 시트 (동일 스프레드시트, gid만 다름)
+    const EXTRA_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
+    const EXTRA_GID = '1305011805';
+
     const PRODUCT_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/export?format=csv&gid=${PRODUCT_GID}`;
     const STOCK_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${STOCK_SHEET_ID}/export?format=csv&gid=${STOCK_GID}`;
     const OPER_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${OPER_SHEET_ID}/export?format=csv&gid=${OPER_GID}`;
+    const EXTRA_CSV_URL =
+      `https://docs.google.com/spreadsheets/d/${EXTRA_SHEET_ID}/export?format=csv&gid=${EXTRA_GID}`;
 
     // ===== 전역 데이터 =====
     let products = [];
@@ -706,6 +725,10 @@ th.sortable{cursor:pointer; position:relative;}
     // ✅ J열(상품번호) 매핑: colorCode -> productNo
     let productNoByColorCode = {};
 
+    // ✅✅ 부가정보 토글 + 매핑: productCode -> {adjust,wash,feature,origin}
+    let showExtra = false;
+    let extraByProductCode = {};
+
     let sortKey = 'productName';
     let sortDir = 'asc';
 
@@ -718,10 +741,11 @@ th.sortable{cursor:pointer; position:relative;}
     const keywordInput = document.getElementById('keyword');
     const clearBtn = document.getElementById('clearKeyword');
 
-    // ✅ 칩 토글 input (id가 material/warehouse/stock 임)
+    // ✅ 칩 토글 input (id가 material/warehouse/stock/extra 임)
     const toggleMaterialInput = document.getElementById('material');
     const toggleWarehouseInput = document.getElementById('warehouse');
     const toggleInStockOnlyInput = document.getElementById('stock');
+    const toggleExtraInput = document.getElementById('extra');
 
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
@@ -787,7 +811,6 @@ th.sortable{cursor:pointer; position:relative;}
     // ✅ 미리보기 모달 열기/닫기
     function openPreviewByProductNo(productNo){
       if (!previewModalEl || !pvFrameEl || !pvLoadingEl || !pvOpenNewTabEl) {
-        // 모달 DOM이 없으면 새창 fallback
         window.open(`https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(productNo)}`, '_blank');
         return;
       }
@@ -808,8 +831,6 @@ th.sortable{cursor:pointer; position:relative;}
       if (!previewModalEl || !pvFrameEl || !pvLoadingEl) return;
       previewModalEl.classList.remove('show');
       previewModalEl.setAttribute('aria-hidden', 'true');
-
-      // 로딩 리셋 + iframe 정리
       pvLoadingEl.style.display = 'flex';
       pvFrameEl.src = 'about:blank';
     }
@@ -819,7 +840,6 @@ th.sortable{cursor:pointer; position:relative;}
         if (pvLoadingEl) pvLoadingEl.style.display = 'none';
       });
     }
-
     if (pvCloseEl) pvCloseEl.addEventListener('click', closePreview);
     if (pvBackdropEl) pvBackdropEl.addEventListener('click', closePreview);
     document.addEventListener('keydown', (e) => {
@@ -927,6 +947,44 @@ th.sortable{cursor:pointer; position:relative;}
       updateLegendVisibility();
     }
 
+    // ✅✅ 부가정보 로드 (상품코드 E열 매칭)
+    async function loadExtra() {
+      const res = await fetch(EXTRA_CSV_URL);
+      if (!res.ok) throw new Error('부가정보 시트 로드 실패: ' + res.status);
+
+      const text = await res.text();
+      const rows = parseCSV(text);
+      if (rows.length < 2) return;
+
+      extraByProductCode = {};
+
+      // 상품코드: E열 -> index 4
+      // 조절: V열 -> index 21
+      // 제조국: AB열 -> index 27
+      // 세탁: AD열 -> index 29
+      // 제품특징: AF열 -> index 31
+      const IDX_PRODUCT_CODE = 4;
+      const IDX_ADJUST = 21;
+      const IDX_ORIGIN = 27;
+      const IDX_WASH = 29;
+      const IDX_FEATURE = 31;
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row.length) continue;
+
+        const productCode = (row[IDX_PRODUCT_CODE] || '').trim();
+        if (!productCode) continue;
+
+        const adjust = (row[IDX_ADJUST] || '').trim();
+        const wash = (row[IDX_WASH] || '').trim();
+        const feature = (row[IDX_FEATURE] || '').trim();
+        const origin = (row[IDX_ORIGIN] || '').trim();
+
+        extraByProductCode[productCode] = { adjust, wash, feature, origin };
+      }
+    }
+
     async function init() {
       try {
         statusEl.textContent = '상품/재고 데이터 불러오는 중...';
@@ -935,7 +993,8 @@ th.sortable{cursor:pointer; position:relative;}
         await Promise.all([
           loadProducts(),
           loadStock(),
-          loadOperationStatus()
+          loadOperationStatus(),
+          loadExtra()
         ]);
 
         statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>`;
@@ -1035,6 +1094,13 @@ th.sortable{cursor:pointer; position:relative;}
         case 'size':        valA = a.size || '';        valB = b.size || '';        break;
         case 'material':    valA = a.material || '';    valB = b.material || '';    break;
         case 'warehouse':   valA = a.warehouse || '';   valB = b.warehouse || '';   break;
+
+        // ✅✅ 부가정보는 한 칸 정렬(4개 합쳐서 비교)
+        case 'extra':
+          valA = [a.adjust,a.wash,a.feature,a.origin].filter(Boolean).join(' ');
+          valB = [b.adjust,b.wash,b.feature,b.origin].filter(Boolean).join(' ');
+          break;
+
         default: return tieBreak(a, b);
       }
 
@@ -1047,10 +1113,9 @@ th.sortable{cursor:pointer; position:relative;}
     // ✅✅ 상세 링크 캐시/프리패치(속도 개선) - fallback용 (product_no 없을 때만)
     // ===========================
     const detailUrlCache = new Map();
-    const CACHE_KEY = 'ws_detail_cache_v2'; // localStorage 캐시
+    const CACHE_KEY = 'ws_detail_cache_v2';
     let inflightCtrl = null;
 
-    // localStorage 캐시 복원
     try {
       const saved = localStorage.getItem(CACHE_KEY);
       if (saved) {
@@ -1066,22 +1131,14 @@ th.sortable{cursor:pointer; position:relative;}
       }catch{}
     }
 
-    // 검색 결과 HTML에서 첫 상품 링크 추출
     function extractFirstProductHref(html){
       if (!html) return '';
-
-      // 1) product_no 기반 상세 링크 우선
       let m = html.match(/href\s*=\s*["']([^"']*product\/detail\.html\?product_no=\d+[^"']*)["']/i);
       if (m && m[1]) return decodeHtmlEntities(m[1]);
-
-      // 2) “보기좋은 URL” 형태
       m = html.match(/href\s*=\s*["'](\/product\/[^"']+\/\d+\/[^"']*)["']/i);
       if (m && m[1]) return decodeHtmlEntities(m[1]);
-
-      // 3) 마지막 fallback: /product/ 로 시작하는 링크 중 첫 번째
       m = html.match(/href\s*=\s*["'](\/product\/[^"']+)["']/i);
       if (m && m[1]) return decodeHtmlEntities(m[1]);
-
       return '';
     }
 
@@ -1092,7 +1149,6 @@ th.sortable{cursor:pointer; position:relative;}
       return ta.value;
     }
 
-    // ✅ fetch 로직(캐시 채우기 전용) - fallback용
     async function fetchAndCacheFirstDetailUrl(keyword){
       const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
       const proxyUrl  = `https://r.jina.ai/${searchUrl}`;
@@ -1101,17 +1157,13 @@ th.sortable{cursor:pointer; position:relative;}
       if (cached) return cached;
 
       const res = await fetch(proxyUrl, {
-        headers: {
-          // Jina 캐시 허용(초): 예) 6시간
-          'x-cache-tolerance': '21600'
-        }
+        headers: { 'x-cache-tolerance': '21600' }
       });
 
       if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
 
       const html = await res.text();
       const firstHref = extractFirstProductHref(html);
-
       if (!firstHref) return '';
 
       const detailUrl = firstHref.startsWith('http')
@@ -1123,9 +1175,7 @@ th.sortable{cursor:pointer; position:relative;}
       return detailUrl;
     }
 
-    // ✅ 후보 키워드 순차 시도: colorCode → productCode → productName (fallback용)
     async function openFirstProductDetailWithFallback(candidates){
-      // 1) 캐시 hit (후보 중 하나라도 캐시 있으면 즉시 오픈)
       for (const kw of candidates) {
         const cached = detailUrlCache.get(kw);
         if (cached){
@@ -1135,14 +1185,12 @@ th.sortable{cursor:pointer; position:relative;}
         }
       }
 
-      // 2) 사용자 클릭 연타/중복 끊기
       if (inflightCtrl) inflightCtrl.abort();
       inflightCtrl = new AbortController();
 
       try{
         showToast('첫 상품 찾는 중...');
 
-        // 타임아웃(4초) - 너무 오래 걸리면 끊고 다음 후보로 (완전 abort는 아님, 체감 방어용)
         const makeTimeoutAbort = (ms) => setTimeout(() => {
           try{ inflightCtrl?.abort(); } catch {}
         }, ms);
@@ -1169,7 +1217,6 @@ th.sortable{cursor:pointer; position:relative;}
           }
         }
 
-        // 3) 전부 실패하면 마지막 후보로 검색페이지 오픈
         const last = candidates[candidates.length - 1];
         window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank');
         showToast('상세를 못 찾아서 검색페이지로 열었어요.');
@@ -1178,7 +1225,6 @@ th.sortable{cursor:pointer; position:relative;}
       }
     }
 
-    // ✅ 검색 결과 렌더 후 상위 N개 프리패치(체감속도 상승) - fallback용
     function prefetchDetailUrlsFromCurrentTable(limit = 8){
       const cells = Array.from(resultEl.querySelectorAll('.product-name-cell'));
       if (!cells.length) return;
@@ -1186,7 +1232,6 @@ th.sortable{cursor:pointer; position:relative;}
       const keys = [];
       for (const cell of cells) {
         const colorCode = (cell.dataset.colorCode || '').trim();
-        // product_no가 있는 colorCode는 굳이 프리패치할 필요 없음
         if (colorCode && !productNoByColorCode[colorCode] && !detailUrlCache.get(colorCode)) keys.push(colorCode);
         if (keys.length >= limit) break;
       }
@@ -1245,6 +1290,7 @@ th.sortable{cursor:pointer; position:relative;}
       filteredProducts.forEach(p => {
         const entries = stockEntriesByColorCode[p.colorCode] || [];
         const pno = productNoByColorCode[p.colorCode] || '';
+        const extra = extraByProductCode[p.productCode] || { adjust:'', wash:'', feature:'', origin:'' };
 
         let useEntries;
         if (showWarehouse) {
@@ -1268,7 +1314,13 @@ th.sortable{cursor:pointer; position:relative;}
             stockClass:  '',
             rawName:     p.rawName     || '',
             colorCodeKey: p.colorCode  || '',
-            productNo:   pno
+            productNo:   pno,
+
+            // ✅✅ extra
+            adjust:  extra.adjust  || '',
+            wash:    extra.wash    || '',
+            feature: extra.feature || '',
+            origin:  extra.origin  || ''
           });
           return;
         }
@@ -1308,7 +1360,13 @@ th.sortable{cursor:pointer; position:relative;}
             stockClass,
             rawName:     p.rawName     || '',
             colorCodeKey: p.colorCode  || '',
-            productNo:   pno
+            productNo:   pno,
+
+            // ✅✅ extra
+            adjust:  extra.adjust  || '',
+            wash:    extra.wash    || '',
+            feature: extra.feature || '',
+            origin:  extra.origin  || ''
           });
         });
       });
@@ -1351,6 +1409,9 @@ th.sortable{cursor:pointer; position:relative;}
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
       if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
 
+      // ✅✅ 부가정보는 한 칸(아코디언)
+      if (showExtra) headerHtml += buildHeaderCell('부가정보', 'extra');
+
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
 
@@ -1376,6 +1437,24 @@ th.sortable{cursor:pointer; position:relative;}
           </span>
         ` : '';
 
+        const extraHasAny = !!(r.adjust || r.wash || r.feature || r.origin);
+
+        const extraCellInner = showExtra ? `
+          <details class="extra-details" ${extraHasAny ? '' : ''}>
+            <summary>${extraHasAny ? '부가정보' : '부가정보 없음'}</summary>
+            <div class="extra-panel">
+              ${extraHasAny ? `
+                <div class="extra-row"><div class="extra-k">조절</div><div class="extra-v">${highlightText(r.adjust || '-', lastKeyword)}</div></div>
+                <div class="extra-row"><div class="extra-k">세탁</div><div class="extra-v">${highlightText(r.wash || '-', lastKeyword)}</div></div>
+                <div class="extra-row"><div class="extra-k">특징</div><div class="extra-v">${highlightText(r.feature || '-', lastKeyword)}</div></div>
+                <div class="extra-row"><div class="extra-k">제조국</div><div class="extra-v">${highlightText(r.origin || '-', lastKeyword)}</div></div>
+              ` : `
+                <div class="extra-empty">등록된 부가정보가 없습니다.</div>
+              `}
+            </div>
+          </details>
+        ` : '';
+
         bodyHtml += `
           <tr>
             <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
@@ -1388,6 +1467,7 @@ th.sortable{cursor:pointer; position:relative;}
             <td>${highlightText(r.size || '', lastKeyword)}</td>
             ${showMaterial ? `<td>${highlightText(r.material || '', lastKeyword)}</td>` : ''}
             ${showWarehouse ? `<td class="col-warehouse">${highlightText(r.warehouse || '', lastKeyword)}</td>` : ''}
+            ${showExtra ? `<td>${extraCellInner}</td>` : ''}
             <td class="text-right">${stockCellInner}</td>
           </tr>
         `;
@@ -1407,7 +1487,6 @@ th.sortable{cursor:pointer; position:relative;}
       updateLegendVisibility();
       attachTableHeaderEvents();
 
-      // ✅ 렌더 후 상위 N개 프리패치 (product_no 없는 것만)
       prefetchDetailUrlsFromCurrentTable(8);
     }
 
@@ -1499,8 +1578,17 @@ th.sortable{cursor:pointer; position:relative;}
       if (keywordInput.value.trim()) search();
     });
 
+    // ✅✅ 부가정보 토글
+    toggleExtraInput.addEventListener('change', () => {
+      showExtra = toggleExtraInput.checked;
+      if (keywordInput.value.trim()) search();
+    });
+
     // 상품명 클릭 → 원래 상품명 복사
     resultEl.addEventListener('click', e => {
+      // ✅ details/summary 클릭은 복사 방지 (부가정보 펼치기 우선)
+      if (e.target.closest('.extra-details')) return;
+
       const cell = e.target.closest('.product-name-cell');
       if (!cell) return;
 
@@ -1549,14 +1637,11 @@ th.sortable{cursor:pointer; position:relative;}
       if (!cell) return;
 
       const productNo = (cell.dataset.productNo || "").trim();
-
-      // ✅ 1순위: 상품번호가 있으면 즉시 미리보기(또는 새창으로 바꾸고 싶으면 openPreviewByProductNo 대신 window.open)
       if (productNo) {
         openPreviewByProductNo(productNo);
         return;
       }
 
-      // ❗ 2순위: 기존 fallback
       const colorCode   = (cell.dataset.colorCode || "").trim();
       const productCode = (cell.dataset.productCode || "").trim();
       const productName = (cell.dataset.productName || "").trim();
@@ -1606,7 +1691,7 @@ th.sortable{cursor:pointer; position:relative;}
     }
 
     // 초기 상태 반영 + 변경될 때마다 반영
-    [ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
+    [ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput, toggleExtraInput ].forEach(inp => {
       if (!inp) return;
       syncPillActiveByInput(inp);
       inp.addEventListener('change', () => syncPillActiveByInput(inp));
