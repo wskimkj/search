@@ -106,12 +106,9 @@ body{
 .result-card{
   padding: 14px 16px 16px;
 }
-
 #result{
   min-height: 0 !important;
 }
-
-/* 안내문구(검색 전/결과 없음) 스타일 */
 .no-result{
   padding: 14px 0;
   margin: 0;
@@ -138,97 +135,45 @@ body{
   flex-direction:column;
   gap:10px;
 }
-
-/* ===== slim search bar ===== */
-.input-wrap.slim{
-  position:relative;
+.input-wrap{ position:relative; }
+.input-wrap input{
+  width:100%;
+  padding:12px 42px 12px 34px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.25);
+  background:#f5f3fb;
 }
-.input-wrap.slim input{
-  height: 42px;
-  padding: 0 78px 0 42px;
-  border-radius: 999px;
-  border: 1px solid rgba(170,150,230,.22);
-  background: rgba(245,243,251,.75);
-  font-size: 13px;
-}
-.input-wrap.slim input:focus{
+.input-wrap input:focus{
   outline:none;
-  border-color: rgba(255,143,188,.55);
-  box-shadow: 0 0 0 4px rgba(255,143,188,.16);
+  border-color:var(--pink);
+  box-shadow:0 0 0 4px rgba(255,143,188,.18);
 }
-
-/* 왼쪽 돋보기 */
-.input-wrap.slim .input-icon-left{
+.input-icon-left{
   position:absolute;
-  left:14px;
+  left:12px;
   top:50%;
   transform:translateY(-50%);
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:18px;
-  height:18px;
-  opacity:.95;
 }
-.icon-search{ width:18px; height:18px; display:block; }
-
-/* 오른쪽 Enter ↵ */
-.input-wrap.slim .input-icon-right{
+.input-icon-right{
   position:absolute;
   right:14px;
   top:50%;
   transform:translateY(-50%);
   font-size:11px;
-  color: rgba(110,106,130,.55);
-  pointer-events:none;
+  color:#999;
 }
 
-/* X 버튼 */
-.clear-btn{
-  position:absolute;
-  right:52px;
-  top:50%;
-  transform:translateY(-50%);
-  width:22px;
-  height:22px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.18);
-  background: rgba(255,255,255,.65);
-  color: rgba(110,106,130,.75);
-  font-size:16px;
-  line-height:1;
-  cursor:pointer;
-  display:none;
-}
-.clear-btn:hover{
-  background: rgba(255,143,188,.12);
-  border-color: rgba(255,143,188,.22);
-}
-
-.type-pills{
+/* ===== result ===== */
+.result-card{ padding-top:14px; }
+.result-header-row{
   display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:flex-start;
 }
-.type-pill{
-  height:34px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.25);
-  background:#fff;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  font-size:13px;
-  user-select:none;
-  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+.result-header-right{
+  font-size:11px;
+  color:var(--text-muted);
 }
-.type-pill input{ display:none; }
-.type-pill.active{
-  background:rgba(255,143,188,.25);
-  border-color:rgba(255,143,188,.45);
-}
-.type-pill:active{ transform: scale(.98); }
 
 /* ===== op legend ===== */
 #opLegend.op-legend{
@@ -254,6 +199,8 @@ body{
 .op-legend-dot.end{background:#f97316;}
 .op-legend-dot.stop{background:#ef4444;}
 .op-legend-dot.pause{background:#eab308;}
+/* ✅ 회색(운영정보 없음) 추가 */
+.op-legend-dot.unk{background:#a3a3a3;}
 
 /* ===== table ===== */
 .result-table-wrap{
@@ -286,6 +233,7 @@ tr:nth-child(even) td{background:#faf9fe;}
 tr:hover td{background:rgba(255,143,188,.18);}
 
 /* ===== column resize ===== */
+th{ position:sticky; }
 .resize-handle{
   position:absolute;
   top:0;
@@ -335,7 +283,8 @@ th.sortable{cursor:pointer; position:relative;}
 .op-status-dot--end   { background:#f97316; }
 .op-status-dot--stop  { background:#ef4444; }
 .op-status-dot--pause { background:#eab308; }
-.op-status-dot--none  { background:#cbd5e1; } /* ✅ 운영 미기재 회색 */
+/* ✅ 운영여부 없을 때 회색 점 */
+.op-status-dot--unk   { background:#a3a3a3; }
 
 /* ===== stock pill ===== */
 .stock-pill{
@@ -371,8 +320,6 @@ th.sortable{cursor:pointer; position:relative;}
   opacity:0;
 }
 #toast.show{opacity:1;}
-
-/* ✅ status 크기 */
 #status{
   font-size: 12px !important;
   line-height: 1.2 !important;
@@ -384,15 +331,98 @@ th.sortable{cursor:pointer; position:relative;}
   font-weight: 600 !important;
   color: var(--text-main) !important;
 }
-
-/* ===== responsive ===== */
 @media(max-width:860px){
   .header{flex-direction:column;gap:10px;}
   .card-search{flex-direction:column;}
 }
 
+/* ===== slim search bar ===== */
+.input-wrap.slim{ position:relative; }
+.input-wrap.slim input{
+  height: 42px;
+  padding: 0 78px 0 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(170,150,230,.22);
+  background: rgba(245,243,251,.75);
+  font-size: 13px;
+}
+.input-wrap.slim input:focus{
+  outline:none;
+  border-color: rgba(255,143,188,.55);
+  box-shadow: 0 0 0 4px rgba(255,143,188,.16);
+}
+.input-wrap.slim .input-icon-left{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  height:18px;
+  opacity:.95;
+}
+.icon-search{ width:18px; height:18px; display:block; }
+.input-wrap.slim .input-icon-right{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:11px;
+  color: rgba(110,106,130,.55);
+  pointer-events:none;
+}
+.clear-btn{
+  position:absolute;
+  right:52px;
+  top:50%;
+  transform:translateY(-50%);
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.18);
+  background: rgba(255,255,255,.65);
+  color: rgba(110,106,130,.75);
+  font-size:16px;
+  line-height:1;
+  cursor:pointer;
+  display:none;
+}
+.clear-btn:hover{
+  background: rgba(255,143,188,.12);
+  border-color: rgba(255,143,188,.22);
+}
+.type-pills{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.type-pill{
+  height:34px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.25);
+  background:#fff;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  font-size:13px;
+  user-select:none;
+  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+}
+.type-pill input{ display:none; }
+.type-pill.active{
+  background:rgba(255,143,188,.25);
+  border-color:rgba(255,143,188,.45);
+}
+.type-pill:active{ transform: scale(.98); }
+.input-wrap .input-icon-left{ font-size:0; }
+.text-right{ text-align:right; }
+.text-center{ text-align:center; }
+
 /* ===========================
-   ✅✅ 미리보기 모달
+   미리보기 모달
    =========================== */
 .pv-modal{ position:fixed; inset:0; display:none; z-index:9999; }
 .pv-modal.show{ display:block; }
@@ -456,123 +486,75 @@ th.sortable{cursor:pointer; position:relative;}
 }
 
 /* ===========================
-   ✅✅ 운영 점 Hover 부가정보 툴팁 (예쁘게)
+   운영 점 Hover 툴팁 (✅ UI 개선: 구분선/카드형)
    =========================== */
 .extra-tooltip{
   position: fixed;
   z-index: 99999;
   display: none;
-  width: min(420px, calc(100vw - 24px));
+  min-width: 260px;
+  max-width: 380px;
   padding: 12px 12px 10px;
-  border-radius: 18px;
-
-  background:
-    radial-gradient(240px 160px at 12% 14%, rgba(255,143,188,.16), transparent 60%),
-    radial-gradient(240px 160px at 88% 10%, rgba(184,167,255,.18), transparent 62%),
-    rgba(255,255,255,.96);
-
+  border-radius: 16px;
+  background: rgba(255,255,255,.97);
   border: 1px solid rgba(170,150,230,.22);
-  box-shadow: 0 22px 60px rgba(30,18,60,.22);
-  backdrop-filter: blur(8px);
-
+  box-shadow: 0 18px 50px rgba(30,18,60,.18);
   font-size: 12px;
   color: var(--text-main);
   line-height: 1.35;
+  overflow:hidden;
 }
-
-.extra-tooltip .t-head{
+.extra-tooltip .t-title{
+  font-weight: 900;
+  font-size: 12px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:10px;
-  padding: 2px 4px 10px;
-  border-bottom: 1px dashed rgba(170,150,230,.28);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
-
-.extra-tooltip .t-title{
+.extra-tooltip .t-title .badge{
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.22);
+  background: rgba(245,243,251,.75);
+  color: var(--text-muted);
+}
+.extra-tooltip .t-list{
   display:flex;
-  align-items:center;
+  flex-direction:column;
   gap:8px;
-  font-weight: 900;
-  font-size: 13px;
 }
-
-.extra-tooltip .t-badge{
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255,143,188,.18);
-  border: 1px solid rgba(255,143,188,.32);
-  color: rgba(47,42,58,.88);
-  white-space:nowrap;
-}
-
-.extra-tooltip .t-grid{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-.extra-tooltip .t-card{
-  background: rgba(255,255,255,.70);
-  border: 1px solid rgba(170,150,230,.18);
-  border-radius: 14px;
-  padding: 10px 10px;
-  box-shadow: 0 10px 24px rgba(30,18,60,.08);
-}
-
-.extra-tooltip .t-row{
+.extra-tooltip .t-item{
   display:flex;
-  align-items:flex-start;
   gap:10px;
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid rgba(170,150,230,.16);
+  background: rgba(245,243,251,.55);
 }
-
 .extra-tooltip .t-k{
-  width: 58px;
+  width: 62px;
+  font-weight:700;
+  color: var(--text-muted);
   flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .02em;
-  color: rgba(110,106,130,.86);
-  padding-top: 2px;
 }
-
 .extra-tooltip .t-v{
   flex: 1 1 auto;
   word-break: break-word;
-  white-space: pre-wrap;
-  font-size: 12px;
-  color: rgba(47,42,58,.94);
+  color: var(--text-main);
 }
-
 .extra-tooltip .t-sep{
-  height: 1px;
-  background: rgba(170,150,230,.14);
-  margin: 8px 0;
+  height:1px;
+  background: rgba(170,150,230,.18);
+  margin: 8px -12px 0;
 }
 
-.extra-tooltip .t-foot{
-  margin-top: 8px;
-  padding: 0 4px 2px;
-  font-size: 11px;
-  color: rgba(110,106,130,.65);
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
-
+/* 작은 힌트 */
 .extra-tooltip .t-hint{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-.extra-tooltip .t-hint-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background: rgba(255,143,188,.85);
-  box-shadow: 0 0 0 3px rgba(255,143,188,.16);
+  margin-top:8px;
+  font-size:10px;
+  color: rgba(110,106,130,.65);
 }
  </style>
 
@@ -644,10 +626,21 @@ th.sortable{cursor:pointer; position:relative;}
           </div>
 
           <div id="opLegend" class="op-legend">
-            <span class="op-legend-item"><span class="op-legend-dot on"></span> 운영</span>
-            <span class="op-legend-item"><span class="op-legend-dot end"></span> 소진 후 종료</span>
-            <span class="op-legend-item"><span class="op-legend-dot stop"></span> 단종</span>
-            <span class="op-legend-item"><span class="op-legend-dot pause"></span> 일시 중단</span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot on"></span> 운영
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot end"></span> 소진 후 종료
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot stop"></span> 단종
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot pause"></span> 일시 중단
+            </span>
+            <span class="op-legend-item">
+              <span class="op-legend-dot unk"></span> 정보 없음
+            </span>
           </div>
 
           <div id="result">
@@ -660,7 +653,7 @@ th.sortable{cursor:pointer; position:relative;}
 
   <div id="toast" class="toast">복사</div>
 
-  <!-- ✅✅ 미리보기 모달 -->
+  <!-- 미리보기 모달 -->
   <div id="previewModal" class="pv-modal" aria-hidden="true">
     <div class="pv-backdrop"></div>
     <div class="pv-panel" role="dialog" aria-modal="true">
@@ -679,7 +672,7 @@ th.sortable{cursor:pointer; position:relative;}
     </div>
   </div>
 
-  <!-- ✅✅ 운영 점 Hover 툴팁 -->
+  <!-- 운영 점 Hover 툴팁 -->
   <div id="extraTooltip" class="extra-tooltip" role="tooltip" aria-hidden="true"></div>
 
   <script>
@@ -693,9 +686,9 @@ th.sortable{cursor:pointer; position:relative;}
     const OPER_SHEET_ID = '1F4EC5w1VPmFpwSbw0LuIv5QkwSSs8YkCBPZKY3h-z64';
     const OPER_GID = '2108422262';
 
-    // ✅ 부가정보 시트 (같은 파일, 다른 gid)
+    // ✅ 부가정보(상품번호 매칭 포함) 시트: 네가 준 gid=2050011179 로 변경
     const EXTRA_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
-    const EXTRA_GID = '1305011805';
+    const EXTRA_GID = '2050011179';
 
     const PRODUCT_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/export?format=csv&gid=${PRODUCT_GID}`;
@@ -717,11 +710,15 @@ th.sortable{cursor:pointer; position:relative;}
     let inStockOnly = false;
     let opStatusByColorCode = {};
 
-    // ✅ J열(상품번호) 매핑: colorCode -> productNo (재고 시트)
+    // ✅ J열(상품번호) 매핑: colorCode -> productNo
     let productNoByColorCode = {};
 
-    // ✅ 부가정보 매핑: productCode -> { adjust, wash, feature, madeIn, productNo(BL) }
+    // ✅ 부가정보 매핑: productCode -> { adjust, wash, feature, madeIn }
     let extraByProductCode = {};
+
+    // ✅ 3번 요구사항용: AH(상품코드) -> BL(productNo), 그리고 “키워드 포함 검색”용 인덱스
+    let productNoByCode_AH = {};
+    let extraRowsTextIndex = []; // [{ text, productNo }]
 
     let sortKey = 'productName';
     let sortDir = 'asc';
@@ -741,9 +738,9 @@ th.sortable{cursor:pointer; position:relative;}
 
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
-    const resultInfoEl = document.getElementById('resultInfo'); // (DOM에 없어서 null 가능)
+    const resultInfoEl = document.getElementById('resultInfo'); // (현재 DOM에 없어서 null일 수 있음)
 
-    // ✅ 미리보기 모달 DOM
+    // 미리보기 모달 DOM
     const previewModalEl = document.getElementById('previewModal');
     const pvBackdropEl = previewModalEl ? previewModalEl.querySelector('.pv-backdrop') : null;
     const pvCloseEl = document.getElementById('pvClose');
@@ -751,7 +748,7 @@ th.sortable{cursor:pointer; position:relative;}
     const pvLoadingEl = document.getElementById('pvLoading');
     const pvOpenNewTabEl = document.getElementById('pvOpenNewTab');
 
-    // ✅ 운영 점 Hover 툴팁 DOM
+    // 운영 점 Hover 툴팁 DOM
     const extraTooltipEl = document.getElementById('extraTooltip');
 
     const regexBracket = /\[[^\]]*\]/g;
@@ -781,7 +778,10 @@ th.sortable{cursor:pointer; position:relative;}
     }
 
     function parseCSV(text) {
-      const parsed = Papa.parse(text, { header: false, skipEmptyLines: true });
+      const parsed = Papa.parse(text, {
+        header: false,
+        skipEmptyLines: true
+      });
       return parsed.data;
     }
 
@@ -789,58 +789,57 @@ th.sortable{cursor:pointer; position:relative;}
       if (!toastEl) return;
       toastEl.textContent = msg;
       toastEl.classList.add('show');
-      setTimeout(() => toastEl.classList.remove('show'), 1400);
+      setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 1400);
     }
 
     function updateLegendVisibility() {
       if (!opLegendEl) return;
+      // ✅ 운영 시트 데이터 없어도 “정보 없음”이 의미 있으니 항상 보이게 할 수도 있지만,
+      // 기존 UX 유지: 운영 시트가 로드되면 보이게
       const hasData = Object.keys(opStatusByColorCode).length > 0;
       opLegendEl.style.display = hasData ? 'flex' : 'none';
     }
 
+    // ====== (공통) product_no 정규화 ======
     function normalizeProductNo(v){
-  if (v === null || v === undefined) return '';
-  const s = String(v).trim();
-  if (!s) return '';
-  // "12345.0" / "no:12345" 같은 것도 숫자만 뽑아서 안정화
-  const digits = s.replace(/[^\d]/g, '');
-  return digits;
-}
+      if (v === null || v === undefined) return '';
+      const s = String(v).trim();
+      if (!s) return '';
+      // "12345.0" / "no:12345" 등 방지
+      return s.replace(/[^\d]/g, '');
+    }
 
-function openPreviewByProductNo(productNo){
-  const pno = normalizeProductNo(productNo);
-  if (!pno) {
-    showToast('상품번호가 비어있어요.');
-    return;
-  }
+    // ✅ 미리보기 모달 열기/닫기 (✅ 같은 URL 연속 로드도 강제 리로드)
+    function openPreviewByProductNo(productNo){
+      const pno = normalizeProductNo(productNo);
+      if (!pno) {
+        showToast('상품번호를 찾지 못했어요.');
+        return;
+      }
 
-  const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(pno)}`;
+      const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(pno)}`;
 
-  // 모달 DOM 없으면 새탭
-  if (!previewModalEl || !pvFrameEl || !pvLoadingEl || !pvOpenNewTabEl) {
-    window.open(url, '_blank', 'noopener');
-    return;
-  }
+      if (!previewModalEl || !pvFrameEl || !pvLoadingEl || !pvOpenNewTabEl) {
+        window.open(url, '_blank', 'noopener');
+        return;
+      }
 
-  // ✅ 항상 링크도 최신으로
-  pvOpenNewTabEl.href = url;
+      pvOpenNewTabEl.href = url;
+      pvLoadingEl.style.display = 'flex';
 
-  // ✅ “같은 URL이면 iframe이 리로드 안 하는” 문제 방지:
-  // 1) about:blank로 한번 비우고 2) 다음 프레임에서 실제 url 세팅
-  pvLoadingEl.style.display = 'flex';
-  pvFrameEl.src = 'about:blank';
+      // ✅ 강제 리로드
+      pvFrameEl.src = 'about:blank';
+      previewModalEl.classList.add('show');
+      previewModalEl.setAttribute('aria-hidden', 'false');
 
-  previewModalEl.classList.add('show');
-  previewModalEl.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => {
+        pvFrameEl.src = url;
+      });
 
-  // 다음 프레임에서 진짜 URL 주입 (강제 리로드)
-  requestAnimationFrame(() => {
-    pvFrameEl.src = url;
-  });
-
-  showToast(`미리보기 열기: ${pno}`);
-}
-
+      showToast('미리보기 여는 중...');
+    }
 
     function closePreview(){
       if (!previewModalEl || !pvFrameEl || !pvLoadingEl) return;
@@ -852,12 +851,17 @@ function openPreviewByProductNo(productNo){
 
     if (pvFrameEl) {
       pvFrameEl.addEventListener('load', () => {
+        // about:blank 로딩에서는 숨기지 않음
+        if (pvFrameEl.src === 'about:blank') return;
         if (pvLoadingEl) pvLoadingEl.style.display = 'none';
       });
     }
+
     if (pvCloseEl) pvCloseEl.addEventListener('click', closePreview);
     if (pvBackdropEl) pvBackdropEl.addEventListener('click', closePreview);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePreview(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePreview();
+    });
 
     async function loadProducts() {
       const res = await fetch(PRODUCT_CSV_URL);
@@ -921,7 +925,7 @@ function openPreviewByProductNo(productNo){
           productNoByColorCode[colorCode] = productNo;
         }
 
-        // 재고는 K열(row[10]) 사용
+        // 재고는 K열(row[10])
         let qtyRaw      = (row[10] || '').toString().trim();
         if (!qtyRaw) continue;
 
@@ -960,10 +964,7 @@ function openPreviewByProductNo(productNo){
       updateLegendVisibility();
     }
 
-    // ✅ 부가정보 로드:
-    // - 상품코드는 특정열(E/AH 등) 고정 X
-    // - 행 전체를 훑어서 products의 상품코드(Set)에 포함되는 값을 찾으면 매칭
-    // - 매칭된 행에서 BL열(상품번호)을 같이 가져옴
+    // ✅ 부가정보 로드 + (3번) 상품번호 매칭 인덱스 만들기
     async function loadExtraInfo() {
       const res = await fetch(EXTRA_CSV_URL);
       if (!res.ok) throw new Error('부가정보 시트 로드 실패: ' + res.status);
@@ -972,39 +973,50 @@ function openPreviewByProductNo(productNo){
       const rows = parseCSV(text);
       if (rows.length < 2) return;
 
-      // 0-based index
-      const IDX_ADJUST   = 21; // V
-      const IDX_MADEIN   = 27; // AB
-      const IDX_WASH     = 29; // AD
-      const IDX_FEATURE  = 31; // AF
-      const IDX_PRODUCTNO = 63; // BL (A=0 → BL=64 → index 63)
-
-      // ✅ 상품코드 set
-      const codeSet = new Set(
-        products.map(p => (p.productCode || '').toString().trim()).filter(Boolean)
-      );
+      // ✅ 0-based index
+      // 조절: V(22) -> 21
+      // 제조국: AB(28) -> 27
+      // 세탁: AD(30) -> 29
+      // 제품특징: AF(32) -> 31
+      // 상품코드: AH(34) -> 33
+      // 상품번호: BL(64) -> 63
+      const IDX_ADJUST  = 21;
+      const IDX_MADEIN  = 27;
+      const IDX_WASH    = 29;
+      const IDX_FEATURE = 31;
+      const IDX_CODE_AH = 33;
+      const IDX_NO_BL   = 63;
 
       extraByProductCode = {};
+      productNoByCode_AH = {};
+      extraRowsTextIndex = [];
 
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i] || [];
         if (!r.length) continue;
 
-        // ✅ 행 전체에서 상품코드 찾기
-        let matchedCode = '';
-        for (let c = 0; c < r.length; c++) {
-          const v = (r[c] || '').toString().trim();
-          if (v && codeSet.has(v)) { matchedCode = v; break; }
-        }
-        if (!matchedCode) continue;
+        const codeAH = (r[IDX_CODE_AH] || '').toString().trim();     // ✅ AH
+        const productNoBL = (r[IDX_NO_BL] || '').toString().trim();  // ✅ BL
 
         const adjust  = (r[IDX_ADJUST]  || '').toString().trim();
         const madeIn  = (r[IDX_MADEIN]  || '').toString().trim();
         const wash    = (r[IDX_WASH]    || '').toString().trim();
         const feature = (r[IDX_FEATURE] || '').toString().trim();
-        const productNo = (r[IDX_PRODUCTNO] || '').toString().trim();
 
-        extraByProductCode[matchedCode] = { adjust, madeIn, wash, feature, productNo };
+        // hover용(상품코드 키 기준)
+        if (codeAH) {
+          extraByProductCode[codeAH] = { adjust, madeIn, wash, feature };
+        }
+
+        // ✅ AH -> BL (재고 클릭 연결용)
+        if (codeAH && productNoBL && !productNoByCode_AH[codeAH]) {
+          productNoByCode_AH[codeAH] = productNoBL;
+        }
+
+        // ✅ 키워드 포함 검색용(행 전체 텍스트)
+        //    (대소문자 무시, 포함이면 OK)
+        const rowText = r.map(x => (x ?? '').toString()).join(' ').toLowerCase();
+        extraRowsTextIndex.push({ text: rowText, productNo: productNoBL });
       }
     }
 
@@ -1013,9 +1025,8 @@ function openPreviewByProductNo(productNo){
         statusEl.textContent = '상품/재고 데이터 불러오는 중...';
         keywordInput.disabled = true;
 
-        // ✅ products를 먼저 불러야(상품코드 Set 생성) extra 매칭이 정확함
-        await loadProducts();
         await Promise.all([
+          loadProducts(),
           loadStock(),
           loadOperationStatus(),
           loadExtraInfo()
@@ -1030,26 +1041,27 @@ function openPreviewByProductNo(productNo){
       }
     }
 
-    // ✅ 운영 점: 운영여부 없어도 회색 점을 항상 생성해서 hover 트리거 유지
+    // ✅ 운영 점: 운영여부 없으면 회색 점도 생성(2번 요구사항)
     function buildOperationIndicator(colorCode, productCode) {
-      const rawStatus = opStatusByColorCode[colorCode] || '';
+      const rawStatus = opStatusByColorCode[colorCode];
 
-      let cls = 'op-status-dot ';
-      if (!rawStatus) {
-        cls += 'op-status-dot--none';
-        return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}" title="운영여부 미기재"></span>`;
-      }
-
-      const s = rawStatus.trim();
+      // 운영 상태 텍스트
+      const s = (rawStatus || '').trim();
       const normalized = s.replace(/\s+/g, '').replace(/[()]/g, '');
 
-      if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
+      let cls = 'op-status-dot ';
+      let title = s;
+
+      if (!rawStatus) {
+        cls += 'op-status-dot--unk';
+        title = '운영정보 없음';
+      } else if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
       else if (normalized.startsWith('소진후종료')) cls += 'op-status-dot--end';
       else if (normalized.startsWith('단종')) cls += 'op-status-dot--stop';
       else if (normalized.startsWith('일시중단')) cls += 'op-status-dot--pause';
-      else cls += 'op-status-dot--none';
+      else cls += 'op-status-dot--pause';
 
-      return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}" title="${escapeHtml(s)}"></span>`;
+      return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}" title="${escapeHtml(title)}"></span>`;
     }
 
     function escapeRegExp(string) {
@@ -1133,7 +1145,7 @@ function openPreviewByProductNo(productNo){
     }
 
     // ===========================
-    // ✅✅ 상세 링크 캐시/프리패치 (fallback용)
+    // fallback(기존 유지)
     // ===========================
     const detailUrlCache = new Map();
     const CACHE_KEY = 'ws_detail_cache_v2';
@@ -1179,7 +1191,9 @@ function openPreviewByProductNo(productNo){
       const cached = detailUrlCache.get(keyword);
       if (cached) return cached;
 
-      const res = await fetch(proxyUrl, { headers: { 'x-cache-tolerance': '21600' } });
+      const res = await fetch(proxyUrl, {
+        headers: { 'x-cache-tolerance': '21600' }
+      });
       if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
 
       const html = await res.text();
@@ -1199,7 +1213,7 @@ function openPreviewByProductNo(productNo){
       for (const kw of candidates) {
         const cached = detailUrlCache.get(kw);
         if (cached){
-          window.open(cached, '_blank');
+          window.open(cached, '_blank', 'noopener');
           showToast(`상세(캐시)로 이동!`);
           return;
         }
@@ -1210,6 +1224,7 @@ function openPreviewByProductNo(productNo){
 
       try{
         showToast('첫 상품 찾는 중...');
+
         const makeTimeoutAbort = (ms) => setTimeout(() => {
           try{ inflightCtrl?.abort(); } catch {}
         }, ms);
@@ -1219,11 +1234,13 @@ function openPreviewByProductNo(productNo){
           inflightCtrl = new AbortController();
 
           const timeoutId = makeTimeoutAbort(4000);
+
           try {
             const url = await fetchAndCacheFirstDetailUrl(kw);
             clearTimeout(timeoutId);
+
             if (url) {
-              window.open(url, '_blank');
+              window.open(url, '_blank', 'noopener');
               showToast('첫 상품 상세로 이동!');
               inflightCtrl = null;
               return;
@@ -1235,7 +1252,7 @@ function openPreviewByProductNo(productNo){
         }
 
         const last = candidates[candidates.length - 1];
-        window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank');
+        window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank', 'noopener');
         showToast('상세를 못 찾아서 검색페이지로 열었어요.');
       } finally {
         inflightCtrl = null;
@@ -1287,7 +1304,12 @@ function openPreviewByProductNo(productNo){
         const name      = (p.productName || '').toLowerCase();
         const code      = (p.productCode || '').toLowerCase();
         const colorCode = (p.colorCode   || '').toLowerCase();
-        return name.includes(lowerKw) || code.includes(lowerKw) || colorCode.includes(lowerKw);
+
+        return (
+          name.includes(lowerKw) ||
+          code.includes(lowerKw) ||
+          colorCode.includes(lowerKw)
+        );
       });
 
       if (!filteredProducts.length) {
@@ -1304,8 +1326,11 @@ function openPreviewByProductNo(productNo){
         const pno = productNoByColorCode[p.colorCode] || '';
 
         let useEntries;
-        if (showWarehouse) useEntries = entries;
-        else useEntries = entries.filter(e => e.warehouse === '주희물류');
+        if (showWarehouse) {
+          useEntries = entries;
+        } else {
+          useEntries = entries.filter(e => e.warehouse === '주희물류');
+        }
 
         if (!useEntries.length) {
           rows.push({
@@ -1368,7 +1393,9 @@ function openPreviewByProductNo(productNo){
       });
 
       let usedRows = rows;
-      if (inStockOnly) usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
+      if (inStockOnly) {
+        usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
+      }
 
       if (!usedRows.length) {
         statusEl.innerHTML = `"${kw}" 검색 결과: <strong>0행</strong> (재고 있음만 필터 적용)`;
@@ -1377,6 +1404,7 @@ function openPreviewByProductNo(productNo){
       }
 
       usedRows.sort(compareRows);
+
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>`;
 
       let headerHtml = '<tr>';
@@ -1386,8 +1414,10 @@ function openPreviewByProductNo(productNo){
       headerHtml += buildHeaderCell('상품코드', 'productCode', 'col-pcode');
       headerHtml += buildHeaderCell('상품칼라코드', 'colorCode');
       headerHtml += buildHeaderCell('사이즈', 'size');
+
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
       if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
+
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
 
@@ -1431,7 +1461,7 @@ function openPreviewByProductNo(productNo){
         `;
       });
 
-      resultEl.innerHTML = `
+      const html = `
         <div class="result-table-wrap">
           <div class="result-scroll">
             <table>
@@ -1441,7 +1471,7 @@ function openPreviewByProductNo(productNo){
           </div>
         </div>
       `;
-
+      resultEl.innerHTML = html;
       updateLegendVisibility();
       attachTableHeaderEvents();
       prefetchDetailUrlsFromCurrentTable(8);
@@ -1511,7 +1541,7 @@ function openPreviewByProductNo(productNo){
       document.body.style.userSelect = 'none';
     }
 
-    // ✅ 엔터 검색
+    // 엔터 검색
     keywordInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -1519,24 +1549,23 @@ function openPreviewByProductNo(productNo){
       }
     });
 
-    // ✅ 칩 토글 (키워드 있을 때만 재검색)
+    // 칩 토글 변경 시 바로 재검색 (키워드 있을 때만)
     toggleMaterialInput.addEventListener('change', () => {
       showMaterial = toggleMaterialInput.checked;
       if (keywordInput.value.trim()) search();
     });
-
     toggleWarehouseInput.addEventListener('change', () => {
       showWarehouse = toggleWarehouseInput.checked;
       if (keywordInput.value.trim()) search();
     });
-
     toggleInStockOnlyInput.addEventListener('change', () => {
       inStockOnly = toggleInStockOnlyInput.checked;
       if (keywordInput.value.trim()) search();
     });
 
-    // 상품명 클릭 → 원래 상품명 복사
+    // 상품명 클릭 → 원래 상품명 복사 (기존 유지)
     resultEl.addEventListener('click', e => {
+      // ✅ 재고 pill 클릭은 아래에서 처리하므로 여기서 막지 않음
       const cell = e.target.closest('.product-name-cell');
       if (!cell) return;
 
@@ -1572,26 +1601,48 @@ function openPreviewByProductNo(productNo){
       const titleEl = document.querySelector('.title-wrap h1');
       if (titleEl) {
         titleEl.addEventListener('click', () => {
-          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
+          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank', 'noopener');
         });
       }
     });
 
-    // ✅✅ 재고 pill 클릭:
-    // 1) 재고시트 product_no(J열) 있으면 => 미리보기
-    // 2) 없으면 부가정보(BL) product_no가 있으면 => 미리보기
-    // 3) 그래도 없으면 기존 fallback
+    // ✅✅ (3번) 재고 pill 클릭 → 상품번호(product_no) 찾기 우선순위
+    // 0) 재고시트 J열(productNoByColorCode) -> 이미 data-product-no에 들어옴
+    // 1) 부가정보 시트 AH로 productCode 매칭 -> BL(productNo)
+    // 2) 없으면: 사용자가 입력한 키워드(부분 포함)로 부가정보 시트 행 전체에서 찾아 BL(productNo)
+    // 3) 그래도 없으면: 기존 fallback(느림)
+    function findProductNoByKeywordFallback(keyword){
+      const kw = (keyword || '').toString().trim().toLowerCase();
+      if (!kw) return '';
+      // 너무 짧으면 오탐 방지
+      if (kw.length < 2) return '';
+
+      for (const row of extraRowsTextIndex) {
+        if (row.text.includes(kw)) {
+          const pno = normalizeProductNo(row.productNo);
+          if (pno) return pno;
+        }
+      }
+      return '';
+    }
+
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
 
-      let productNo = (cell.dataset.productNo || "").trim();
+      // 0) 재고 시트 product_no
+      let productNo = normalizeProductNo((cell.dataset.productNo || "").trim());
 
+      // 1) AH -> BL
       if (!productNo) {
         const productCode = (cell.dataset.productCode || "").trim();
-        const extra = productCode ? extraByProductCode[productCode] : null;
-        const extraNo = extra && extra.productNo ? String(extra.productNo).trim() : '';
-        if (extraNo) productNo = extraNo;
+        const mapped = productCode ? productNoByCode_AH[productCode] : '';
+        productNo = normalizeProductNo(mapped);
+      }
+
+      // 2) 키워드 포함 검색 -> BL
+      if (!productNo) {
+        productNo = findProductNoByKeywordFallback(keywordInput.value);
       }
 
       if (productNo) {
@@ -1599,6 +1650,7 @@ function openPreviewByProductNo(productNo){
         return;
       }
 
+      // 3) 기존 fallback
       const colorCode   = (cell.dataset.colorCode || "").trim();
       const productCode = (cell.dataset.productCode || "").trim();
       const productName = (cell.dataset.productName || "").trim();
@@ -1627,7 +1679,7 @@ function openPreviewByProductNo(productNo){
       }
     });
 
-    // ✅ 검색어 X 버튼
+    // 검색어 X 버튼
     function updateClearBtn(){
       if (!clearBtn) return;
       clearBtn.style.display = keywordInput.value.trim() ? 'inline-flex' : 'none';
@@ -1646,7 +1698,6 @@ function openPreviewByProductNo(productNo){
       if (!label) return;
       label.classList.toggle('active', inputEl.checked);
     }
-
     [ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
       if (!inp) return;
       syncPillActiveByInput(inp);
@@ -1654,7 +1705,7 @@ function openPreviewByProductNo(productNo){
     });
 
     // ===========================
-    // ✅ 운영 점 Hover → 부가정보 툴팁
+    // 운영 점 Hover → 부가정보 툴팁 (✅ 구분선/카드형)
     // ===========================
     function showExtraTooltip(x, y, html){
       if (!extraTooltipEl) return;
@@ -1695,41 +1746,17 @@ function openPreviewByProductNo(productNo){
       if (!info) return;
 
       const html = `
-        <div class="t-head">
-          <div class="t-title">✨ 부가정보 미리보기</div>
-          <div class="t-badge">${escapeHtml(code)}</div>
+        <div class="t-title">
+          <span>부가정보</span>
+          <span class="badge">${escapeHtml(code)}</span>
         </div>
-
-        <div class="t-grid">
-          <div class="t-card">
-            <div class="t-row">
-              <div class="t-k">조절</div>
-              <div class="t-v">${escapeHtml(info.adjust || '-')}</div>
-            </div>
-            <div class="t-sep"></div>
-            <div class="t-row">
-              <div class="t-k">제조국</div>
-              <div class="t-v">${escapeHtml(info.madeIn || '-')}</div>
-            </div>
-          </div>
-
-          <div class="t-card">
-            <div class="t-row">
-              <div class="t-k">세탁</div>
-              <div class="t-v">${escapeHtml(info.wash || '-')}</div>
-            </div>
-            <div class="t-sep"></div>
-            <div class="t-row">
-              <div class="t-k">특징</div>
-              <div class="t-v">${escapeHtml(info.feature || '-')}</div>
-            </div>
-          </div>
+        <div class="t-list">
+          <div class="t-item"><div class="t-k">조절</div><div class="t-v">${escapeHtml(info.adjust || '-')}</div></div>
+          <div class="t-item"><div class="t-k">세탁</div><div class="t-v">${escapeHtml(info.wash || '-')}</div></div>
+          <div class="t-item"><div class="t-k">제품특징</div><div class="t-v">${escapeHtml(info.feature || '-')}</div></div>
+          <div class="t-item"><div class="t-k">제조국</div><div class="t-v">${escapeHtml(info.madeIn || '-')}</div></div>
         </div>
-
-        <div class="t-foot">
-          <span class="t-hint"><span class="t-hint-dot"></span>운영 점에 마우스 올리면 표시</span>
-          <span>${escapeHtml(stockUpdatedAt || '')}</span>
-        </div>
+        <div class="t-hint">※ 운영 점(●) 위에 올리면 표시됩니다</div>
       `;
 
       showExtraTooltip(e.clientX, e.clientY, html);
@@ -1754,4 +1781,3 @@ function openPreviewByProductNo(productNo){
   </script>
 </body>
 </html>
-
