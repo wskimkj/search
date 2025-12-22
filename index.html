@@ -4,7 +4,7 @@
   <link rel="stylesheet" href="https://wskimkj.github.io/admin/css/common.css">
 
   <meta charset="UTF-8">
-  <title> Search </title>
+  <title>Search</title>
 
   <!-- 파비콘 -->
   <link rel="icon" type="image/png" href="android-chrome-512x512 (1).ico">
@@ -16,548 +16,498 @@
   <!-- CSV 파서 -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
- <style>
-/* ===================== FINAL CSS (기능 유지 / 레이아웃 정상 / pill 복구) ===================== */
-:root{
-  --page-bg: #f7f4ff;
-  --page-bg2:#eef6ff;
+  <style>
+    /* ===================== FINAL CSS ===================== */
+    :root{
+      --page-bg: #f7f4ff;
+      --page-bg2:#eef6ff;
 
-  --card-bg: rgba(255,255,255,.88);
-  --card-stroke: rgba(170,150,230,.22);
+      --card-bg: rgba(255,255,255,.88);
+      --card-stroke: rgba(170,150,230,.22);
 
-  --text-main: #2f2a3a;
-  --text-muted: #6e6a82;
+      --text-main: #2f2a3a;
+      --text-muted: #6e6a82;
 
-  --pink: #ff8fbc;
-  --lilac:#b8a7ff;
+      --pink: #ff8fbc;
+      --lilac:#b8a7ff;
 
-  --radius-xl: 18px;
-  --shadow-main: 0 18px 50px rgba(30,18,60,.10);
-  --shadow-card: 0 10px 26px rgba(30,18,60,.08);
-}
+      --radius-xl: 18px;
+      --shadow-main: 0 18px 50px rgba(30,18,60,.10);
+      --shadow-card: 0 10px 26px rgba(30,18,60,.08);
+    }
 
-*{box-sizing:border-box;}
-html,body{height:100%;}
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
 
-body{
-  margin:0;
-  font-family:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  color:var(--text-main);
-  background:
-    radial-gradient(900px 520px at 20% 18%, rgba(255,143,188,.25), transparent 60%),
-    radial-gradient(900px 520px at 82% 24%, rgba(184,167,255,.20), transparent 58%),
-    linear-gradient(180deg, var(--page-bg), var(--page-bg2));
-}
+    body{
+      margin:0;
+      font-family:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text-main);
+      background:
+        radial-gradient(900px 520px at 20% 18%, rgba(255,143,188,.25), transparent 60%),
+        radial-gradient(900px 520px at 82% 24%, rgba(184,167,255,.20), transparent 58%),
+        linear-gradient(180deg, var(--page-bg), var(--page-bg2));
+    }
 
-/* ===== layout ===== */
-.app-shell{
-  min-height:100vh;
-  padding:24px;
-}
-.inner-shell{
-  max-width:1400px;
-  margin:0 auto;
-  background:var(--card-bg);
-  border:1px solid var(--card-stroke);
-  border-radius:24px;
-  padding:18px 20px 20px;
-  box-shadow:var(--shadow-main);
-}
+    /* ===== layout ===== */
+    .app-shell{ min-height:100vh; padding:24px; }
+    .inner-shell{
+      max-width:1400px;
+      margin:0 auto;
+      background:var(--card-bg);
+      border:1px solid var(--card-stroke);
+      border-radius:24px;
+      padding:18px 20px 20px;
+      box-shadow:var(--shadow-main);
+    }
 
-/* ===== header ===== */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:14px;
-}
-.title-wrap h1{
-  margin:0;
-  font-size:20px;
-  font-weight:800;
-  display:flex;
-  gap:10px;
-  cursor:pointer;
-}
-.title-tag{
-  font-size:11px;
-  padding:4px 10px;
-  border-radius:999px;
-  background:rgba(255,143,188,.25);
-  border:1px solid rgba(255,143,188,.35);
-}
-.header-right{
-  font-size:12px;
-  color:var(--text-muted);
-}
+    /* ===== header ===== */
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+    .title-wrap h1{
+      margin:0;
+      font-size:20px;
+      font-weight:800;
+      display:flex;
+      gap:10px;
+      cursor:pointer;
+    }
+    .title-tag{
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(255,143,188,.25);
+      border:1px solid rgba(255,143,188,.35);
+    }
+    .header-right{ font-size:12px; color:var(--text-muted); }
 
-/* ===== cards ===== */
-.card{
-  background:#fff;
-  border:1px solid var(--card-stroke);
-  border-radius:22px;
-  box-shadow:var(--shadow-card);
-}
-.card-search{
-  align-items: stretch;
-}
+    /* ===== cards ===== */
+    .card{
+      background:#fff;
+      border:1px solid var(--card-stroke);
+      border-radius:22px;
+      box-shadow:var(--shadow-card);
+    }
+    .card-search{ align-items: stretch; }
+    .result-card{ padding: 14px 16px 16px; }
+    #result{ min-height: 0 !important; }
+    .no-result{
+      padding: 14px 0;
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
 
-/* ✅ Result 영역이 빈데도 커 보이는 현상 방지 */
-.result-card{
-  padding: 14px 16px 16px;
-}
-#result{
-  min-height: 0 !important;
-}
-.no-result{
-  padding: 14px 0;
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
+    /* ===== search ===== */
+    .card-search{
+      display:flex;
+      gap:14px;
+      padding:12px 14px;
+      align-items:flex-start;
+    }
+    .card-title{
+      font-size:13px;
+      font-weight:700;
+      margin:0;
+      white-space:nowrap;
+    }
+    .search-box{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-/* ===== search ===== */
-.card-search{
-  display:flex;
-  gap:14px;
-  padding:12px 14px;
-  align-items:flex-start;
-}
-.card-title{
-  font-size:13px;
-  font-weight:700;
-  margin:0;
-  white-space:nowrap;
-}
-.search-box{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.input-wrap{ position:relative; }
-.input-wrap input{
-  width:100%;
-  padding:12px 42px 12px 34px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.25);
-  background:#f5f3fb;
-}
-.input-wrap input:focus{
-  outline:none;
-  border-color:var(--pink);
-  box-shadow:0 0 0 4px rgba(255,143,188,.18);
-}
-.input-icon-left{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-}
-.input-icon-right{
-  position:absolute;
-  right:14px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:11px;
-  color:#999;
-}
+    /* ===== slim search bar ===== */
+    .input-wrap.slim{ position:relative; }
+    .input-wrap.slim input{
+      height: 42px;
+      padding: 0 78px 0 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(170,150,230,.22);
+      background: rgba(245,243,251,.75);
+      font-size: 13px;
+    }
+    .input-wrap.slim input:focus{
+      outline:none;
+      border-color: rgba(255,143,188,.55);
+      box-shadow: 0 0 0 4px rgba(255,143,188,.16);
+    }
+    .input-wrap.slim .input-icon-left{
+      position:absolute;
+      left:14px;
+      top:50%;
+      transform:translateY(-50%);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;
+      height:18px;
+      opacity:.95;
+    }
+    .icon-search{ width:18px; height:18px; display:block; }
+    .input-wrap.slim .input-icon-right{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:11px;
+      color: rgba(110,106,130,.55);
+      pointer-events:none;
+    }
+    .clear-btn{
+      position:absolute;
+      right:52px;
+      top:50%;
+      transform:translateY(-50%);
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      border:1px solid rgba(170,150,230,.18);
+      background: rgba(255,255,255,.65);
+      color: rgba(110,106,130,.75);
+      font-size:16px;
+      line-height:1;
+      cursor:pointer;
+      display:none;
+    }
+    .clear-btn:hover{
+      background: rgba(255,143,188,.12);
+      border-color: rgba(255,143,188,.22);
+    }
 
-/* ===== result ===== */
-.result-card{ padding-top:14px; }
-.result-header-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-}
-.result-header-right{
-  font-size:11px;
-  color:var(--text-muted);
-}
+    /* ===== pills ===== */
+    .type-pills{ display:flex; gap:10px; flex-wrap:wrap; }
+    .type-pill{
+      height:34px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid rgba(170,150,230,.25);
+      background:#fff;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      font-size:13px;
+      user-select:none;
+      transition: background .12s ease, border-color .12s ease, transform .06s ease;
+    }
+    .type-pill input{ display:none; }
+    .type-pill.active{
+      background:rgba(255,143,188,.25);
+      border-color:rgba(255,143,188,.45);
+    }
+    .type-pill:active{ transform: scale(.98); }
 
-/* ===== op legend ===== */
-#opLegend.op-legend{
-  display:none;
-  margin:6px 0 10px;
-  gap:12px;
-}
-#opLegend .op-legend-item{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:12px;
-  color:var(--text-muted);
-}
-.op-legend-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  border:2px solid #fff;
-  box-shadow:0 0 0 1px rgba(170,150,230,.25);
-}
-.op-legend-dot.on{background:#22c55e;}
-.op-legend-dot.end{background:#f97316;}
-.op-legend-dot.stop{background:#ef4444;}
-.op-legend-dot.pause{background:#eab308;}
-/* ✅ 회색(운영정보 없음) 추가 */
-.op-legend-dot.unk{background:#a3a3a3;}
+    /* ===== result ===== */
+    .result-header-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
 
-/* ===== table ===== */
-.result-table-wrap{
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid rgba(170,150,230,.18);
-}
-.result-scroll{
-  max-height:520px;
-  overflow:auto;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:auto;
-  font-size:12px;
-}
-th,td{
-  padding:10px 12px;
-  border-bottom:1px solid rgba(170,150,230,.15);
-}
-th{
-  background:#fff;
-  position:sticky;
-  top:0;
-  z-index:2;
-  user-select:none;
-}
-tr:nth-child(even) td{background:#faf9fe;}
-tr:hover td{background:rgba(255,143,188,.18);}
+    /* ===== op legend ===== */
+    #opLegend.op-legend{
+      display:none; /* JS에서 flex로 켬 */
+      margin:6px 0 10px;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    #opLegend .op-legend-item{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      color:var(--text-muted);
+    }
+    .op-legend-dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      border:2px solid #fff;
+      box-shadow:0 0 0 1px rgba(170,150,230,.25);
+    }
+    .op-legend-dot.on{background:#22c55e;}
+    .op-legend-dot.end{background:#f97316;}
+    .op-legend-dot.stop{background:#ef4444;}
+    .op-legend-dot.pause{background:#eab308;}
+    .op-legend-dot.none{background:#b9b6c8;}
 
-/* ===== column resize ===== */
-th{ position:sticky; }
-.resize-handle{
-  position:absolute;
-  top:0;
-  right:0;
-  width:10px;
-  height:100%;
-  cursor:col-resize;
-}
-.resize-handle::after{
-  content:"";
-  position:absolute;
-  top:20%;
-  bottom:20%;
-  left:50%;
-  width:1px;
-  transform:translateX(-50%);
-  background:rgba(170,150,230,.35);
-  opacity:0;
-}
-th:hover .resize-handle::after{opacity:1;}
-th.sortable{cursor:pointer; position:relative;}
-.sort-indicator{
-  margin-left:4px;
-  font-size:10px;
-  color:var(--pink);
-}
+    /* ===== table ===== */
+    .result-table-wrap{
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid rgba(170,150,230,.18);
+    }
+    .result-scroll{
+      max-height:520px;
+      overflow:auto;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:auto;
+      font-size:12px;
+    }
+    th,td{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(170,150,230,.15);
+    }
+    th{
+      background:#fff;
+      position:sticky;
+      top:0;
+      z-index:2;
+      user-select:none;
+    }
+    tr:nth-child(even) td{background:#faf9fe;}
+    tr:hover td{background:rgba(255,143,188,.18);}
 
-/* ===== product name / status dot ===== */
-.product-name-cell{
-  position:relative;
-  padding-left:28px;
-}
-.op-status-dot{
-  position:absolute;
-  left:10px;
-  top:50%;
-  transform:translateY(-50%);
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  border:2px solid #fff;
-  box-shadow:0 0 0 1px rgba(170,150,230,.25);
-}
+    /* ===== column resize ===== */
+    .resize-handle{
+      position:absolute;
+      top:0;
+      right:0;
+      width:10px;
+      height:100%;
+      cursor:col-resize;
+    }
+    .resize-handle::after{
+      content:"";
+      position:absolute;
+      top:20%;
+      bottom:20%;
+      left:50%;
+      width:1px;
+      transform:translateX(-50%);
+      background:rgba(170,150,230,.35);
+      opacity:0;
+    }
+    th:hover .resize-handle::after{opacity:1;}
+    th.sortable{cursor:pointer; position:relative;}
+    .sort-indicator{
+      margin-left:4px;
+      font-size:10px;
+      color:var(--pink);
+    }
 
-/* 상태별 색 */
-.op-status-dot--on    { background:#22c55e; }
-.op-status-dot--end   { background:#f97316; }
-.op-status-dot--stop  { background:#ef4444; }
-.op-status-dot--pause { background:#eab308; }
-/* ✅ 운영여부 없을 때 회색 점 */
-.op-status-dot--unk   { background:#a3a3a3; }
+    /* ===== product name / status dot ===== */
+    .product-name-cell{
+      position:relative;
+      padding-left:28px;
+    }
 
-/* ===== stock pill ===== */
-.stock-pill{
-  font-size:11px;
-  padding:3px 8px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-.stock-pill-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-}
-.stock-pill-green{background:#e9fbf3;}
-.stock-pill-green .stock-pill-dot{background:#22c55e;}
-.stock-pill-yellow{background:#fff7d6;}
-.stock-pill-yellow .stock-pill-dot{background:#facc15;}
-.stock-pill-red{background:#ffe4ee;}
-.stock-pill-red .stock-pill-dot{background:#ff8fbc;}
+    /* ✅ 상태 점 (운영여부 pill) */
+    .op-status-dot{
+      position:absolute;
+      left:10px;
+      top:50%;
+      transform:translateY(-50%);
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      border:2px solid #fff;
+      box-shadow:0 0 0 1px rgba(170,150,230,.25);
+      display:inline-block;     /* ✅ hover hit-area 확실 */
+      cursor:help;              /* ✅ */
+    }
+    .op-status-dot--on    { background:#22c55e; }
+    .op-status-dot--end   { background:#f97316; }
+    .op-status-dot--stop  { background:#ef4444; }
+    .op-status-dot--pause { background:#eab308; }
+    .op-status-dot--none  { background:#b9b6c8; } /* 정보 없음(회색) */
 
-/* ===== misc ===== */
-.kw-mark{background:yellow;padding:0 2px;}
-#toast{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#fff;
-  border:1px solid rgba(255,143,188,.35);
-  opacity:0;
-}
-#toast.show{opacity:1;}
-#status{
-  font-size: 12px !important;
-  line-height: 1.2 !important;
-  margin-top: 6px !important;
-  color: var(--text-muted) !important;
-}
-#status strong{
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: var(--text-main) !important;
-}
-@media(max-width:860px){
-  .header{flex-direction:column;gap:10px;}
-  .card-search{flex-direction:column;}
-}
+    /* ===== stock pill ===== */
+    .stock-pill{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .stock-pill-dot{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+    }
+    .stock-pill-green{background:#e9fbf3;}
+    .stock-pill-green .stock-pill-dot{background:#22c55e;}
+    .stock-pill-yellow{background:#fff7d6;}
+    .stock-pill-yellow .stock-pill-dot{background:#facc15;}
+    .stock-pill-red{background:#ffe4ee;}
+    .stock-pill-red .stock-pill-dot{background:#ff8fbc;}
 
-/* ===== slim search bar ===== */
-.input-wrap.slim{ position:relative; }
-.input-wrap.slim input{
-  height: 42px;
-  padding: 0 78px 0 42px;
-  border-radius: 999px;
-  border: 1px solid rgba(170,150,230,.22);
-  background: rgba(245,243,251,.75);
-  font-size: 13px;
-}
-.input-wrap.slim input:focus{
-  outline:none;
-  border-color: rgba(255,143,188,.55);
-  box-shadow: 0 0 0 4px rgba(255,143,188,.16);
-}
-.input-wrap.slim .input-icon-left{
-  position:absolute;
-  left:14px;
-  top:50%;
-  transform:translateY(-50%);
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:18px;
-  height:18px;
-  opacity:.95;
-}
-.icon-search{ width:18px; height:18px; display:block; }
-.input-wrap.slim .input-icon-right{
-  position:absolute;
-  right:14px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:11px;
-  color: rgba(110,106,130,.55);
-  pointer-events:none;
-}
-.clear-btn{
-  position:absolute;
-  right:52px;
-  top:50%;
-  transform:translateY(-50%);
-  width:22px;
-  height:22px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.18);
-  background: rgba(255,255,255,.65);
-  color: rgba(110,106,130,.75);
-  font-size:16px;
-  line-height:1;
-  cursor:pointer;
-  display:none;
-}
-.clear-btn:hover{
-  background: rgba(255,143,188,.12);
-  border-color: rgba(255,143,188,.22);
-}
-.type-pills{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.type-pill{
-  height:34px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.25);
-  background:#fff;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  font-size:13px;
-  user-select:none;
-  transition: background .12s ease, border-color .12s ease, transform .06s ease;
-}
-.type-pill input{ display:none; }
-.type-pill.active{
-  background:rgba(255,143,188,.25);
-  border-color:rgba(255,143,188,.45);
-}
-.type-pill:active{ transform: scale(.98); }
-.input-wrap .input-icon-left{ font-size:0; }
-.text-right{ text-align:right; }
-.text-center{ text-align:center; }
+    /* ===== misc ===== */
+    .kw-mark{background:yellow;padding:0 2px;}
+    #toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid rgba(255,143,188,.35);
+      opacity:0;
+    }
+    #toast.show{opacity:1;}
 
-/* ===========================
-   미리보기 모달
-   =========================== */
-.pv-modal{ position:fixed; inset:0; display:none; z-index:9999; }
-.pv-modal.show{ display:block; }
-.pv-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
-.pv-panel{
-  position:absolute; left:50%; top:50%;
-  transform:translate(-50%,-50%);
-  width:min(1100px, 92vw);
-  height:min(86vh, 900px);
-  background:#fff;
-  border-radius:18px;
-  border:1px solid rgba(170,150,230,.22);
-  box-shadow:0 18px 50px rgba(30,18,60,.18);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-.pv-topbar{
-  height:46px;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 12px 0 14px;
-  border-bottom:1px solid rgba(170,150,230,.18);
-  background:rgba(245,243,251,.75);
-}
-.pv-title{ font-size:13px; font-weight:700; color:var(--text-main); }
-.pv-actions{ display:flex; gap:8px; align-items:center; }
-.pv-btn{
-  height:30px;
-  padding:0 10px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.22);
-  background:#fff;
-  font-size:12px;
-  cursor:pointer;
-  text-decoration:none;
-  color:var(--text-main);
-  display:inline-flex;
-  align-items:center;
-}
-.pv-btn:hover{
-  background: rgba(255,143,188,.12);
-  border-color: rgba(255,143,188,.22);
-}
-.pv-body{ position:relative; flex:1; }
-.pv-loading{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  color:var(--text-muted);
-  background:rgba(255,255,255,.85);
-  z-index:2;
-}
-.pv-frame{
-  width:100%;
-  height:100%;
-  border:0;
-  display:block;
-}
+    /* ✅ status */
+    #status{
+      font-size: 12px !important;
+      line-height: 1.2 !important;
+      margin-top: 6px !important;
+      color: var(--text-muted) !important;
+    }
+    #status strong{
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      color: var(--text-main) !important;
+    }
 
-/* ===========================
-   운영 점 Hover 툴팁 (✅ UI 개선: 구분선/카드형)
-   =========================== */
-.extra-tooltip{
-  position: fixed;
-  z-index: 99999;
-  display: none;
-  min-width: 260px;
-  max-width: 380px;
-  padding: 12px 12px 10px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.97);
-  border: 1px solid rgba(170,150,230,.22);
-  box-shadow: 0 18px 50px rgba(30,18,60,.18);
-  font-size: 12px;
-  color: var(--text-main);
-  line-height: 1.35;
-  overflow:hidden;
-}
-.extra-tooltip .t-title{
-  font-weight: 900;
-  font-size: 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom: 8px;
-}
-.extra-tooltip .t-title .badge{
-  font-size:10px;
-  padding:3px 8px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.22);
-  background: rgba(245,243,251,.75);
-  color: var(--text-muted);
-}
-.extra-tooltip .t-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.extra-tooltip .t-item{
-  display:flex;
-  gap:10px;
-  padding:8px 10px;
-  border-radius:12px;
-  border:1px solid rgba(170,150,230,.16);
-  background: rgba(245,243,251,.55);
-}
-.extra-tooltip .t-k{
-  width: 62px;
-  font-weight:700;
-  color: var(--text-muted);
-  flex: 0 0 auto;
-}
-.extra-tooltip .t-v{
-  flex: 1 1 auto;
-  word-break: break-word;
-  color: var(--text-main);
-}
-.extra-tooltip .t-sep{
-  height:1px;
-  background: rgba(170,150,230,.18);
-  margin: 8px -12px 0;
-}
+    /* util */
+    .text-right{ text-align:right; }
+    .text-center{ text-align:center; }
 
-/* 작은 힌트 */
-.extra-tooltip .t-hint{
-  margin-top:8px;
-  font-size:10px;
-  color: rgba(110,106,130,.65);
-}
- </style>
+    /* ===== responsive ===== */
+    @media(max-width:860px){
+      .header{flex-direction:column;gap:10px;}
+      .card-search{flex-direction:column;}
+    }
 
+    /* ===========================
+       ✅✅ 미리보기 모달
+       =========================== */
+    .pv-modal{ position:fixed; inset:0; display:none; z-index:9999; }
+    .pv-modal.show{ display:block; }
+    .pv-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
+
+    .pv-panel{
+      position:absolute; left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      width:min(1100px, 92vw);
+      height:min(86vh, 900px);
+      background:#fff;
+      border-radius:18px;
+      border:1px solid rgba(170,150,230,.22);
+      box-shadow:0 18px 50px rgba(30,18,60,.18);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .pv-topbar{
+      height:46px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 12px 0 14px;
+      border-bottom:1px solid rgba(170,150,230,.18);
+      background:rgba(245,243,251,.75);
+    }
+    .pv-title{ font-size:13px; font-weight:700; color:var(--text-main); }
+    .pv-actions{ display:flex; gap:8px; align-items:center; }
+    .pv-btn{
+      height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid rgba(170,150,230,.22);
+      background:#fff;
+      font-size:12px;
+      cursor:pointer;
+      text-decoration:none;
+      color:var(--text-main);
+      display:inline-flex;
+      align-items:center;
+    }
+    .pv-btn:hover{
+      background: rgba(255,143,188,.12);
+      border-color: rgba(255,143,188,.22);
+    }
+    .pv-body{ position:relative; flex:1; }
+    .pv-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      color:var(--text-muted);
+      background:rgba(255,255,255,.85);
+      z-index:2;
+    }
+    .pv-frame{
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
+    }
+
+    /* ===========================
+       ✅✅ 운영 점 Hover 부가정보 툴팁 (UI 업그레이드)
+       =========================== */
+    .extra-tooltip{
+      position: fixed;
+      z-index: 99999;
+      display: none;
+      min-width: 280px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.97);
+      border: 1px solid rgba(170,150,230,.22);
+      box-shadow: 0 18px 50px rgba(30,18,60,.18);
+      font-size: 12px;
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+    .extra-tooltip .t-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-weight: 900;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .extra-tooltip .t-badge{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(170,150,230,.22);
+      background: rgba(245,243,251,.85);
+      color: #5f5b78;
+      font-weight: 800;
+      white-space:nowrap;
+    }
+
+    /* ✅ 항목별 구분선/섹션 */
+    .extra-tooltip .t-section{
+      padding: 8px 0;
+      border-top: 1px dashed rgba(170,150,230,.28);
+    }
+    .extra-tooltip .t-section:first-of-type{
+      border-top:0;
+      padding-top:0;
+    }
+    .extra-tooltip .t-row{
+      display:flex;
+      gap:10px;
+      margin: 5px 0;
+      align-items:flex-start;
+    }
+    .extra-tooltip .t-k{
+      width:64px;
+      color: var(--text-muted);
+      flex: 0 0 auto;
+      padding-top:1px;
+    }
+    .extra-tooltip .t-v{
+      flex: 1 1 auto;
+      word-break: break-word;
+    }
+  </style>
 </head>
 
 <body>
@@ -613,9 +563,7 @@ th.sortable{cursor:pointer; position:relative;}
               </label>
             </div>
 
-            <div class="status" id="status">
-              데이터 불러오는 중...
-            </div>
+            <div class="status" id="status">데이터 불러오는 중...</div>
           </div>
         </div>
 
@@ -626,21 +574,11 @@ th.sortable{cursor:pointer; position:relative;}
           </div>
 
           <div id="opLegend" class="op-legend">
-            <span class="op-legend-item">
-              <span class="op-legend-dot on"></span> 운영
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot end"></span> 소진 후 종료
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot stop"></span> 단종
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot pause"></span> 일시 중단
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot unk"></span> 정보 없음
-            </span>
+            <span class="op-legend-item"><span class="op-legend-dot on"></span> 운영</span>
+            <span class="op-legend-item"><span class="op-legend-dot end"></span> 소진 후 종료</span>
+            <span class="op-legend-item"><span class="op-legend-dot stop"></span> 단종</span>
+            <span class="op-legend-item"><span class="op-legend-dot pause"></span> 일시 중단</span>
+            <span class="op-legend-item"><span class="op-legend-dot none"></span> 정보 없음</span>
           </div>
 
           <div id="result">
@@ -653,7 +591,7 @@ th.sortable{cursor:pointer; position:relative;}
 
   <div id="toast" class="toast">복사</div>
 
-  <!-- 미리보기 모달 -->
+  <!-- ✅✅ 미리보기 모달 -->
   <div id="previewModal" class="pv-modal" aria-hidden="true">
     <div class="pv-backdrop"></div>
     <div class="pv-panel" role="dialog" aria-modal="true">
@@ -672,7 +610,7 @@ th.sortable{cursor:pointer; position:relative;}
     </div>
   </div>
 
-  <!-- 운영 점 Hover 툴팁 -->
+  <!-- ✅✅ 운영 점 Hover 툴팁 -->
   <div id="extraTooltip" class="extra-tooltip" role="tooltip" aria-hidden="true"></div>
 
   <script>
@@ -686,9 +624,9 @@ th.sortable{cursor:pointer; position:relative;}
     const OPER_SHEET_ID = '1F4EC5w1VPmFpwSbw0LuIv5QkwSSs8YkCBPZKY3h-z64';
     const OPER_GID = '2108422262';
 
-    // ✅ 부가정보(상품번호 매칭 포함) 시트: 네가 준 gid=2050011179 로 변경
+    // ✅ 부가정보 시트 (같은 파일, 다른 gid)
     const EXTRA_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
-    const EXTRA_GID = '2050011179';
+    const EXTRA_GID = '1305011805';
 
     const PRODUCT_CSV_URL =
       `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/export?format=csv&gid=${PRODUCT_GID}`;
@@ -716,13 +654,8 @@ th.sortable{cursor:pointer; position:relative;}
     // ✅ 부가정보 매핑: productCode -> { adjust, wash, feature, madeIn }
     let extraByProductCode = {};
 
-    // ✅ 3번 요구사항용: AH(상품코드) -> BL(productNo), 그리고 “키워드 포함 검색”용 인덱스
-    let productNoByCode_AH = {};
-    let extraRowsTextIndex = []; // [{ text, productNo }]
-
     let sortKey = 'productName';
     let sortDir = 'asc';
-
     let lastKeyword = '';
 
     const statusEl = document.getElementById('status');
@@ -738,9 +671,9 @@ th.sortable{cursor:pointer; position:relative;}
 
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
-    const resultInfoEl = document.getElementById('resultInfo'); // (현재 DOM에 없어서 null일 수 있음)
+    const resultInfoEl = document.getElementById('resultInfo'); // 없으면 null
 
-    // 미리보기 모달 DOM
+    // ✅ 미리보기 모달 DOM
     const previewModalEl = document.getElementById('previewModal');
     const pvBackdropEl = previewModalEl ? previewModalEl.querySelector('.pv-backdrop') : null;
     const pvCloseEl = document.getElementById('pvClose');
@@ -748,7 +681,7 @@ th.sortable{cursor:pointer; position:relative;}
     const pvLoadingEl = document.getElementById('pvLoading');
     const pvOpenNewTabEl = document.getElementById('pvOpenNewTab');
 
-    // 운영 점 Hover 툴팁 DOM
+    // ✅ 운영 점 Hover 툴팁 DOM
     const extraTooltipEl = document.getElementById('extraTooltip');
 
     const regexBracket = /\[[^\]]*\]/g;
@@ -778,10 +711,7 @@ th.sortable{cursor:pointer; position:relative;}
     }
 
     function parseCSV(text) {
-      const parsed = Papa.parse(text, {
-        header: false,
-        skipEmptyLines: true
-      });
+      const parsed = Papa.parse(text, { header:false, skipEmptyLines:true });
       return parsed.data;
     }
 
@@ -789,55 +719,28 @@ th.sortable{cursor:pointer; position:relative;}
       if (!toastEl) return;
       toastEl.textContent = msg;
       toastEl.classList.add('show');
-      setTimeout(() => {
-        toastEl.classList.remove('show');
-      }, 1400);
+      setTimeout(() => toastEl.classList.remove('show'), 1400);
     }
 
+    // ✅ legend는 항상 보이게 (점은 항상 렌더됨)
     function updateLegendVisibility() {
       if (!opLegendEl) return;
-      // ✅ 운영 시트 데이터 없어도 “정보 없음”이 의미 있으니 항상 보이게 할 수도 있지만,
-      // 기존 UX 유지: 운영 시트가 로드되면 보이게
-      const hasData = Object.keys(opStatusByColorCode).length > 0;
-      opLegendEl.style.display = hasData ? 'flex' : 'none';
+      opLegendEl.style.display = 'flex';
     }
 
-    // ====== (공통) product_no 정규화 ======
-    function normalizeProductNo(v){
-      if (v === null || v === undefined) return '';
-      const s = String(v).trim();
-      if (!s) return '';
-      // "12345.0" / "no:12345" 등 방지
-      return s.replace(/[^\d]/g, '');
-    }
-
-    // ✅ 미리보기 모달 열기/닫기 (✅ 같은 URL 연속 로드도 강제 리로드)
+    // ✅ 미리보기 모달 열기/닫기
     function openPreviewByProductNo(productNo){
-      const pno = normalizeProductNo(productNo);
-      if (!pno) {
-        showToast('상품번호를 찾지 못했어요.');
-        return;
-      }
-
-      const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(pno)}`;
-
       if (!previewModalEl || !pvFrameEl || !pvLoadingEl || !pvOpenNewTabEl) {
-        window.open(url, '_blank', 'noopener');
+        window.open(`https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(productNo)}`, '_blank');
         return;
       }
-
-      pvOpenNewTabEl.href = url;
+      const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(productNo)}`;
       pvLoadingEl.style.display = 'flex';
+      pvFrameEl.src = url;
+      pvOpenNewTabEl.href = url;
 
-      // ✅ 강제 리로드
-      pvFrameEl.src = 'about:blank';
       previewModalEl.classList.add('show');
       previewModalEl.setAttribute('aria-hidden', 'false');
-
-      requestAnimationFrame(() => {
-        pvFrameEl.src = url;
-      });
-
       showToast('미리보기 여는 중...');
     }
 
@@ -851,17 +754,12 @@ th.sortable{cursor:pointer; position:relative;}
 
     if (pvFrameEl) {
       pvFrameEl.addEventListener('load', () => {
-        // about:blank 로딩에서는 숨기지 않음
-        if (pvFrameEl.src === 'about:blank') return;
         if (pvLoadingEl) pvLoadingEl.style.display = 'none';
       });
     }
-
     if (pvCloseEl) pvCloseEl.addEventListener('click', closePreview);
     if (pvBackdropEl) pvBackdropEl.addEventListener('click', closePreview);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePreview();
-    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePreview(); });
 
     async function loadProducts() {
       const res = await fetch(PRODUCT_CSV_URL);
@@ -881,7 +779,6 @@ th.sortable{cursor:pointer; position:relative;}
       products = rows.slice(1).map(row => {
         const rawName = row[idxProductName] || '';
         const cleanedName = cleanProductName(rawName);
-
         return {
           productCode: row[idxProductCode] || '',
           colorName:   row[idxColorName]   || '',
@@ -925,22 +822,18 @@ th.sortable{cursor:pointer; position:relative;}
           productNoByColorCode[colorCode] = productNo;
         }
 
-        // 재고는 K열(row[10])
-        let qtyRaw      = (row[10] || '').toString().trim();
+        // 재고 K열(row[10])
+        let qtyRaw = (row[10] || '').toString().trim();
         if (!qtyRaw) continue;
 
         qtyRaw = qtyRaw.replace(/,/g, '');
         const qty = Number(qtyRaw);
         if (isNaN(qty)) continue;
 
-        if (!stockEntriesByColorCode[colorCode]) {
-          stockEntriesByColorCode[colorCode] = [];
-        }
+        if (!stockEntriesByColorCode[colorCode]) stockEntriesByColorCode[colorCode] = [];
         stockEntriesByColorCode[colorCode].push({ warehouse, size, qty });
 
-        if (!sizeByColorCode[colorCode] && size) {
-          sizeByColorCode[colorCode] = size;
-        }
+        if (!sizeByColorCode[colorCode] && size) sizeByColorCode[colorCode] = size;
       }
     }
 
@@ -954,17 +847,18 @@ th.sortable{cursor:pointer; position:relative;}
       const rows = parseCSV(text);
       if (rows.length < 2) return;
 
+      opStatusByColorCode = {};
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         const colorCode = (row[0] || '').trim();
         const op = (row[2] || '').trim();
-        if (!colorCode || !op) continue;
-        opStatusByColorCode[colorCode] = op;
+        if (!colorCode) continue;
+        if (op) opStatusByColorCode[colorCode] = op;
       }
       updateLegendVisibility();
     }
 
-    // ✅ 부가정보 로드 + (3번) 상품번호 매칭 인덱스 만들기
+    // ✅ 부가정보 로드 (상품코드 매칭)
     async function loadExtraInfo() {
       const res = await fetch(EXTRA_CSV_URL);
       if (!res.ok) throw new Error('부가정보 시트 로드 실패: ' + res.status);
@@ -973,50 +867,33 @@ th.sortable{cursor:pointer; position:relative;}
       const rows = parseCSV(text);
       if (rows.length < 2) return;
 
-      // ✅ 0-based index
-      // 조절: V(22) -> 21
-      // 제조국: AB(28) -> 27
-      // 세탁: AD(30) -> 29
-      // 제품특징: AF(32) -> 31
-      // 상품코드: AH(34) -> 33
-      // 상품번호: BL(64) -> 63
+      // 0-based index
+      // 상품코드: E열 => 4
+      // 조절: V열 => 21
+      // 제조국: AB열 => 27
+      // 세탁: AD열 => 29
+      // 제품특징: AF열 => 31
+      const IDX_CODE    = 4;
       const IDX_ADJUST  = 21;
       const IDX_MADEIN  = 27;
       const IDX_WASH    = 29;
       const IDX_FEATURE = 31;
-      const IDX_CODE_AH = 33;
-      const IDX_NO_BL   = 63;
 
       extraByProductCode = {};
-      productNoByCode_AH = {};
-      extraRowsTextIndex = [];
 
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i] || [];
-        if (!r.length) continue;
-
-        const codeAH = (r[IDX_CODE_AH] || '').toString().trim();     // ✅ AH
-        const productNoBL = (r[IDX_NO_BL] || '').toString().trim();  // ✅ BL
+        const code = (r[IDX_CODE] || '').toString().trim();
+        if (!code) continue;
 
         const adjust  = (r[IDX_ADJUST]  || '').toString().trim();
         const madeIn  = (r[IDX_MADEIN]  || '').toString().trim();
         const wash    = (r[IDX_WASH]    || '').toString().trim();
         const feature = (r[IDX_FEATURE] || '').toString().trim();
 
-        // hover용(상품코드 키 기준)
-        if (codeAH) {
-          extraByProductCode[codeAH] = { adjust, madeIn, wash, feature };
+        if (adjust || madeIn || wash || feature) {
+          extraByProductCode[code] = { adjust, madeIn, wash, feature };
         }
-
-        // ✅ AH -> BL (재고 클릭 연결용)
-        if (codeAH && productNoBL && !productNoByCode_AH[codeAH]) {
-          productNoByCode_AH[codeAH] = productNoBL;
-        }
-
-        // ✅ 키워드 포함 검색용(행 전체 텍스트)
-        //    (대소문자 무시, 포함이면 OK)
-        const rowText = r.map(x => (x ?? '').toString()).join(' ').toLowerCase();
-        extraRowsTextIndex.push({ text: rowText, productNo: productNoBL });
       }
     }
 
@@ -1034,6 +911,8 @@ th.sortable{cursor:pointer; position:relative;}
 
         statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>`;
         keywordInput.disabled = false;
+
+        updateLegendVisibility();
       } catch (err) {
         console.error(err);
         statusEl.textContent = '데이터 로드 실패: ' + err.message;
@@ -1041,27 +920,29 @@ th.sortable{cursor:pointer; position:relative;}
       }
     }
 
-    // ✅ 운영 점: 운영여부 없으면 회색 점도 생성(2번 요구사항)
+    // ✅ 운영 점: 항상 생성 (없으면 회색), title 제거(브라우저 기본툴팁 충돌 방지), data-op로 상태 전달
     function buildOperationIndicator(colorCode, productCode) {
       const rawStatus = opStatusByColorCode[colorCode];
-
-      // 운영 상태 텍스트
-      const s = (rawStatus || '').trim();
-      const normalized = s.replace(/\s+/g, '').replace(/[()]/g, '');
-
       let cls = 'op-status-dot ';
-      let title = s;
+      let label = '정보 없음';
 
       if (!rawStatus) {
-        cls += 'op-status-dot--unk';
-        title = '운영정보 없음';
-      } else if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
-      else if (normalized.startsWith('소진후종료')) cls += 'op-status-dot--end';
-      else if (normalized.startsWith('단종')) cls += 'op-status-dot--stop';
-      else if (normalized.startsWith('일시중단')) cls += 'op-status-dot--pause';
-      else cls += 'op-status-dot--pause';
+        cls += 'op-status-dot--none';
+      } else {
+        const s = rawStatus.trim();
+        label = s;
 
-      return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}" title="${escapeHtml(title)}"></span>`;
+        const normalized = s.replace(/\s+/g, '').replace(/[()]/g, '');
+        if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
+        else if (normalized.startsWith('소진후종료') || normalized.startsWith('소진')) cls += 'op-status-dot--end';
+        else if (normalized.startsWith('단종')) cls += 'op-status-dot--stop';
+        else if (normalized.startsWith('일시중단') || normalized.startsWith('일시')) cls += 'op-status-dot--pause';
+        else cls += 'op-status-dot--none';
+      }
+
+      return `<span class="${cls}"
+                   data-product-code="${escapeHtml(productCode || '')}"
+                   data-op="${escapeHtml(label)}"></span>`;
     }
 
     function escapeRegExp(string) {
@@ -1071,10 +952,8 @@ th.sortable{cursor:pointer; position:relative;}
     function highlightText(text, keyword) {
       const base = escapeHtml(text || '');
       if (!keyword) return base;
-
       const kw = keyword.trim();
       if (!kw) return base;
-
       const pattern = new RegExp(escapeRegExp(kw), 'gi');
       return base.replace(pattern, match => `<mark class="kw-mark">${match}</mark>`);
     }
@@ -1103,9 +982,7 @@ th.sortable{cursor:pointer; position:relative;}
       const direction = sortDir === 'desc' ? -1 : 1;
       const key = sortKey;
 
-      function cmpString(sa, sb) {
-        return sa.localeCompare(sb, 'ko-KR');
-      }
+      function cmpString(sa, sb) { return sa.localeCompare(sb, 'ko-KR'); }
 
       function tieBreak(a, b) {
         const nCmp = cmpString(a.productName || '', b.productName || '');
@@ -1118,9 +995,7 @@ th.sortable{cursor:pointer; position:relative;}
       if (key === 'stock') {
         const aNum = (typeof a.stockNum === 'number') ? a.stockNum : -1;
         const bNum = (typeof b.stockNum === 'number') ? b.stockNum : -1;
-        if (aNum !== bNum) {
-          return (aNum < bNum ? -1 : 1) * direction;
-        }
+        if (aNum !== bNum) return (aNum < bNum ? -1 : 1) * direction;
         return tieBreak(a, b);
       }
 
@@ -1145,7 +1020,7 @@ th.sortable{cursor:pointer; position:relative;}
     }
 
     // ===========================
-    // fallback(기존 유지)
+    // 상세 링크 캐시/프리패치 (기존 fallback)
     // ===========================
     const detailUrlCache = new Map();
     const CACHE_KEY = 'ws_detail_cache_v2';
@@ -1213,7 +1088,7 @@ th.sortable{cursor:pointer; position:relative;}
       for (const kw of candidates) {
         const cached = detailUrlCache.get(kw);
         if (cached){
-          window.open(cached, '_blank', 'noopener');
+          window.open(cached, '_blank');
           showToast(`상세(캐시)로 이동!`);
           return;
         }
@@ -1224,7 +1099,6 @@ th.sortable{cursor:pointer; position:relative;}
 
       try{
         showToast('첫 상품 찾는 중...');
-
         const makeTimeoutAbort = (ms) => setTimeout(() => {
           try{ inflightCtrl?.abort(); } catch {}
         }, ms);
@@ -1240,7 +1114,7 @@ th.sortable{cursor:pointer; position:relative;}
             clearTimeout(timeoutId);
 
             if (url) {
-              window.open(url, '_blank', 'noopener');
+              window.open(url, '_blank');
               showToast('첫 상품 상세로 이동!');
               inflightCtrl = null;
               return;
@@ -1252,7 +1126,7 @@ th.sortable{cursor:pointer; position:relative;}
         }
 
         const last = candidates[candidates.length - 1];
-        window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank', 'noopener');
+        window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank');
         showToast('상세를 못 찾아서 검색페이지로 열었어요.');
       } finally {
         inflightCtrl = null;
@@ -1304,12 +1178,7 @@ th.sortable{cursor:pointer; position:relative;}
         const name      = (p.productName || '').toLowerCase();
         const code      = (p.productCode || '').toLowerCase();
         const colorCode = (p.colorCode   || '').toLowerCase();
-
-        return (
-          name.includes(lowerKw) ||
-          code.includes(lowerKw) ||
-          colorCode.includes(lowerKw)
-        );
+        return (name.includes(lowerKw) || code.includes(lowerKw) || colorCode.includes(lowerKw));
       });
 
       if (!filteredProducts.length) {
@@ -1326,11 +1195,8 @@ th.sortable{cursor:pointer; position:relative;}
         const pno = productNoByColorCode[p.colorCode] || '';
 
         let useEntries;
-        if (showWarehouse) {
-          useEntries = entries;
-        } else {
-          useEntries = entries.filter(e => e.warehouse === '주희물류');
-        }
+        if (showWarehouse) useEntries = entries;
+        else useEntries = entries.filter(e => e.warehouse === '주희물류');
 
         if (!useEntries.length) {
           rows.push({
@@ -1393,9 +1259,7 @@ th.sortable{cursor:pointer; position:relative;}
       });
 
       let usedRows = rows;
-      if (inStockOnly) {
-        usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
-      }
+      if (inStockOnly) usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
 
       if (!usedRows.length) {
         statusEl.innerHTML = `"${kw}" 검색 결과: <strong>0행</strong> (재고 있음만 필터 적용)`;
@@ -1404,7 +1268,6 @@ th.sortable{cursor:pointer; position:relative;}
       }
 
       usedRows.sort(compareRows);
-
       statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>`;
 
       let headerHtml = '<tr>';
@@ -1414,10 +1277,8 @@ th.sortable{cursor:pointer; position:relative;}
       headerHtml += buildHeaderCell('상품코드', 'productCode', 'col-pcode');
       headerHtml += buildHeaderCell('상품칼라코드', 'colorCode');
       headerHtml += buildHeaderCell('사이즈', 'size');
-
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
       if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
-
       headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
       headerHtml += '</tr>';
 
@@ -1461,7 +1322,7 @@ th.sortable{cursor:pointer; position:relative;}
         `;
       });
 
-      const html = `
+      resultEl.innerHTML = `
         <div class="result-table-wrap">
           <div class="result-scroll">
             <table>
@@ -1471,7 +1332,7 @@ th.sortable{cursor:pointer; position:relative;}
           </div>
         </div>
       `;
-      resultEl.innerHTML = html;
+
       updateLegendVisibility();
       attachTableHeaderEvents();
       prefetchDetailUrlsFromCurrentTable(8);
@@ -1541,7 +1402,7 @@ th.sortable{cursor:pointer; position:relative;}
       document.body.style.userSelect = 'none';
     }
 
-    // 엔터 검색
+    // ✅ 엔터 검색
     keywordInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -1549,7 +1410,7 @@ th.sortable{cursor:pointer; position:relative;}
       }
     });
 
-    // 칩 토글 변경 시 바로 재검색 (키워드 있을 때만)
+    // ✅ 토글 변경 시 재검색
     toggleMaterialInput.addEventListener('change', () => {
       showMaterial = toggleMaterialInput.checked;
       if (keywordInput.value.trim()) search();
@@ -1563,96 +1424,64 @@ th.sortable{cursor:pointer; position:relative;}
       if (keywordInput.value.trim()) search();
     });
 
-    // 상품명 클릭 → 원래 상품명 복사 (단, 운영 점/툴팁 관련 클릭은 제외)
-resultEl.addEventListener('click', e => {
-  // ✅ 운영 점(상태 pill/점) 클릭이면 복사 로직 타지 않게 막기
-  if (e.target.closest('.op-status-dot')) return;
+    // ✅ 상품명 클릭 → 원래 상품명 복사
+    //    (운영 점 클릭은 복사 로직 제외)
+    resultEl.addEventListener('click', e => {
+      if (e.target.closest('.op-status-dot')) return;
 
-  const cell = e.target.closest('.product-name-cell');
-  if (!cell) return;
+      const cell = e.target.closest('.product-name-cell');
+      if (!cell) return;
 
-  const colorCode = cell.dataset.colorCode;
-  if (!colorCode) return;
+      const colorCode = cell.dataset.colorCode;
+      if (!colorCode) return;
 
-  const prod = products.find(p => p.colorCode === colorCode);
-  if (!prod || !prod.rawName) return;
+      const prod = products.find(p => p.colorCode === colorCode);
+      if (!prod || !prod.rawName) return;
 
-  const textToCopy = prod.rawName;
+      const textToCopy = prod.rawName;
 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(textToCopy)
-      .then(() => showToast('원래 상품명을 복사했어요.'))
-      .catch(() => showToast('복사에 실패했어요. 브라우저 권한을 확인해주세요.'));
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = textToCopy;
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand('copy');
-      showToast('원래 상품명을 복사했어요.');
-    } catch (err) {
-      showToast('복사에 실패했어요.');
-    }
-    document.body.removeChild(ta);
-  }
-});
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy)
+          .then(() => showToast('원래 상품명을 복사했어요.'))
+          .catch(() => showToast('복사에 실패했어요. 브라우저 권한을 확인해주세요.'));
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = textToCopy;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('원래 상품명을 복사했어요.');
+        } catch (err) {
+          showToast('복사에 실패했어요.');
+        }
+        document.body.removeChild(ta);
+      }
+    });
 
     // 타이틀 클릭 → 사이트 검색 페이지
     document.addEventListener('DOMContentLoaded', () => {
       const titleEl = document.querySelector('.title-wrap h1');
       if (titleEl) {
         titleEl.addEventListener('click', () => {
-          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank', 'noopener');
+          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank');
         });
       }
     });
 
-    // ✅✅ (3번) 재고 pill 클릭 → 상품번호(product_no) 찾기 우선순위
-    // 0) 재고시트 J열(productNoByColorCode) -> 이미 data-product-no에 들어옴
-    // 1) 부가정보 시트 AH로 productCode 매칭 -> BL(productNo)
-    // 2) 없으면: 사용자가 입력한 키워드(부분 포함)로 부가정보 시트 행 전체에서 찾아 BL(productNo)
-    // 3) 그래도 없으면: 기존 fallback(느림)
-    function findProductNoByKeywordFallback(keyword){
-      const kw = (keyword || '').toString().trim().toLowerCase();
-      if (!kw) return '';
-      // 너무 짧으면 오탐 방지
-      if (kw.length < 2) return '';
-
-      for (const row of extraRowsTextIndex) {
-        if (row.text.includes(kw)) {
-          const pno = normalizeProductNo(row.productNo);
-          if (pno) return pno;
-        }
-      }
-      return '';
-    }
-
+    // ✅✅ 재고 pill 클릭:
+    // 1) product_no 있으면 => 미리보기 모달
+    // 2) 없으면 => 기존 fallback
     document.addEventListener("click", async (e) => {
       const cell = e.target.closest(".stock-cell");
       if (!cell) return;
 
-      // 0) 재고 시트 product_no
-      let productNo = normalizeProductNo((cell.dataset.productNo || "").trim());
-
-      // 1) AH -> BL
-      if (!productNo) {
-        const productCode = (cell.dataset.productCode || "").trim();
-        const mapped = productCode ? productNoByCode_AH[productCode] : '';
-        productNo = normalizeProductNo(mapped);
-      }
-
-      // 2) 키워드 포함 검색 -> BL
-      if (!productNo) {
-        productNo = findProductNoByKeywordFallback(keywordInput.value);
-      }
-
+      const productNo = (cell.dataset.productNo || "").trim();
       if (productNo) {
         openPreviewByProductNo(productNo);
         return;
       }
 
-      // 3) 기존 fallback
       const colorCode   = (cell.dataset.colorCode || "").trim();
       const productCode = (cell.dataset.productCode || "").trim();
       const productName = (cell.dataset.productName || "").trim();
@@ -1681,7 +1510,7 @@ resultEl.addEventListener('click', e => {
       }
     });
 
-    // 검색어 X 버튼
+    // ✅ 검색어 X 버튼
     function updateClearBtn(){
       if (!clearBtn) return;
       clearBtn.style.display = keywordInput.value.trim() ? 'inline-flex' : 'none';
@@ -1707,7 +1536,7 @@ resultEl.addEventListener('click', e => {
     });
 
     // ===========================
-    // 운영 점 Hover → 부가정보 툴팁 (✅ 구분선/카드형)
+    // ✅ 운영 점 Hover → 부가정보 툴팁
     // ===========================
     function showExtraTooltip(x, y, html){
       if (!extraTooltipEl) return;
@@ -1716,6 +1545,7 @@ resultEl.addEventListener('click', e => {
       extraTooltipEl.setAttribute('aria-hidden', 'false');
 
       const pad = 12;
+      // 먼저 보이게 한 뒤 크기 측정
       const rect = extraTooltipEl.getBoundingClientRect();
       let left = x + 14;
       let top  = y + 14;
@@ -1737,6 +1567,7 @@ resultEl.addEventListener('click', e => {
       extraTooltipEl.innerHTML = '';
     }
 
+    // ✅ dot 위에서만 툴팁 표시
     document.addEventListener('mousemove', (e) => {
       const dot = e.target.closest('.op-status-dot');
       if (!dot) return;
@@ -1747,20 +1578,24 @@ resultEl.addEventListener('click', e => {
       const info = extraByProductCode[code];
       if (!info) return;
 
+      const opText = (dot.dataset.op || '정보 없음').trim();
+
       const html = `
         <div class="t-title">
-          <span>부가정보</span>
-          <span class="badge">${escapeHtml(code)}</span>
+          부가정보
+          <span class="t-badge">${escapeHtml(opText)}</span>
         </div>
-        <div class="t-list">
-          <div class="t-item"><div class="t-k">조절</div><div class="t-v">${escapeHtml(info.adjust || '-')}</div></div>
-          <div class="t-item"><div class="t-k">세탁</div><div class="t-v">${escapeHtml(info.wash || '-')}</div></div>
-          <div class="t-item"><div class="t-k">제품특징</div><div class="t-v">${escapeHtml(info.feature || '-')}</div></div>
-          <div class="t-item"><div class="t-k">제조국</div><div class="t-v">${escapeHtml(info.madeIn || '-')}</div></div>
-        </div>
-        <div class="t-hint">※ 운영 점(●) 위에 올리면 표시됩니다</div>
-      `;
 
+        <div class="t-section">
+          <div class="t-row"><div class="t-k">조절</div><div class="t-v">${escapeHtml(info.adjust || '-')}</div></div>
+          <div class="t-row"><div class="t-k">세탁</div><div class="t-v">${escapeHtml(info.wash || '-')}</div></div>
+        </div>
+
+        <div class="t-section">
+          <div class="t-row"><div class="t-k">제품특징</div><div class="t-v">${escapeHtml(info.feature || '-')}</div></div>
+          <div class="t-row"><div class="t-k">제조국</div><div class="t-v">${escapeHtml(info.madeIn || '-')}</div></div>
+        </div>
+      `;
       showExtraTooltip(e.clientX, e.clientY, html);
     });
 
@@ -1770,7 +1605,6 @@ resultEl.addEventListener('click', e => {
 
       const code = (dot.dataset.productCode || '').trim();
       const info = code ? extraByProductCode[code] : null;
-
       if (!info) hideExtraTooltip();
     });
 
@@ -1783,4 +1617,3 @@ resultEl.addEventListener('click', e => {
   </script>
 </body>
 </html>
-
