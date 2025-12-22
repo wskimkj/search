@@ -1563,38 +1563,40 @@ th.sortable{cursor:pointer; position:relative;}
       if (keywordInput.value.trim()) search();
     });
 
-    // 상품명 클릭 → 원래 상품명 복사 (기존 유지)
-    resultEl.addEventListener('click', e => {
-      // ✅ 재고 pill 클릭은 아래에서 처리하므로 여기서 막지 않음
-      const cell = e.target.closest('.product-name-cell');
-      if (!cell) return;
+    // 상품명 클릭 → 원래 상품명 복사 (단, 운영 점/툴팁 관련 클릭은 제외)
+resultEl.addEventListener('click', e => {
+  // ✅ 운영 점(상태 pill/점) 클릭이면 복사 로직 타지 않게 막기
+  if (e.target.closest('.op-status-dot')) return;
 
-      const colorCode = cell.dataset.colorCode;
-      if (!colorCode) return;
+  const cell = e.target.closest('.product-name-cell');
+  if (!cell) return;
 
-      const prod = products.find(p => p.colorCode === colorCode);
-      if (!prod || !prod.rawName) return;
+  const colorCode = cell.dataset.colorCode;
+  if (!colorCode) return;
 
-      const textToCopy = prod.rawName;
+  const prod = products.find(p => p.colorCode === colorCode);
+  if (!prod || !prod.rawName) return;
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textToCopy)
-          .then(() => showToast('원래 상품명을 복사했어요.'))
-          .catch(() => showToast('복사에 실패했어요. 브라우저 권한을 확인해주세요.'));
-      } else {
-        const ta = document.createElement('textarea');
-        ta.value = textToCopy;
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand('copy');
-          showToast('원래 상품명을 복사했어요.');
-        } catch (err) {
-          showToast('복사에 실패했어요.');
-        }
-        document.body.removeChild(ta);
-      }
-    });
+  const textToCopy = prod.rawName;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => showToast('원래 상품명을 복사했어요.'))
+      .catch(() => showToast('복사에 실패했어요. 브라우저 권한을 확인해주세요.'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = textToCopy;
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast('원래 상품명을 복사했어요.');
+    } catch (err) {
+      showToast('복사에 실패했어요.');
+    }
+    document.body.removeChild(ta);
+  }
+});
 
     // 타이틀 클릭 → 사이트 검색 페이지
     document.addEventListener('DOMContentLoaded', () => {
@@ -1781,3 +1783,4 @@ th.sortable{cursor:pointer; position:relative;}
   </script>
 </body>
 </html>
+
