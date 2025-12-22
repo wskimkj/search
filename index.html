@@ -1061,7 +1061,7 @@ th.sortable{cursor:pointer; position:relative;}
       else if (normalized.startsWith('일시중단')) cls += 'op-status-dot--pause';
       else cls += 'op-status-dot--pause';
 
-      return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}" title="${escapeHtml(title)}"></span>`;
+  return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}"></span>`;
     }
 
     function escapeRegExp(string) {
@@ -1707,79 +1707,90 @@ resultEl.addEventListener('click', e => {
     });
 
     // ===========================
-    // 운영 점 Hover → 부가정보 툴팁 (✅ 구분선/카드형)
-    // ===========================
-    function showExtraTooltip(x, y, html){
-      if (!extraTooltipEl) return;
-      extraTooltipEl.innerHTML = html;
-      extraTooltipEl.style.display = 'block';
-      extraTooltipEl.setAttribute('aria-hidden', 'false');
+// 운영 점 Hover → 부가정보 툴팁 (✅ 예쁜 UI 미리보기)
+// ===========================
+function buildExtraTooltipHTML(code, info){
+  const adjust  = info?.adjust  || '-';
+  const wash    = info?.wash    || '-';
+  const feature = info?.feature || '-';
+  const madeIn  = info?.madeIn  || '-';
 
-      const pad = 12;
-      const rect = extraTooltipEl.getBoundingClientRect();
-      let left = x + 14;
-      let top  = y + 14;
+  return `
+    <div class="t-title">
+      <span>부가정보</span>
+      <span class="badge">${escapeHtml(code || 'NO-CODE')}</span>
+    </div>
+    <div class="t-list">
+      <div class="t-item"><div class="t-k">조절</div><div class="t-v">${escapeHtml(adjust)}</div></div>
+      <div class="t-item"><div class="t-k">세탁</div><div class="t-v">${escapeHtml(wash)}</div></div>
+      <div class="t-item"><div class="t-k">제품특징</div><div class="t-v">${escapeHtml(feature)}</div></div>
+      <div class="t-item"><div class="t-k">제조국</div><div class="t-v">${escapeHtml(madeIn)}</div></div>
+    </div>
+    <div class="t-hint">※ 운영 점(●) 위에 올리면 표시됩니다</div>
+  `;
+}
 
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+let activeDot = null;
 
-      if (left + rect.width + pad > vw) left = x - rect.width - 14;
-      if (top + rect.height + pad > vh) top = y - rect.height - 14;
+document.addEventListener('mousemove', (e) => {
+  const dot = e.target.closest('.op-status-dot');
 
-      extraTooltipEl.style.left = `${Math.max(pad, left)}px`;
-      extraTooltipEl.style.top  = `${Math.max(pad, top)}px`;
+  // dot 위가 아니면 닫기
+  if (!dot) {
+    if (activeDot) {
+      activeDot = null;
+      hideExtraTooltip();
     }
+    return;
+  }
 
-    function hideExtraTooltip(){
-      if (!extraTooltipEl) return;
-      extraTooltipEl.style.display = 'none';
-      extraTooltipEl.setAttribute('aria-hidden', 'true');
-      extraTooltipEl.innerHTML = '';
-    }
+  const code = (dot.dataset.productCode || '').trim();
+  const info = code ? extraByProductCode[code] : null;
 
-    document.addEventListener('mousemove', (e) => {
-      const dot = e.target.closest('.op-status-dot');
-      if (!dot) return;
+  // ✅ dot이 바뀌었거나, 툴팁이 안 떠 있으면 내용 갱신
+  if (activeDot !== dot || extraTooltipEl.style.display !== 'block') {
+    activeDot = dot;
 
-      const code = (dot.dataset.productCode || '').trim();
-      if (!code) return;
-
-      const info = extraByProductCode[code];
-      if (!info) return;
-
-      const html = `
-        <div class="t-title">
-          <span>부가정보</span>
-          <span class="badge">${escapeHtml(code)}</span>
-        </div>
-        <div class="t-list">
-          <div class="t-item"><div class="t-k">조절</div><div class="t-v">${escapeHtml(info.adjust || '-')}</div></div>
-          <div class="t-item"><div class="t-k">세탁</div><div class="t-v">${escapeHtml(info.wash || '-')}</div></div>
-          <div class="t-item"><div class="t-k">제품특징</div><div class="t-v">${escapeHtml(info.feature || '-')}</div></div>
-          <div class="t-item"><div class="t-k">제조국</div><div class="t-v">${escapeHtml(info.madeIn || '-')}</div></div>
-        </div>
-        <div class="t-hint">※ 운영 점(●) 위에 올리면 표시됩니다</div>
-      `;
-
-      showExtraTooltip(e.clientX, e.clientY, html);
+    // ✅ info가 없어도 "정보 없음" UI로 보여주기
+    const html = buildExtraTooltipHTML(code, info || {
+      adjust: '정보 없음',
+      wash: '정보 없음',
+      feature: '정보 없음',
+      madeIn: '정보 없음'
     });
 
-    document.addEventListener('mouseover', (e) => {
-      const dot = e.target.closest('.op-status-dot');
-      if (!dot) return;
+    showExtraTooltip(e.clientX, e.clientY, html);
+  } else {
+    // 같은 dot이면 위치만 따라가게
+    const rect = extraTooltipEl.getBoundingClientRect();
+    let left = e.clientX + 14;
+    let top  = e.clientY + 14;
 
-      const code = (dot.dataset.productCode || '').trim();
-      const info = code ? extraByProductCode[code] : null;
+    const pad = 12;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-      if (!info) hideExtraTooltip();
-    });
+    if (left + rect.width + pad > vw) left = e.clientX - rect.width - 14;
+    if (top + rect.height + pad > vh) top = e.clientY - rect.height - 14;
 
-    document.addEventListener('mouseout', (e) => {
-      const fromDot = e.target.closest('.op-status-dot');
-      if (fromDot) hideExtraTooltip();
-    });
+    extraTooltipEl.style.left = `${Math.max(pad, left)}px`;
+    extraTooltipEl.style.top  = `${Math.max(pad, top)}px`;
+  }
+});
+
+// 스크롤/리사이즈 시 닫기(잔상 방지)
+window.addEventListener('scroll', () => {
+  activeDot = null;
+  hideExtraTooltip();
+}, { passive: true });
+
+window.addEventListener('resize', () => {
+  activeDot = null;
+  hideExtraTooltip();
+});
 
     init();
   </script>
 </body>
 </html>
+
