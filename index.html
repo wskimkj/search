@@ -1802,8 +1802,62 @@ th.sortable{cursor:pointer; position:relative;}
     window.addEventListener('scroll', () => { activeDot = null; hideExtraTooltip(); }, { passive: true });
     window.addEventListener('resize', () => { activeDot = null; hideExtraTooltip(); });
 
+
+// ===========================
+// 드래그 복사: 바코드/상품코드/상품칼라코드 → TSV로 클립보드 변환
+// (Google Sheets에 붙여넣으면 A/C/E에 들어가게: B,D는 빈칸)
+// ===========================
+function isInsideResultTable(sel){
+  if(!sel) return false;
+  const node = sel.anchorNode || sel.focusNode;
+  const el = node?.nodeType === 1 ? node : node?.parentElement;
+  return !!el?.closest?.('#result table');
+}
+
+function getSelectedText(){
+  const sel = window.getSelection();
+  if(!sel) return "";
+  return sel.toString();
+}
+
+function selectionToTSV(selectedText){
+  const s = (selectedText || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+
+  if(!s) return "";
+
+  const tokens = s
+    .split(/\t|\n/g)
+    .map(x => x.replace(/\s+/g, " ").trim());
+
+  const barcode   = tokens[0] ?? "";
+  const prodCode  = tokens[1] ?? "";
+  const colorCode = tokens[2] ?? "";
+
+  // ✅ A=바코드, C=상품코드, E=상품컬러코드 (B,D는 빈칸)
+  return `${barcode}\t\t${prodCode}\t\t${colorCode}`;
+}
+
+document.addEventListener("copy", (e) => {
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed) return;
+  if(!isInsideResultTable(sel)) return;
+
+  const raw = getSelectedText();
+  const tsv = selectionToTSV(raw);
+  if(!tsv) return;
+
+  e.preventDefault();
+  e.clipboardData.setData("text/plain", tsv);
+});
+
+
+
     init();
   </script>
 </body>
 </html>
+
 
