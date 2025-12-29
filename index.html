@@ -547,6 +547,12 @@ th.sortable{cursor:pointer; position:relative;}
   font-size:10px;
   color: rgba(110,106,130,.65);
 }
+/* ✅ 위젯(iframe)로 띄울 때는 검색바/헤더 숨기고 결과만 보여주기 */
+body.embed .header{ display:none !important; }
+body.embed .card.card-search{ display:none !important; }
+body.embed .inner-shell{ padding-top:14px !important; }
+
+    
   </style>
 </head>
 
@@ -1904,7 +1910,54 @@ th.sortable{cursor:pointer; position:relative;}
       e.clipboardData.setData("text/plain", tsv);
     });
 
+    // ===========================
+  // ✅ 위젯에서 ?q= 로 들어오면 자동으로 검색 실행
+  // ===========================
+  const URL_QS_KEY = "q"; // 어드민 위젯이 쓰는 키와 동일해야 함
+
+  function getInitialQueryFromUrl() {
+    try {
+      const u = new URL(location.href);
+      return (u.searchParams.get(URL_QS_KEY) || "").trim();
+    } catch {
+      return "";
+    }
+  }
+
+  // init() 보다 먼저 읽어두기
+  const __initialQuery = getInitialQueryFromUrl();
+
+  // ✅ keywordInput/clearBtn가 이미 선언된 상태(너 코드 구조상 그럼)에서 값 주입
+  if (typeof keywordInput !== "undefined" && keywordInput && __initialQuery) {
+    keywordInput.value = __initialQuery;
+
+    // X 버튼 표시 갱신(너 코드에 있는 함수)
+    try { updateClearBtn(); } catch {}
+  }
+
+  // ✅ init() 끝나고(데이터 로드 후) 자동 검색
+  const __origInit = init;
+  init = async function () {
+    await __origInit();
+
+    // 데이터 로드 끝나서 입력 활성화된 뒤 실행
+    if (__initialQuery && keywordInput && !keywordInput.disabled) {
+      try { search(); } catch {}
+    }
+  };
+// ✅ embed=1 이면 iframe용(검색창 숨김) 모드
+(function(){
+  try{
+    const u = new URL(location.href);
+    const isEmbed = u.searchParams.get("embed") === "1";
+    if(isEmbed) document.body.classList.add("embed");
+  }catch{}
+})();
+
+    
+
     init();
   </script>
 </body>
 </html>
+
