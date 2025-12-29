@@ -1077,11 +1077,18 @@ body.embed .inner-shell{ padding-top:14px !important; }
           statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>`;
         });
 
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = '데이터 로드 실패: ' + err.message;
-        stockInfoEl.textContent = '로드 실패';
-      }
+    } catch (err) {
+  console.error('[init fail]', err);
+
+  const msg =
+    err?.message ||
+    err?.name ||
+    (typeof err === 'string' ? err : JSON.stringify(err));
+
+  statusEl.textContent = '데이터 로드 실패: ' + msg;
+  stockInfoEl.textContent = '로드 실패';
+}
+
     }
 
     // ✅ 운영 점: 운영여부 없으면 회색 점도 생성
@@ -1984,5 +1991,6 @@ body.embed .inner-shell{ padding-top:14px !important; }
   </script>
 </body>
 </html>
+
 
 
