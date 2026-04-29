@@ -1,1996 +1,2315 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <link rel="stylesheet" href="https://wskimkj.github.io/admin/css/common.css">
-
   <meta charset="UTF-8" />
-  <title> Search </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title> Shipment </title>
+  <link rel="icon" type="image/png" href="favicon.ico">
 
-  <!-- 파비콘 -->
-  <link rel="icon" type="image/png" href="android-chrome-512x512 (1).ico">
-
-  <!-- 폰트 -->
   <link rel="stylesheet" as="style" crossorigin
-        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-
-  <!-- CSV 파서 -->
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-/* ===================== FINAL CSS (기능 유지 / 레이아웃 정상 / pill 복구) ===================== */
-:root{
-  --page-bg: #f7f4ff;
-  --page-bg2:#eef6ff;
+    :root{
+      --bg1:#f7f4ff; --bg2:#eef6ff;
+      --card:rgba(255,255,255,.9);
+      --stroke:rgba(170,150,230,.22);
+      --text:#2f2a3a;
+      --shadow:0 18px 50px rgba(30,18,60,.10);
+      --shadow2:0 10px 26px rgba(30,18,60,.08);
 
-  --card-bg: rgba(255,255,255,.88);
-  --card-stroke: rgba(170,150,230,.22);
+      --low-bg: rgba(255, 70, 70, .10);
+      --low-border: rgba(255, 70, 70, .35);
+      --low-text: rgba(160, 20, 20, .95);
 
-  --text-main: #2f2a3a;
-  --text-muted: #6e6a82;
+      --out-bg: rgba(255, 35, 35, .16);
+      --out-border: rgba(255, 35, 35, .55);
+      --out-text: rgba(135, 0, 0, .98);
 
-  --pink: #ff8fbc;
-  --lilac:#b8a7ff;
+      --na-bg: rgba(120,120,140,.10);
+      --na-border: rgba(120,120,140,.35);
+      --na-text: rgba(80,80,95,.95);
 
-  --radius-xl: 18px;
-  --shadow-main: 0 18px 50px rgba(30,18,60,.10);
-  --shadow-card: 0 10px 26px rgba(30,18,60,.08);
-}
+      --ok-bg: rgba(184,167,255,.14);
+      --ok-border: rgba(170,150,230,.35);
+      --ok-text: rgba(47,42,58,.92);
 
-*{box-sizing:border-box;}
-html,body{height:100%;}
+      --pink:#ff8fbc;
 
-body{
-  margin:0;
-  font-family:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  color:var(--text-main);
-  background:
-    radial-gradient(900px 520px at 20% 18%, rgba(255,143,188,.25), transparent 60%),
-    radial-gradient(900px 520px at 82% 24%, rgba(184,167,255,.20), transparent 58%),
-    linear-gradient(180deg, var(--page-bg), var(--page-bg2));
-}
+      --table-font: 11px;
+      --row-pad-y: 7px;
+      --row-pad-x: 8px;
+       --mini-pad-x: 6px;
+    }
+    *{box-sizing:border-box;font-family:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+    body{
+      margin:0; min-height:100vh; color:var(--text);
+      background:
+        radial-gradient(900px 520px at 20% 18%, rgba(255,143,188,.25), transparent 60%),
+        radial-gradient(900px 520px at 82% 24%, rgba(184,167,255,.20), transparent 58%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+    }
 
-/* ===== layout ===== */
-.app-shell{
-  min-height:100vh;
-  padding:24px;
-}
-.inner-shell{
-  max-width:1400px;
-  margin:0 auto;
-  background:var(--card-bg);
-  border:1px solid var(--card-stroke);
-  border-radius:24px;
-  padding:18px 20px 20px;
-  box-shadow:var(--shadow-main);
-}
+    .field-label{ font-size:12px; opacity:.75; white-space:nowrap; min-width:52px; flex:0 0 auto; }
+    .container{max-width:1400px;margin:0 auto;padding:28px 16px 46px;}
+    .card{ background:var(--card); border:1px solid var(--stroke); border-radius:20px; box-shadow:var(--shadow); overflow:hidden; }
+    .card-inner{padding:18px;}
+    .title{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:18px; font-weight:900; }
+    .meta{ margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; color:rgba(110,106,130,.85); font-size:12px; align-items:center; line-height:1.2; }
+    .pill{
+      font-size:11px; padding:5px 10px; border-radius:999px;
+      background: linear-gradient(90deg, rgba(255,143,188,.20), rgba(184,167,255,.16));
+      border:1px solid rgba(170,150,230,.25);
+      box-shadow: 0 1px 0 rgba(255,255,255,.55) inset;
+      text-decoration:none; color:rgba(47,42,58,.82);
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .pill:hover{ border-color: rgba(255,143,188,.55); box-shadow: 0 0 0 3px rgba(255,143,188,.14), 0 1px 0 rgba(255,255,255,.55) inset; }
 
-/* ===== header ===== */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:14px;
-}
-.title-wrap h1{
-  margin:0;
-  font-size:20px;
-  font-weight:800;
-  display:flex;
-  gap:10px;
-  cursor:pointer;
-}
-.title-tag{
-  font-size:11px;
-  padding:4px 10px;
-  border-radius:999px;
-  background:rgba(255,143,188,.25);
-  border:1px solid rgba(255,143,188,.35);
-}
-.header-right{
-  font-size:12px;
-  color:var(--text-muted);
-}
+    .row{display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap;}
+    .input{
+      flex:1; min-width:240px; display:flex; align-items:center; gap:8px;
+      padding:10px 12px; border-radius:14px;
+      background:rgba(243,241,250,.85);
+      border:1px solid rgba(170,150,230,.20);
+      box-shadow: var(--shadow2);
+    }
+    .input input{ width:100%; border:0; outline:0; background:transparent; font-size:13px; }
+    .btn{
+      border:0; cursor:pointer; padding:10px 14px; border-radius:14px;
+      background:rgba(255,255,255,.82); border:1px solid rgba(170,150,230,.25);
+      box-shadow: var(--shadow2); font-weight:900;
+    }
+    .btn:hover{border-color: rgba(255,143,188,.55); box-shadow: 0 0 0 3px rgba(255,143,188,.12), var(--shadow2);}
+    .btn:disabled{cursor:not-allowed; opacity:.55; filter:saturate(.8); box-shadow:none;}
 
-/* ===== cards ===== */
-.card{
-  background:#fff;
-  border:1px solid var(--card-stroke);
-  border-radius:22px;
-  box-shadow:var(--shadow-card);
-}
-.card-search{
-  align-items: stretch;
-}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
+      border-radius:999px; border:1px solid rgba(170,150,230,.25);
+      background: rgba(255,255,255,.70);
+      font-weight:900; font-size:11px; white-space:nowrap;
+    }
+    .badge.ok{ background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok-text); }
+    .badge.low{ background: var(--low-bg); border-color: var(--low-border); color: var(--low-text); }
+    .badge.out{ background: var(--out-bg); border-color: var(--out-border); color: var(--out-text); }
+    .badge.na{ background: var(--na-bg); border-color: var(--na-border); color: var(--na-text); }
 
-/* ✅ Result 영역이 빈데도 커 보이는 현상 방지 */
-.result-card{
-  padding: 14px 16px 16px;
-}
-#result{
-  min-height: 0 !important;
-}
-.no-result{
-  padding: 14px 0;
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
+    /* ✅ 섹션 헤더 (발주서 / 출고시트 구분) */
+    .section-header{
+      margin-top: 16px;
+      margin-bottom: 6px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 12px; font-weight: 900;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-header.order-sheet{
+      background: linear-gradient(90deg, rgba(184,167,255,.22), rgba(255,143,188,.10));
+      border: 1px solid rgba(170,150,230,.30);
+      color: rgba(60,40,120,.92);
+    }
+    .section-header.exist-sheet{
+      background: linear-gradient(90deg, rgba(255,200,100,.22), rgba(255,143,188,.10));
+      border: 1px solid rgba(200,160,60,.30);
+      color: rgba(100,60,0,.92);
+    }
+    .section-header .cnt-badge{
+      padding: 2px 8px; border-radius: 999px;
+      background: rgba(255,255,255,.70);
+      border: 1px solid rgba(170,150,230,.25);
+      font-size: 11px;
+    }
 
-/* ===== search ===== */
-.card-search{
-  display:flex;
-  gap:14px;
-  padding:12px 14px;
-  align-items:flex-start;
-}
-.card-title{
-  font-size:13px;
-  font-weight:700;
-  margin:0;
-  white-space:nowrap;
-}
-.search-box{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.input-wrap{ position:relative; }
-.input-wrap input{
-  width:100%;
-  padding:12px 42px 12px 34px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.25);
-  background:#f5f3fb;
-}
-.input-wrap input:focus{
-  outline:none;
-  border-color:var(--pink);
-  box-shadow:0 0 0 4px rgba(255,143,188,.18);
-}
-.input-icon-left{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-}
-.input-icon-right{
-  position:absolute;
-  right:14px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:11px;
-  color:#999;
-}
+    .warnline{font-size:11px; font-weight:900;}
+    .warnline.low{color: var(--low-text);}
+    .warnline.out{color: var(--out-text);}
+    .warnline.na{color: var(--na-text);}
 
-/* ===== result ===== */
-.result-card{ padding-top:14px; }
-.result-header-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-}
-.result-header-right{
-  font-size:11px;
-  color:var(--text-muted);
-}
+    .table-wrap{
+      margin-top:6px; border-radius:16px; border:1px solid rgba(170,150,230,.18);
+      overflow:auto; background: rgba(255,255,255,.68);
+      box-shadow: 0 1px 0 rgba(255,255,255,.70) inset;
+      max-height: 72vh; scrollbar-gutter: stable;
+    }
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:12px;}
+    thead th{
+      position:sticky; top:0; z-index:2; text-align:left; padding:10px 12px;
+      background: rgba(255,255,255,.86);
+      border-bottom: 1px solid rgba(170,150,230,.18);
+      font-weight:900; white-space:nowrap;
+    }
+    tbody td{
+      padding:10px 12px; border-bottom:1px solid rgba(170,150,230,.12);
+      vertical-align:top; white-space: nowrap;
+    }
+    tbody tr:nth-child(even){background: rgba(243,241,250,.55);}
+    tbody tr:hover{background: linear-gradient(90deg, rgba(255,143,188,.18), rgba(184,167,255,.14));}
+    .no-data{padding:20px 14px; text-align:center; color: rgba(110,106,130,.75); font-size:12px;}
+    tr.low { background: var(--low-bg) !important; }
+    tr.out { background: var(--out-bg) !important; }
+    tr.na { background: rgba(120,120,140,.07) !important; }
+    .copy{cursor:pointer;}
+    .chkcell{ text-align:center; }
 
-/* ===== op legend ===== */
-#opLegend.op-legend{
-  display:none;
-  margin:6px 0 10px;
-  gap:12px;
-}
-#opLegend .op-legend-item{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:12px;
-  color:var(--text-muted);
-}
-.op-legend-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  border:2px solid #fff;
-  box-shadow:0 0 0 1px rgba(170,150,230,.25);
-}
-.op-legend-dot.on{background:#22c55e;}
-.op-legend-dot.end{background:#f97316;}
-.op-legend-dot.stop{background:#ef4444;}
-.op-legend-dot.pause{background:#eab308;}
-.op-legend-dot.unk{background:#a3a3a3;}
+    .panel{
+      margin-top: 12px; padding: 12px; border-radius: 16px;
+      border: 1px dashed rgba(170,150,230,.35);
+      background: rgba(255,255,255,.65);
+      display:none; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .panel.show{display:flex;}
+    .panel .label{ font-size:12px; font-weight:900; color: rgba(47,42,58,.88); }
 
-/* ===== table ===== */
-.result-table-wrap{
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid rgba(170,150,230,.18);
-}
-.result-scroll{
-  max-height:520px;
-  overflow:auto;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:auto;
-  font-size:12px;
-}
-th,td{
-  padding:10px 12px;
-  border-bottom:1px solid rgba(170,150,230,.15);
-}
-th{
-  background:#fff;
-  position:sticky;
-  top:0;
-  z-index:2;
-  user-select:none;
-}
-tr:nth-child(even) td{background:#faf9fe;}
-tr:hover td{background:rgba(255,143,188,.18);}
+    .miniinput{
+      display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px;
+      background: rgba(243,241,250,.85);
+      border:1px solid rgba(170,150,230,.20);
+      box-shadow: var(--shadow2);
+    }
+    .miniinput input{
+      border:0; outline:0; background:transparent; width:220px; font-size:12.5px;
+    }
+    .minihelp{ font-size:11px; color: rgba(110,106,130,.85); }
+    .miniinput select{
+      border:0; outline:0; background:transparent; width: 280px; font-size:12.5px;
+    }
 
-/* ===== column resize ===== */
-th{ position:sticky; }
-.resize-handle{
-  position:absolute;
-  top:0;
-  right:0;
-  width:10px;
-  height:100%;
-  cursor:col-resize;
-}
-.resize-handle::after{
-  content:"";
-  position:absolute;
-  top:20%;
-  bottom:20%;
-  left:50%;
-  width:1px;
-  transform:translateX(-50%);
-  background:rgba(170,150,230,.35);
-  opacity:0;
-}
-th:hover .resize-handle::after{opacity:1;}
-th.sortable{cursor:pointer; position:relative;}
-.sort-indicator{
-  margin-left:4px;
-  font-size:10px;
-  color:var(--pink);
-}
+    #toast{
+      position:fixed; right:18px; bottom:18px; z-index:9999;
+      padding:10px 12px; border-radius:14px;
+      background: rgba(255,255,255,.90);
+      border:1px solid rgba(255,143,188,.35);
+      box-shadow: var(--shadow);
+      opacity:0; transform: translateY(10px);
+      transition:.18s ease; pointer-events:none; font-weight:900;
+    }
+    #toast.show{opacity:1; transform:translateY(0);}
 
-/* ===== product name / status dot ===== */
-.product-name-cell{
-  position:relative;
-  padding-left:28px;
-}
-.op-status-dot{
-  position:absolute;
-  left:10px;
-  top:50%;
-  transform:translateY(-50%);
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  border:2px solid #fff;
-  box-shadow:0 0 0 1px rgba(170,150,230,.25);
-}
+    .input:focus-within, .miniinput:focus-within{
+      border-color: rgba(255,143,188,.55);
+      box-shadow: 0 0 0 3px rgba(255,143,188,.12), var(--shadow2);
+    }
+    #status{ font-weight:900; }
+    #stat2{ opacity:.75; }
+    #copyGateMsg{
+      padding:4px 8px; border-radius:999px;
+      background: rgba(255,255,255,.55);
+      border:1px solid rgba(170,150,230,.18);
+    }
+    tr.is-selected{
+      outline: 2px solid rgba(255,143,188,.45);
+      outline-offset: -2px;
+      background: linear-gradient(90deg, rgba(255,143,188,.22), rgba(184,167,255,.18)) !important;
+    }
+    #changePanel{ position: sticky; bottom: 10px; z-index: 50; backdrop-filter: blur(10px); }
+    #changePanel.show{ box-shadow: 0 18px 50px rgba(30,18,60,.12); }
 
-/* 상태별 색 */
-.op-status-dot--on    { background:#22c55e; }
-.op-status-dot--end   { background:#f97316; }
-.op-status-dot--stop  { background:#ef4444; }
-.op-status-dot--pause { background:#eab308; }
-.op-status-dot--unk   { background:#a3a3a3; }
+    .toolbar{
+      margin-top: 10px; padding: 10px 12px; border-radius: 16px;
+      border: 1px solid rgba(170,150,230,.18);
+      background: rgba(255,255,255,.65);
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .toolbar .hint{ font-size:11px; opacity:.75; }
+    .kbd{
+      font-size:11px; border:1px solid rgba(170,150,230,.25);
+      padding:2px 6px; border-radius:8px; background: rgba(255,255,255,.70);
+      font-weight:900;
+    }
 
-/* ===== stock pill ===== */
-.stock-pill{
-  font-size:11px;
-  padding:3px 8px;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-.stock-pill-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-}
-.stock-pill-green{background:#e9fbf3;}
-.stock-pill-green .stock-pill-dot{background:#22c55e;}
-.stock-pill-yellow{background:#fff7d6;}
-.stock-pill-yellow .stock-pill-dot{background:#facc15;}
-.stock-pill-red{background:#ffe4ee;}
-.stock-pill-red .stock-pill-dot{background:#ff8fbc;}
+    .spinner{
+      width:14px; height:14px; border-radius:50%;
+      border:2px solid rgba(170,150,230,.25);
+      border-top-color: rgba(255,143,188,.85);
+      display:inline-block; animation: spin .8s linear infinite; vertical-align:-2px;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
 
-/* ===== misc ===== */
-.kw-mark{background:yellow;padding:0 2px;}
-#toast{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#fff;
-  border:1px solid rgba(255,143,188,.35);
-  opacity:0;
-}
-#toast.show{opacity:1;}
-#status{
-  font-size: 12px !important;
-  line-height: 1.2 !important;
-  margin-top: 6px !important;
-  color: var(--text-muted) !important;
-}
-#status strong{
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: var(--text-main) !important;
-}
-@media(max-width:860px){
-  .header{flex-direction:column;gap:10px;}
-  .card-search{flex-direction:column;}
-}
+    #hoverTip{
+      position: fixed; z-index: 10000;
+      max-width: min(560px, 92vw); max-height: min(280px, 40vh);
+      overflow: auto;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(170,150,230,.35);
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 18px 50px rgba(30,18,60,.16);
+      font-size: 12px; font-weight: 700; color: rgba(47,42,58,.95);
+      line-height: 1.35;
+      opacity: 0; transform: translateY(-4px);
+      pointer-events: none; transition: .10s ease;
+      display: none; white-space: pre-wrap; word-break: break-word;
+    }
+    #hoverTip.show{ display: block; opacity: 1; transform: translateY(0); }
 
-/* ===== slim search bar ===== */
-.input-wrap.slim{ position:relative; }
-.input-wrap.slim input{
-  height: 42px;
-  padding: 0 78px 0 42px;
-  border-radius: 999px;
-  border: 1px solid rgba(170,150,230,.22);
-  background: rgba(245,243,251,.75);
-  font-size: 13px;
-}
-.input-wrap.slim input:focus{
-  outline:none;
-  border-color: rgba(255,143,188,.55);
-  box-shadow: 0 0 0 4px rgba(255,143,188,.16);
-}
-.input-wrap.slim .input-icon-left{
-  position:absolute;
-  left:14px;
-  top:50%;
-  transform:translateY(-50%);
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:18px;
-  height:18px;
-  opacity:.95;
-}
-.icon-search{ width:18px; height:18px; display:block; }
-.input-wrap.slim .input-icon-right{
-  position:absolute;
-  right:14px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:11px;
-  color: rgba(110,106,130,.55);
-  pointer-events:none;
-}
-.clear-btn{
-  position:absolute;
-  right:52px;
-  top:50%;
-  transform:translateY(-50%);
-  width:22px;
-  height:22px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.18);
-  background: rgba(255,255,255,.65);
-  color: rgba(110,106,130,.75);
-  font-size:16px;
-  line-height:1;
-  cursor:pointer;
-  display:none;
-}
-.clear-btn:hover{
-  background: rgba(255,143,188,.12);
-  border-color: rgba(255,143,188,.22);
-}
-.type-pills{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.type-pill{
-  height:34px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.25);
-  background:#fff;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  font-size:13px;
-  user-select:none;
-  transition: background .12s ease, border-color .12s ease, transform .06s ease;
-}
-.type-pill input{ display:none; }
-.type-pill.active{
-  background:rgba(255,143,188,.25);
-  border-color:rgba(255,143,188,.45);
-}
-.type-pill:active{ transform: scale(.98); }
-.input-wrap .input-icon-left{ font-size:0; }
-.text-right{ text-align:right; }
-.text-center{ text-align:center; }
+    /* 상단 요약 숨김 */
+    #stat2, #stockSummary, #copyGateMsg { display:none !important; }
 
-/* ===========================
-   미리보기 모달
-   =========================== */
-.pv-modal{ position:fixed; inset:0; display:none; z-index:9999; }
-.pv-modal.show{ display:block; }
-.pv-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.35); }
-.pv-panel{
-  position:absolute; left:50%; top:50%;
-  transform:translate(-50%,-50%);
-  width:min(1100px, 92vw);
-  height:min(86vh, 900px);
-  background:#fff;
-  border-radius:18px;
-  border:1px solid rgba(170,150,230,.22);
-  box-shadow:0 18px 50px rgba(30,18,60,.18);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-.pv-topbar{
-  height:46px;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 12px 0 14px;
-  border-bottom:1px solid rgba(170,150,230,.18);
-  background:rgba(245,243,251,.75);
-}
-.pv-title{ font-size:13px; font-weight:700; color:var(--text-main); }
-.pv-actions{ display:flex; gap:8px; align-items:center; }
-.pv-btn{
-  height:30px;
-  padding:0 10px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.22);
-  background:#fff;
-  font-size:12px;
-  cursor:pointer;
-  text-decoration:none;
-  color:var(--text-main);
-  display:inline-flex;
-  align-items:center;
-}
-.pv-btn:hover{
-  background: rgba(255,143,188,.12);
-  border-color: rgba(255,143,188,.22);
-}
-.pv-body{ position:relative; flex:1; }
-.pv-loading{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  color:var(--text-muted);
-  background:rgba(255,255,255,.85);
-  z-index:2;
-}
-.pv-frame{
-  width:100%;
-  height:100%;
-  border:0;
-  display:block;
-}
+    .dupBanner{
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,35,35,.45);
+      background: linear-gradient(90deg, rgba(255,35,35,.18), rgba(255,143,188,.10));
+      box-shadow: 0 18px 50px rgba(255,35,35,.12);
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .dupBannerLeft{ display:flex; align-items:center; gap:12px; }
+    .dupIcon{
+      width:38px; height:38px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,35,35,.18);
+      border:1px solid rgba(255,35,35,.35);
+      font-size:18px;
+    }
+    .dupTitle{
+      font-size:15px;
+      font-weight: 900;
+      color: rgba(135,0,0,.98);
+      line-height: 1.1;
+    }
+    .dupSub{
+      margin-top: 2px;
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(135,0,0,.80);
+    }
+    .dupBannerRight{ display:flex; gap:8px; align-items:center; }
+    .dupBtn{
+      background: rgba(255,255,255,.85);
+      border:1px solid rgba(255,35,35,.35);
+    }
+    .dupBtn:hover{
+      border-color: rgba(255,35,35,.65);
+      box-shadow: 0 0 0 3px rgba(255,35,35,.12), var(--shadow2);
+    }
+    .dupBannerDetail{
+      width:100%;
+      margin-top: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .dupCard{
+      border-radius:14px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(255,35,35,.22);
+      padding: 10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .dupLine1{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: rgba(47,42,58,.94);
+    }
+    .dupLine2{
+      font-weight: 800;
+      font-size: 11.5px;
+      color: rgba(110,106,130,.88);
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-/* ===========================
-   운영 점 Hover 툴팁 (카드형)
-   =========================== */
-.extra-tooltip{
-  position: fixed;
-  z-index: 99999;
-  display: none;
-  min-width: 280px;
-  max-width: 420px;
-  padding: 12px 12px 10px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.97);
-  border: 1px solid rgba(170,150,230,.22);
-  box-shadow: 0 18px 50px rgba(30,18,60,.18);
-  font-size: 12px;
-  color: var(--text-main);
-  line-height: 1.35;
-  overflow:hidden;
-}
-.extra-tooltip .t-title{
-  font-weight: 900;
-  font-size: 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom: 8px;
-}
-.extra-tooltip .t-title .badge{
-  font-size:10px;
-  padding:3px 8px;
-  border-radius:999px;
-  border:1px solid rgba(170,150,230,.22);
-  background: rgba(245,243,251,.75);
-  color: var(--text-muted);
-}
-.extra-tooltip .t-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.extra-tooltip .t-item{
-  display:flex;
-  gap:10px;
-  padding:8px 10px;
-  border-radius:12px;
-  border:1px solid rgba(170,150,230,.16);
-  background: rgba(245,243,251,.55);
-}
-.extra-tooltip .t-k{
-  width: 76px;
-  font-weight:700;
-  color: var(--text-muted);
-  flex: 0 0 auto;
-}
-.extra-tooltip .t-v{
-  flex: 1 1 auto;
-  word-break: break-word;
-  color: var(--text-main);
-}
-.extra-tooltip .t-hint{
-  margin-top:8px;
-  font-size:10px;
-  color: rgba(110,106,130,.65);
-}
-/* ✅ 위젯(iframe)로 띄울 때는 검색바/헤더 숨기고 결과만 보여주기 */
-body.embed .header{ display:none !important; }
-body.embed .card.card-search{ display:none !important; }
-body.embed .inner-shell{ padding-top:14px !important; }
+    #tableWrap th{
+      position: sticky;
+      user-select: none;
+    }
 
-    
+    #tableWrap th .col-resizer{
+      position:absolute;
+      top:0;
+      right:-4px;
+      width:8px;
+      height:100%;
+      cursor: col-resize;
+      z-index: 5;
+    }
+
+    #tableWrap th.resizing{
+      cursor: col-resize;
+    }
+
+    body.col-resize-active{
+      cursor: col-resize !important;
+      user-select:none !important;
+    }
+
+    /* 출고시트 섹션 테이블래퍼 */
+    .exist-table-wrap th{
+      position: sticky;
+      user-select: none;
+    }
+    .exist-table-wrap th .col-resizer{
+      position:absolute;
+      top:0;
+      right:-4px;
+      width:8px;
+      height:100%;
+      cursor: col-resize;
+      z-index: 5;
+    }
+
+    #tableWrap table{
+      font-size: var(--table-font);
+    }
+    #tableWrap thead th{
+      padding: var(--row-pad-y) var(--row-pad-x);
+    }
+    #tableWrap tbody td{
+      padding: var(--row-pad-y) var(--row-pad-x);
+    }
+
+    #tableWrap table thead th:nth-child(1),
+    #tableWrap table tbody td:nth-child(1){
+      padding-left: var(--mini-pad-x);
+      padding-right: var(--mini-pad-x);
+      min-width: 34px !important;
+      max-width: 34px !important;
+      width: 34px !important;
+      text-align: center;
+    }
+    #tableWrap table thead th:nth-child(2),
+    #tableWrap table tbody td:nth-child(2){
+      padding-left: var(--mini-pad-x);
+      padding-right: var(--mini-pad-x);
+      min-width: 44px !important;
+      max-width: 44px !important;
+      width: 44px !important;
+      text-align: center;
+    }
+
+    #tableWrap input.rowChk{
+      transform: scale(0.95);
+    }
+
+    /* 출고시트 결과 섹션 */
+    #existResultSection{ margin-top: 4px; }
+    #existResultSection .table-wrap{
+      font-size: var(--table-font);
+    }
+    #existResultSection .table-wrap table thead th:nth-child(1),
+    #existResultSection .table-wrap table tbody td:nth-child(1){
+      padding-left: var(--mini-pad-x);
+      padding-right: var(--mini-pad-x);
+      min-width: 34px !important;
+      max-width: 34px !important;
+      width: 34px !important;
+      text-align: center;
+    }
+    #existResultSection .table-wrap table thead th:nth-child(2),
+    #existResultSection .table-wrap table tbody td:nth-child(2){
+      padding-left: var(--mini-pad-x);
+      padding-right: var(--mini-pad-x);
+      min-width: 44px !important;
+      max-width: 44px !important;
+      width: 44px !important;
+      text-align: center;
+    }
   </style>
 </head>
 
 <body>
-  <div class="app-shell">
-    <div class="inner-shell">
-      <div class="header">
-        <div class="header-left">
-          <div class="title-wrap">
-            <h1>
-              Search
-              <span class="title-tag"> PlayMD </span>
-            </h1>
+  <div class="container">
+    <div class="card">
+      <div class="card-inner">
+        <div class="title">
+          <div> Shipment </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a class="pill" id="orderLink" href="#" target="_blank" rel="noopener noreferrer">발주서</a>
+            <a class="pill" id="stockLink" href="#" target="_blank" rel="noopener noreferrer">재고</a>
+            <a class="pill" id="existLink" href="#" target="_blank" rel="noopener noreferrer"> 출고 </a>
           </div>
         </div>
-        <div class="header-right">
-          <div style="margin-top: 4px;">
-            <span id="stockInfo">로딩 중...</span>
-          </div>
+
+        <div class="meta">
+          <span id="status">로딩 중…</span>
+          <span id="stat2"></span>
+          <span id="stockSummary"></span>
+          <span id="copyGateMsg"></span>
         </div>
-      </div>
 
-      <div class="content-row">
-        <!-- 검색 카드 -->
-        <div class="card card-search">
-          <div class="search-box">
-            <div class="input-wrap slim">
-              <span class="input-icon-left" aria-hidden="true">
-                <svg class="icon-search" viewBox="0 0 24 24" fill="none">
-                  <path d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" stroke="rgba(110,106,130,.55)" stroke-width="2"/>
-                  <path d="M20 20l-3.5-3.5" stroke="rgba(255,143,188,.80)" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
-
-              <input type="text" id="keyword" placeholder="(예: 상품명, 상품코드, 칼라코드 등)" />
-              <button type="button" id="clearKeyword" class="clear-btn" aria-label="검색어 지우기">×</button>
-              <span class="input-icon-right">Enter ↵</span>
-            </div>
-
-            <div class="type-pills" id="filterPills">
-              <label class="type-pill" for="warehouse">
-                <input type="checkbox" id="warehouse">
-                창고
-              </label>
-
-              <label class="type-pill" for="material">
-                <input type="checkbox" id="material">
-                소재
-              </label>
-
-              <label class="type-pill" for="stock">
-                <input type="checkbox" id="stock">
-                재고
-              </label>
-            </div>
-
-            <div class="status" id="status">
-              데이터 불러오는 중...
+        <div class="dupBanner" id="dupBanner" style="display:none;">
+          <div class="dupBannerLeft">
+            <div class="dupIcon">🔴</div>
+            <div>
+              <div class="dupTitle">이중 출고 의심</div>
+              <div class="dupSub" id="dupBannerSub">-</div>
             </div>
           </div>
+          <div class="dupBannerRight">
+            <button class="btn dupBtn" id="dupBannerToggle" type="button">자세히</button>
+          </div>
+          <div class="dupBannerDetail" id="dupBannerDetail" style="display:none;"></div>
         </div>
 
-        <!-- 결과 카드 -->
-        <div class="card result-card">
-          <div class="result-header-row">
-            <h2 class="card-title"><span class="icon"></span></h2>
-          </div>
+        <div class="panel" id="existPanel" style="display:none;">
+          <span class="label">기존 등록 데이터</span>
+          <button class="btn" id="btnExistToggle" type="button">펼치기</button>
 
-          <div id="opLegend" class="op-legend">
-            <span class="op-legend-item">
-              <span class="op-legend-dot on"></span> 운영
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot end"></span> 소진 후 종료
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot stop"></span> 단종
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot pause"></span> 일시 중단
-            </span>
-            <span class="op-legend-item">
-              <span class="op-legend-dot unk"></span> 정보 없음
-            </span>
-          </div>
-
-          <div id="result">
-            <div class="no-result"></div>
+          <div id="existBody" style="display:none; width:100%;">
+            <div class="table-wrap" style="max-height:240px; width:100%; margin-top:8px;">
+              <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
+                <thead>
+                  <tr>
+                    <th>사방넷주문번호</th>
+                    <th>쇼핑몰 주문번호</th>
+                    <th>목적</th>
+                    <th>전산 처리 방법</th>
+                    <th>기록일(있으면)</th>
+                  </tr>
+                </thead>
+                <tbody id="existTbody"></tbody>
+              </table>
+            </div>
+            <div class="minihelp" style="margin-top:8px;">
+              ※ 이 주문번호로 이미 입력된 목적/전산 처리 방법이 있으면 여기서 확인됩니다.
+            </div>
           </div>
         </div>
+
+        <div class="row">
+          <div class="input">
+            <span class="field-label">검색</span>
+            <input id="orderInput" type="text" placeholder="주문번호/송장/연락처/수령인 입력 (Enter)" />
+          </div>
+        </div>
+
+        <div class="panel" id="manualPanel">
+          <span class="label">발주서에 없음 → 수동 입력</span>
+          <div class="miniinput">
+            <span style="font-size:11px;opacity:.75;">상품컬러코드</span>
+            <input id="manualColor" type="text" placeholder="예: ABC123 (필수)" />
+          </div>
+          <div class="miniinput" style="width:180px;">
+            <span style="font-size:11px;opacity:.75;">수량</span>
+            <input id="manualQty" type="text" placeholder="예: 1" />
+          </div>
+          <button class="btn" id="btnManualApply">적용</button>
+          <span class="minihelp">재고 10 미만/0/미등록이면 복사 차단 · Ctrl+C로 복사</span>
+        </div>
+
+        <div class="panel" id="changePanel">
+          <span class="label">변경</span>
+
+          <div class="miniinput">
+            <span style="font-size:11px;opacity:.75;">색상 선택</span>
+            <select id="changeColorSelect" title="색상명(I열)로 선택하면 컬러코드가 자동 입력됩니다. (LOW/OUT/N/A는 선택 불가)">
+              <option value="">선택하세요</option>
+            </select>
+          </div>
+
+          <div class="miniinput">
+            <span style="font-size:11px;opacity:.75;">컬러코드</span>
+            <input id="changeColor" type="text" placeholder="예: ABC123 (필수)" />
+          </div>
+
+          <div class="miniinput" style="width:180px;">
+            <span style="font-size:11px;opacity:.75;">수량</span>
+            <input id="changeQty" type="text" placeholder="예: 1" />
+          </div>
+
+          <button class="btn" id="btnChangeApply">적용</button>
+          <button class="btn" id="btnChangeReset">취소</button>
+        </div>
+
+        <div class="toolbar" id="tableToolbar" style="display:none;">
+          <span class="hint">
+            행 클릭하면 복사 · 여러 건이면 체크 후 <span class="kbd">변경</span> 적용 ·
+            <span class="kbd">Ctrl</span>+<span class="kbd">C</span> 로 복사
+          </span>
+
+          <span id="selCount" class="badge ok" style="display:none;">선택 0건</span>
+          <button class="btn" id="btnSelectAll" type="button" style="display:none;">전체 선택</button>
+          <button class="btn" id="btnSelectNone" type="button" style="display:none;">선택 해제</button>
+
+          <div class="miniinput" style="width:260px;">
+            <span style="font-size:11px;opacity:.75;">폰트</span>
+            <input id="tableFontRange" type="range" min="9" max="14" step="1" value="11" style="width:140px;">
+            <span id="tableFontVal" class="badge ok">11</span>
+          </div>
+        </div>
+
+        <!-- ✅ 발주서 결과 섹션 -->
+        <div id="orderResultSection" style="display:none;">
+          <div class="section-header order-sheet">
+            📋 발주서 결과
+            <span class="cnt-badge" id="orderResultCnt">0건</span>
+          </div>
+          <div class="table-wrap" id="tableWrap">
+            <div class="no-data">검색 결과가 없습니다.</div>
+          </div>
+        </div>
+
+        <!-- ✅ 출고 시트 결과 섹션 -->
+        <div id="existResultSection" style="display:none;">
+          <div class="section-header exist-sheet">
+            📦 출고 시트 결과
+            <span class="cnt-badge" id="existResultCnt">0건</span>
+          </div>
+          <div class="table-wrap exist-table-wrap" id="existTableWrap">
+            <div class="no-data">검색 결과가 없습니다.</div>
+          </div>
+        </div>
+
+        <!-- 발주서/출고 모두 없을 때 기본 래퍼 -->
+        <div id="noResultWrap">
+          <div class="table-wrap" id="tableWrapFallback" style="margin-top:14px;">
+            <div class="no-data">검색 결과가 없습니다.</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <div id="toast" class="toast">복사</div>
-
-  <!-- 미리보기 모달 -->
-  <div id="previewModal" class="pv-modal" aria-hidden="true">
-    <div class="pv-backdrop"></div>
-    <div class="pv-panel" role="dialog" aria-modal="true">
-      <div class="pv-topbar">
-        <div class="pv-title">상품 미리보기</div>
-        <div class="pv-actions">
-          <a id="pvOpenNewTab" class="pv-btn" href="#" target="_blank" rel="noopener">↗️</a>
-          <button type="button" id="pvClose" class="pv-btn">❌</button>
-        </div>
-      </div>
-
-      <div class="pv-body">
-        <div id="pvLoading" class="pv-loading">불러오는 중…</div>
-        <iframe id="pvFrame" class="pv-frame" loading="lazy"></iframe>
-      </div>
-    </div>
-  </div>
-
-  <!-- 운영 점 Hover 툴팁 -->
-  <div id="extraTooltip" class="extra-tooltip" role="tooltip" aria-hidden="true"></div>
+  <div id="toast"> copy </div>
+  <div id="hoverTip"></div>
 
   <script>
-    // ===== 시트 설정 =====
-    const PRODUCT_SHEET_ID = '1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc';
-    const PRODUCT_GID = '885700988';
+    /* ===================== 기준 ===================== */
+    const LOW_STOCK_THRESHOLD = 10;
 
-    const STOCK_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
-    const STOCK_GID = '366983013';
+    /* ===================== 시트 ===================== */
+    const ORDER_SHEET_URL_VIEW = "https://docs.google.com/spreadsheets/d/1_Bxfag-90U6u-6JbhxNqeoD9vRns-CpPeXPIJYO1Z5o/edit?gid=518656308#gid=518656308";
+    const ORDER_CSV_BASE = "https://docs.google.com/spreadsheets/d/1_Bxfag-90U6u-6JbhxNqeoD9vRns-CpPeXPIJYO1Z5o/export?format=csv&gid=518656308";
 
-    const OPER_SHEET_ID = '1F4EC5w1VPmFpwSbw0LuIv5QkwSSs8YkCBPZKY3h-z64';
-    const OPER_GID = '2108422262';
+    const STOCK_SHEET_URL_VIEW = "https://docs.google.com/spreadsheets/d/1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM/edit?gid=366983013#gid=366983013";
+    const STOCK_CSV_BASE = "https://docs.google.com/spreadsheets/d/1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM/export?format=csv&gid=366983013";
 
-    // ✅ 같은 스프레드시트 파일 안에서 역할별 gid 분리
-    // (A) 운영 점 hover 툴팁용 "부가정보" 시트 (gid=1305011805)
-    const EXTRA_INFO_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
-    const EXTRA_INFO_GID = '1305011805';
+    const EXIST_SHEET_URL_VIEW_2025 = "https://docs.google.com/spreadsheets/d/1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc/edit?gid=0#gid=0";
+    const EXIST_CSV_BASE_2025 = "https://docs.google.com/spreadsheets/d/1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc/export?format=csv&gid=0";
 
-    // (B) 재고 pill 클릭 → 상품번호(product_no) 매칭/미리보기 연동 시트 (gid=2050011179)
-    const PREVIEW_MAP_SHEET_ID = '1_L12NKkBVU4c5xDPrYLUQRnSUG2NoAwYGWIfPDVO3bM';
-    const PREVIEW_MAP_GID = '2050011179';
+    const EXIST_SHEET_URL_VIEW_2026 = "https://docs.google.com/spreadsheets/d/1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc/edit?gid=883501265#gid=883501265";
+    const EXIST_CSV_BASE_2026 = "https://docs.google.com/spreadsheets/d/1LPy69E2yPTaSwxFAYrX6qV0BZx1tW0YdonLRNqeo5Vc/export?format=csv&gid=883501265";
 
-    const PRODUCT_CSV_URL =
-      `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/export?format=csv&gid=${PRODUCT_GID}`;
-    const STOCK_CSV_URL =
-      `https://docs.google.com/spreadsheets/d/${STOCK_SHEET_ID}/export?format=csv&gid=${STOCK_GID}`;
-    const OPER_CSV_URL =
-      `https://docs.google.com/spreadsheets/d/${OPER_SHEET_ID}/export?format=csv&gid=${OPER_GID}`;
+    document.getElementById("orderLink").href = ORDER_SHEET_URL_VIEW;
+    document.getElementById("stockLink").href = STOCK_SHEET_URL_VIEW;
+    document.getElementById("existLink").href = EXIST_SHEET_URL_VIEW_2026;
 
-    const EXTRA_INFO_CSV_URL =
-      `https://docs.google.com/spreadsheets/d/${EXTRA_INFO_SHEET_ID}/export?format=csv&gid=${EXTRA_INFO_GID}`;
-    const PREVIEW_MAP_CSV_URL =
-      `https://docs.google.com/spreadsheets/d/${PREVIEW_MAP_SHEET_ID}/export?format=csv&gid=${PREVIEW_MAP_GID}`;
+    /* ===================== ESC: 전체 초기화 ===================== */
+    document.addEventListener("keydown", (e)=>{
+      if(e.key !== "Escape") return;
+      e.preventDefault();
+      resetAll_();
+    });
 
-    // ===== 전역 데이터 =====
-    let products = [];
-    let stockEntriesByColorCode = {};
-    let sizeByColorCode = {};
-    let stockUpdatedAt = '';
+    /* ===================== 강제 포함 B/C/D ===================== */
+    const EXTRA_COLS = [
+      { key: "__B", label: "사방넷주문번호", idx: 1 },
+      { key: "__C", label: "쇼핑몰 주문번호(필수)", idx: 2 },
+      { key: "__D", label: "쇼핑몰", idx: 3 },
+    ];
 
-    let showMaterial = false;
-    let showWarehouse = false;
-    let inStockOnly = false;
-    let opStatusByColorCode = {};
+    /* ===================== 요청 출력 컬럼 ===================== */
+    const OUTPUT_HEADERS = [
+      "요청일", "수령인","배송수단","운송장 번호","받는분연락처","받는분 기타연락처","주소","배송메세지",
+      "상품명","수량","결제금액","큐텐(한글상품명)","바코드","큐텐바코드",
+      "상품코드","쇼핑몰(참고용)","상품컬러코드","상품명(수집)","옵션(수집)","주문자명",
+      "비고"
+    ];
 
-    // ✅ 재고 시트 J열(상품번호) 매핑: colorCode -> productNo
-    let productNoByColorCode = {};
+    /* ===================== 화면 숨김/복사 제외 규칙 ===================== */
+    const HIDE_IN_VIEW = new Set([
+      "배송메세지","큐텐(한글상품명)","큐텐바코드","쇼핑몰(참고용)","상품명(수집)","비고","주문자명",
+      "받는분 기타연락처","주소","배송수단","바코드","상품코드"
+    ]);
 
-    // ✅ (A) 툴팁용 부가정보: productCode -> { sizeAdjust, trim, madeIn, careLabel, feature }
-    let extraInfoByProductCode = {};
+    const TABLE_COLS_ALL = [
+      { key: "요청일", label: "요청일" },
+      ...EXTRA_COLS.map(c => ({ key:c.key, label:c.label })),
+      { key: "수령인", label: "수령인" },
+      ...OUTPUT_HEADERS
+        .filter(h => !["요청일","수령인"].includes(h))
+        .map(h => ({ key:h, label:h }))
+    ];
+    const TABLE_COLS_COPY = TABLE_COLS_ALL;
+    const TABLE_COLS_VIEW = TABLE_COLS_ALL.filter(c => !HIDE_IN_VIEW.has(c.label));
 
-    // ✅ (B) 미리보기 매칭용: productCode(AH) -> productNo(BL)
-    let productNoByCode_AH = {};
-    let extraRowsTextIndex = []; // [{ text, productNo }]
+    const COL_WIDTH = {
+      "요청일":80, "사방넷주문번호": 100, "쇼핑몰 주문번호(필수)": 150,"쇼핑몰":80,
+      "상품명": 200, "상품컬러코드": 100, "결제금액": 80,
+      "옵션(수집)": 100, "운송장 번호": 120, "받는분연락처": 130,
+      "_default": 60
+    };
 
-    let sortKey = 'productName';
-    let sortDir = 'asc';
+    /* ===================== 유틸 ===================== */
+    const $ = (id)=>document.getElementById(id);
 
-    let lastKeyword = '';
+    function showToast(msg="복사됨"){
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(()=>el.classList.remove("show"), 850);
+    }
 
-    const statusEl = document.getElementById('status');
-    const resultEl = document.getElementById('result');
-    const stockInfoEl = document.getElementById('stockInfo');
+    function withCacheBust(url){
+      const sep = url.includes("?") ? "&" : "?";
+      return `${url}${sep}_=${Date.now()}`;
+    }
 
-    const keywordInput = document.getElementById('keyword');
-    const clearBtn = document.getElementById('clearKeyword');
+    function looksLikeBadCsv(text){
+      const t = String(text || "").trim();
+      if(!t) return true;
+      const head = t.slice(0, 200).toLowerCase();
+      if(head.includes("<!doctype") || head.includes("<html") || head.includes("servicelogin")) return true;
+      if(t.length < 30) return true;
+      return false;
+    }
 
-    const toggleMaterialInput = document.getElementById('material');
-    const toggleWarehouseInput = document.getElementById('warehouse');
-    const toggleInStockOnlyInput = document.getElementById('stock');
+    async function fetchText(url, timeoutMs = 12000){
+      const controller = new AbortController();
+      const t = setTimeout(()=>controller.abort(), timeoutMs);
+      try{
+        const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        return await res.text();
+      } finally {
+        clearTimeout(t);
+      }
+    }
 
-    const toastEl = document.getElementById('toast');
-    const opLegendEl = document.getElementById('opLegend');
-    const resultInfoEl = document.getElementById('resultInfo'); // (현재 DOM에 없어서 null일 수 있음)
+    async function fetchCsvSmart(baseUrl, timeoutMs=12000){
+      const t1 = await fetchText(baseUrl, timeoutMs).catch(()=> "");
+      if(!looksLikeBadCsv(t1)) return t1;
+      const t2 = await fetchText(withCacheBust(baseUrl), timeoutMs).catch(()=> "");
+      if(!looksLikeBadCsv(t2)) return t2;
+      return t2 || t1;
+    }
 
-    // 미리보기 모달 DOM
-    const previewModalEl = document.getElementById('previewModal');
-    const pvBackdropEl = previewModalEl ? previewModalEl.querySelector('.pv-backdrop') : null;
-    const pvCloseEl = document.getElementById('pvClose');
-    const pvFrameEl = document.getElementById('pvFrame');
-    const pvLoadingEl = document.getElementById('pvLoading');
-    const pvOpenNewTabEl = document.getElementById('pvOpenNewTab');
-
-    // 운영 점 Hover 툴팁 DOM
-    const extraTooltipEl = document.getElementById('extraTooltip');
-
-    const regexBracket = /\[[^\]]*\]/g;
-    const regexSeason  = /^\s*[0-9]{2}\s*(FW|SS)\s*/i;
-
-    // ✅✅ 로딩 최적화 플래그 (진짜 필요할 때만)
-    let extraInfoLoaded = false;
-    let previewMapLoaded = false;
-    let operLoaded = false;
-
-    function cleanProductName(name) {
-      if (!name) return '';
-      return String(name)
-        .replace(/[\r\n]+/g, '')
-        .replace(/\u00A0/g, ' ')
-        .replace(regexBracket, '')
-        .replace(regexSeason, '')
-        .replace(/\s*\([^)]*\)\s*[^()]*$/, '')
-        .replace(/\([^)]*\)\s*$/, '')
-        .replace(/\s{2,}/g, ' ')
+    function normalizeKey(v){
+      return String(v ?? "")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
         .trim();
     }
+    function normalizeOrderNo(v){ return normalizeKey(v); }
 
-    function escapeHtml(str) {
-      if (!str && str !== 0) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    function normLoose_(v){
+      return String(v ?? "")
+        .replace(/[\s\-]/g, "")
+        .trim()
+        .toLowerCase();
+    }
+    function normDigits_(v){
+      return String(v ?? "")
+        .replace(/[^0-9]/g, "");
     }
 
-    // ✅✅ PapaParse: download + worker 로 파싱 부담을 메인 스레드에서 분리
-    async function parseCSVFromUrl(url, timeoutMs = 12000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    function sciToIntString_(s){
+      s = String(s ?? "").trim();
+      if(!/[eE]/.test(s)) return s;
+      const m = s.match(/^([+-]?\d+(?:\.\d+)?)[eE]([+-]?\d+)$/);
+      if(!m) return s;
 
-  try {
-    const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(`CSV fetch 실패 (${res.status}) ${res.statusText}`);
+      let mant = m[1];
+      const exp = parseInt(m[2], 10);
+      const sign = mant.startsWith("-") ? "-" : "";
+      mant = mant.replace(/^[+-]/, "");
+
+      const parts = mant.split(".");
+      const intPart = parts[0];
+      const fracPart = parts[1] || "";
+      const digits = (intPart + fracPart).replace(/^0+/, "") || "0";
+
+      const shift = exp - fracPart.length;
+      if(shift >= 0) return sign + digits + "0".repeat(shift);
+
+      const cut = digits.length + shift;
+      if(cut <= 0) return sign + "0";
+      return sign + digits.slice(0, cut);
     }
 
-    const text = await res.text();
-
-    if (/<!doctype html>|<html/i.test(text)) {
-      throw new Error("CSV 대신 HTML이 내려왔어요 (시트 공개/웹게시 필요)");
+    function normalizeForContains_(s){
+      return normalizeKey(sciToIntString_(s));
     }
 
-    return new Promise((resolve, reject) => {
-      Papa.parse(text, {
-        header: false,
+    function normColorCode(v){
+      return normalizeKey(v).replace(/\s+/g,"").replace(/-/g,"").toUpperCase();
+    }
+    function normProductCode_(v){
+      return normalizeKey(v).replace(/\s+/g,"").toUpperCase();
+    }
+
+    function toNumber(v){
+      const n = String(v ?? "").replace(/[^0-9.-]/g,"");
+      return Number(n) || 0;
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /* ===================== 로딩 UI ===================== */
+    function setLoadingUI_(on, msg){
+      const st = $("status");
+      if(!st) return;
+      if(on){
+        st.innerHTML = `<span class="spinner"></span> ${escapeHtml(msg || "로딩 중…")}`;
+      }else{
+        st.textContent = msg || "로딩 완료";
+      }
+    }
+
+    /* ===================== 재고 맵 ===================== */
+    let stockMap = new Map();
+    let stockInfoMap = new Map();
+
+    function colorNameFromStock_(colorCodeRaw){
+      const code = normColorCode(colorCodeRaw);
+      const info = stockInfoMap.get(code);
+      return (info?.colorName || "").trim();
+    }
+
+    function stockQtyLabel_(colorCodeRaw){
+      const code = normColorCode(colorCodeRaw);
+      if(!code) return "미등록";
+      if(!stockMap.has(code)) return "미등록";
+      return String(stockMap.get(code));
+    }
+
+    function stripStockTag_(s){
+      return String(s ?? "").replace(/\s*\[재고:.*?\]\s*/g, " ").trim();
+    }
+
+    function attachStockToRequestDate_(reqDate, colorCode){
+      const base = stripStockTag_(reqDate);
+      const code = normColorCode(colorCode);
+      let qtyLabel = "미등록";
+      if(code && stockMap.has(code)) qtyLabel = String(stockMap.get(code));
+      const tag = `[재고:${qtyLabel}]`;
+      return base ? `${base} ${tag}` : tag;
+    }
+
+    function nameFromStock_(colorCodeRaw){
+      const code = normColorCode(colorCodeRaw);
+      const info = stockInfoMap.get(code);
+      if(!info) return "";
+      const a = (info.name || "").trim();
+      const b = (info.colorName || "").trim();
+      if(a && b) return `${a} ${b}`;
+      return a || b || "";
+    }
+
+    function stockStatusByColorCode(colorCodeRaw){
+      const code = normColorCode(colorCodeRaw);
+      if(!code) return { type:"na", label:"재고 미등록", qty:null };
+      if(!stockMap.has(code)) return { type:"na", label:"재고 미등록", qty:null };
+      const qty = stockMap.get(code);
+      if(qty <= 0) return { type:"out", label:`재고 0`, qty };
+      if(qty < LOW_STOCK_THRESHOLD) return { type:"low", label:`재고 ${qty} (${LOW_STOCK_THRESHOLD} 미만)`, qty };
+      return { type:"ok", label:`재고 ${qty}`, qty };
+    }
+
+    /* ===================== 색상 드롭다운 ===================== */
+    let colorSelectWired = false;
+
+    function getAllowedProductCodesForDropdown_(){
+      if(!lastOutRows || lastOutRows.length === 0) return new Set();
+      let idxs = [];
+      if(lastOutRows.length > 1){
+        idxs = getCheckedIndexes_();
+      }
+      if(!idxs.length) idxs = [0];
+      const set = new Set();
+      for(const idx of idxs){
+        const pc = normProductCode_(lastOutRows[idx]?.["상품코드"]);
+        if(pc) set.add(pc);
+      }
+      return set;
+    }
+
+    function rebuildColorSelectOptions_(allowedProductCodes){
+      const sel = $("changeColorSelect");
+      if(!sel) return;
+      const allowAll = !allowedProductCodes || allowedProductCodes.size === 0;
+      sel.innerHTML = `<option value="">선택하세요</option>`;
+      const items = [];
+      stockInfoMap.forEach((info, code)=>{
+        const color = (info?.colorName || "").trim();
+        const label = color || "(색상명 없음)";
+        let isAllowed = true;
+        if(!allowAll){
+          isAllowed = Array.from(allowedProductCodes).some(pc => String(code).startsWith(pc));
+        }
+        if(!isAllowed) return;
+        const st = stockStatusByColorCode(code);
+        items.push({ code, label, type: st.type });
+      });
+
+      items.sort((a,b)=>{
+        const c = a.label.localeCompare(b.label, "ko");
+        if(c !== 0) return c;
+        return a.code.localeCompare(b.code);
+      });
+
+      const frag = document.createDocumentFragment();
+      for(const it of items){
+        const opt = document.createElement("option");
+        opt.value = it.code;
+        const tag = it.type === "ok" ? "" : it.type === "low" ? " (LOW)" : it.type === "out" ? " (OUT)" : " (N/A)";
+        opt.textContent = `${it.label}${tag}`;
+        if(it.type !== "ok") opt.disabled = true;
+        frag.appendChild(opt);
+      }
+      sel.appendChild(frag);
+    }
+
+    function refreshColorDropdownByCurrentRows_(){
+      const allowed = getAllowedProductCodesForDropdown_();
+      rebuildColorSelectOptions_(allowed);
+      const sel = $("changeColorSelect");
+      const code = normColorCode($("changeColor")?.value || "");
+      const st = stockStatusByColorCode(code);
+      if(sel) sel.value = (st.type === "ok") ? code : "";
+    }
+
+    function wireColorSelect_(){
+      if(colorSelectWired) return;
+      const sel = $("changeColorSelect");
+      const input = $("changeColor");
+      if(!sel || !input) return;
+
+      sel.addEventListener("change", ()=>{
+        const code = sel.value;
+        if(code){
+          input.value = code;
+          input.dispatchEvent(new Event("input", { bubbles:true }));
+        }
+      });
+
+      input.addEventListener("input", ()=>{
+        const code = normColorCode(input.value);
+        const st = stockStatusByColorCode(code);
+        sel.value = (st.type === "ok") ? code : "";
+      });
+
+      colorSelectWired = true;
+    }
+
+    /* ===================== 숨김 UI ===================== */
+    function clearStockUI(){
+      $("stockSummary").textContent = "";
+      $("copyGateMsg").textContent = "";
+      $("copyGateMsg").className = "";
+    }
+    function setPanel(which, on){
+      const el = which === "manual" ? $("manualPanel") : $("changePanel");
+      el.classList.toggle("show", !!on);
+    }
+
+    /* ===================== 결과 테이블 폰트 크기(슬라이더) ===================== */
+    function setTableFont_(v){
+      const n = Math.max(8, Number(v) || 11);
+      document.documentElement.style.setProperty("--table-font", `${n}px`);
+      const badge = $("tableFontVal");
+      if(badge) badge.textContent = String(n);
+    }
+    $("tableFontRange")?.addEventListener("input", (e)=> setTableFont_(e.target.value));
+    setTableFont_($("tableFontRange")?.value || 11);
+
+    /* ===================== DUP 배너 ===================== */
+    let dupMatchesForTable_ = [];
+    function hideDupBanner_(){
+      const b = $("dupBanner");
+      if(!b) return;
+      b.style.display = "none";
+      $("dupBannerSub").textContent = "-";
+      $("dupBannerDetail").innerHTML = "";
+      $("dupBannerDetail").style.display = "none";
+      $("dupBannerToggle").textContent = "자세히";
+    }
+    function renderDupBanner_(){
+      const b = $("dupBanner");
+      if(!b) return;
+      if(!dupMatchesForTable_ || dupMatchesForTable_.length === 0){
+        hideDupBanner_();
+        return;
+      }
+      const count = dupMatchesForTable_.length;
+      $("dupBannerSub").textContent = `출고 시트(2025/2026)에 같은 검색어가 포함된 기록이 ${count}건 있어요.`;
+
+      const items = dupMatchesForTable_.slice(0, 12);
+      const more = count - items.length;
+
+      $("dupBannerDetail").innerHTML =
+        items.map(m => {
+          const line1 = [
+            m.sheetTag ? `시트: ${m.sheetTag}` : "",
+            m.mallNo ? `주문번호: ${m.mallNo}` : "",
+            m.reqDate ? `요청일: ${m.reqDate}` : "",
+            m.colorNm ? `상품컬러명: ${m.colorNm}` : ""
+          ].filter(Boolean).join(" · ");
+
+          const line2 = [
+            m.dText ? `메모: ${m.dText}` : "",
+            m.eText ? `처리: ${m.eText}` : ""
+          ].filter(Boolean).join(" · ");
+
+          return `
+            <div class="dupCard">
+              <div class="dupLine1">${escapeHtml(line1 || "기록 상세")}</div>
+              <div class="dupLine2">${escapeHtml(line2 || "")}</div>
+            </div>
+          `;
+        }).join("") + (more > 0 ? `<div class="dupSub">…외 ${more}건 더 있음</div>` : "");
+
+      b.style.display = "flex";
+      showToast(`🔴 이중출고 의심 ${count}건`);
+    }
+    $("dupBannerToggle")?.addEventListener("click", ()=>{
+      const d = $("dupBannerDetail");
+      if(!d) return;
+      const open = d.style.display !== "none";
+      d.style.display = open ? "none" : "flex";
+      $("dupBannerToggle").textContent = open ? "자세히" : "접기";
+    });
+
+    /* ===================== 로컬 캐시 ===================== */
+    const STOCK_CACHE_KEY = "SHIPMENT_STOCK_CSV_CACHE_V1";
+    const STOCK_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
+
+    const ORDER_CACHE_KEY = "SHIPMENT_ORDER_CSV_CACHE_V1";
+    const EXIST_CACHE_KEY_2025 = "SHIPMENT_EXIST_CSV_CACHE_2025_V1";
+    const EXIST_CACHE_KEY_2026 = "SHIPMENT_EXIST_CSV_CACHE_2026_V1";
+    const ORDEREXIST_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
+
+    function loadCache_(key, ttl){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return null;
+        const obj = JSON.parse(raw);
+        if(!obj || !obj.csv || !obj.ts) return null;
+        if(Date.now() - obj.ts > ttl) return null;
+        return obj.csv;
+      }catch{ return null; }
+    }
+    function saveCache_(key, csv){
+      try{ localStorage.setItem(key, JSON.stringify({ ts: Date.now(), csv })); }catch{}
+    }
+    function loadStockCache_(){ return loadCache_(STOCK_CACHE_KEY, STOCK_CACHE_TTL_MS); }
+    function saveStockCache_(csv){ saveCache_(STOCK_CACHE_KEY, csv); }
+
+    /* ===================== 스트리밍 파서 (step) ===================== */
+    function parseCsvStream_(csvText, { onHeader, onRow, onDone, onError }){
+      let headerDone = false;
+
+      Papa.parse(csvText, {
         skipEmptyLines: true,
-        complete: (results) => resolve(results.data || []),
-        error: reject,
-      });
-    });
-  } catch (e) {
-    if (e?.name === "AbortError") {
-      throw new Error("CSV 요청 타임아웃(차단/권한/네트워크)");
-    }
-    throw e;
-  } finally {
-    clearTimeout(timer);
-  }
-}
+        worker: false,
+        step: (results, parser)=>{
+          const row = results.data;
+          if(!row || row.length === 0) return;
 
+          if(!headerDone){
+            headerDone = true;
+            onHeader?.(row.map(h => normalizeKey(h)));
+            return;
+          }
 
-
-    function showToast(msg) {
-      if (!toastEl) return;
-      toastEl.textContent = msg;
-      toastEl.classList.add('show');
-      setTimeout(() => {
-        toastEl.classList.remove('show');
-      }, 1400);
-    }
-
-    function updateLegendVisibility() {
-      if (!opLegendEl) return;
-      const hasData = Object.keys(opStatusByColorCode).length > 0;
-      opLegendEl.style.display = hasData ? 'flex' : 'none';
-    }
-
-    // ====== (공통) product_no 정규화 ======
-    function normalizeProductNo(v){
-      if (v === null || v === undefined) return '';
-      const s = String(v).trim();
-      if (!s) return '';
-      return s.replace(/[^\d]/g, '');
-    }
-
-    // ✅ 미리보기 모달 열기/닫기 (✅ 같은 URL 연속 로드도 강제 리로드)
-    function openPreviewByProductNo(productNo){
-      const pno = normalizeProductNo(productNo);
-      if (!pno) {
-        showToast('상품번호를 찾지 못했어요.');
-        return;
-      }
-
-      const url = `https://whitesands.co.kr/product/detail.html?product_no=${encodeURIComponent(pno)}`;
-
-      if (!previewModalEl || !pvFrameEl || !pvLoadingEl || !pvOpenNewTabEl) {
-        window.open(url, '_blank', 'noopener');
-        return;
-      }
-
-      pvOpenNewTabEl.href = url;
-      pvLoadingEl.style.display = 'flex';
-
-      // ✅ 강제 리로드
-      pvFrameEl.src = 'about:blank';
-      previewModalEl.classList.add('show');
-      previewModalEl.setAttribute('aria-hidden', 'false');
-
-      requestAnimationFrame(() => {
-        pvFrameEl.src = url;
-      });
-
-      showToast('미리보기 여는 중...');
-    }
-
-    function closePreview(){
-      if (!previewModalEl || !pvFrameEl || !pvLoadingEl) return;
-      previewModalEl.classList.remove('show');
-      previewModalEl.setAttribute('aria-hidden', 'true');
-      pvLoadingEl.style.display = 'flex';
-      pvFrameEl.src = 'about:blank';
-    }
-
-    if (pvFrameEl) {
-      pvFrameEl.addEventListener('load', () => {
-        if (pvFrameEl.src === 'about:blank') return;
-        if (pvLoadingEl) pvLoadingEl.style.display = 'none';
+          try{
+            onRow?.(row, parser);
+          }catch(e){
+            try{ parser.abort(); }catch{}
+            onError?.(e);
+          }
+        },
+        complete: ()=>{ onDone?.(); },
+        error: (err)=>{ onError?.(err); }
       });
     }
 
-    if (pvCloseEl) pvCloseEl.addEventListener('click', closePreview);
-    if (pvBackdropEl) pvBackdropEl.addEventListener('click', closePreview);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePreview();
-    });
-
-    async function loadProducts() {
-      const rows = await parseCSVFromUrl(PRODUCT_CSV_URL);
-      if (rows.length < 2) return;
-
-      const idxProductCode = 5;
-      const idxColorName   = 15;
-      const idxBarcode     = 20;
-      const idxMaterial    = 22;
-      const idxColorCode   = 25;
-      const idxProductName = 26;
-
-      products = rows.slice(1).map(row => {
-        const rawName = row[idxProductName] || '';
-        const cleanedName = cleanProductName(rawName);
-
-        return {
-          productCode: row[idxProductCode] || '',
-          colorName:   row[idxColorName]   || '',
-          barcode:     row[idxBarcode]     || '',
-          material:    row[idxMaterial]    || '',
-          colorCode:   row[idxColorCode]   || '',
-          rawName,
-          productName: cleanedName
-        };
-      }).filter(p => p.productName);
-    }
-
-    async function loadStock() {
-      const rows = await parseCSVFromUrl(STOCK_CSV_URL);
-      if (!rows.length) return;
-
-      stockUpdatedAt = (rows[0][1] || '').trim();
-      stockInfoEl.textContent = stockUpdatedAt || '미기재';
-
-      stockEntriesByColorCode = {};
-      sizeByColorCode = {};
-      productNoByColorCode = {};
-
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || !row.length) continue;
-
-        const colorCode = (row[0] || '').trim();
-        if (!colorCode) continue;
-
-        const size      = (row[1] || '').trim();
-        const warehouse = (row[2] || '').trim() || '미정';
-
-        // ✅ J열 = 상품번호 (0-based index: 9)
-        const productNo = (row[9] || '').toString().trim();
-        if (productNo && !productNoByColorCode[colorCode]) {
-          productNoByColorCode[colorCode] = productNo;
-        }
-
-        // 재고는 K열(row[10])
-        let qtyRaw      = (row[10] || '').toString().trim();
-        if (!qtyRaw) continue;
-
-        qtyRaw = qtyRaw.replace(/,/g, '');
-        const qty = Number(qtyRaw);
-        if (isNaN(qty)) continue;
-
-        if (!stockEntriesByColorCode[colorCode]) {
-          stockEntriesByColorCode[colorCode] = [];
-        }
-        stockEntriesByColorCode[colorCode].push({ warehouse, size, qty });
-
-        if (!sizeByColorCode[colorCode] && size) {
-          sizeByColorCode[colorCode] = size;
-        }
-      }
-    }
-
-    async function loadOperationStatus() {
-      const rows = await parseCSVFromUrl(OPER_CSV_URL);
-      if (rows.length < 2) return;
-
-      opStatusByColorCode = opStatusByColorCode || {};
-
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const colorCode = (row[0] || '').trim();
-        const op = (row[2] || '').trim();
-        if (!colorCode || !op) continue;
-        opStatusByColorCode[colorCode] = op;
-      }
-      operLoaded = true;
-      updateLegendVisibility();
-      refreshOperationDotsInTable();
-    }
-
-    // ✅ (A) 툴팁용 부가정보 로드 (gid=1305011805)
-    async function loadExtraTooltipInfo() {
-      const rows = await parseCSVFromUrl(EXTRA_INFO_CSV_URL);
-      if (rows.length < 2) return;
-
-      // V=22->21, X=24->23, AB=28->27, AD=30->29, AF=32->31
-      const IDX_SIZE_ADJUST = 21; // V열: 사이즈 조절
-      const IDX_TRIM        = 23; // X열: 부자재
-      const IDX_MADEIN      = 27; // AB열: 제조국
-      const IDX_CARELABEL   = 29; // AD열: 케어라벨
-      const IDX_FEATURE     = 31; // AF열: 제품 특징
-
-      // ⚠️ 이 시트에서 "상품코드" 열 인덱스
-      const IDX_CODE = 4;
-
-      extraInfoByProductCode = {};
-
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i] || [];
-        if (!r.length) continue;
-
-        const code = (r[IDX_CODE] || '').toString().trim();
-        if (!code) continue;
-
-        extraInfoByProductCode[code] = {
-          sizeAdjust: (r[IDX_SIZE_ADJUST] || '').toString().trim(),
-          trim:       (r[IDX_TRIM]        || '').toString().trim(),
-          madeIn:     (r[IDX_MADEIN]      || '').toString().trim(),
-          careLabel:  (r[IDX_CARELABEL]   || '').toString().trim(),
-          feature:    (r[IDX_FEATURE]     || '').toString().trim(),
-        };
-      }
-    }
-
-    // ✅ (B) 미리보기 매칭용 로드 (gid=2050011179)
-    async function loadPreviewMap() {
-      const rows = await parseCSVFromUrl(PREVIEW_MAP_CSV_URL);
-      if (rows.length < 2) return;
-
-      // 기존 로직 그대로: AH=34->33, BL=64->63
-      const IDX_CODE_AH = 33; // AH: 상품코드
-      const IDX_NO_BL   = 63; // BL: 상품번호(product_no)
-
-      productNoByCode_AH = {};
-      extraRowsTextIndex = [];
-
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i] || [];
-        if (!r.length) continue;
-
-        const codeAH = (r[IDX_CODE_AH] || '').toString().trim();
-        const productNoBL = (r[IDX_NO_BL] || '').toString().trim();
-
-        if (codeAH && productNoBL && !productNoByCode_AH[codeAH]) {
-          productNoByCode_AH[codeAH] = productNoBL;
-        }
-
-        const rowText = r.map(x => (x ?? '').toString()).join(' ').toLowerCase();
-        extraRowsTextIndex.push({ text: rowText, productNo: productNoBL });
-      }
-    }
-
-    // ✅✅ init: 1) 상품+재고만 먼저 → 검색창 빨리 활성화  2) 운영은 유휴시간 로드  3) 나머지는 진짜 lazy
-    async function init() {
-      try {
-        statusEl.textContent = '상품/재고 데이터 불러오는 중...';
-        keywordInput.disabled = true;
-
-        // 1) 필수만 먼저
-        await Promise.all([
-          loadProducts(),
-          loadStock()
-        ]);
-
-        statusEl.innerHTML = `<strong>상품 ${products.length}개</strong> (운영 정보 로딩 중...)`;
-        keywordInput.disabled = false;
-
-        // 2) 운영 상태는 유휴시간 로드 (검색 체감 우선)
-        const idle = (fn) => ('requestIdleCallback' in window)
-          ? requestIdleCallback(fn, { timeout: 2000 })
-          : setTimeout(fn, 0);
-
-        idle(async () => {
-          try { await loadOperationStatus(); } catch {}
-          // 부가정보/미리보기 매핑은 아래에서 "hover/click 시" lazy 로드
-          statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>`;
-        });
-
-    } catch (err) {
-  console.error('[init fail]', err);
-
-  const msg =
-    err?.message ||
-    err?.name ||
-    (typeof err === 'string' ? err : JSON.stringify(err));
-
-  statusEl.textContent = '데이터 로드 실패: ' + msg;
-  stockInfoEl.textContent = '로드 실패';
-}
-
-    }
-
-    // ✅ 운영 점: 운영여부 없으면 회색 점도 생성
-    function buildOperationIndicator(colorCode, productCode) {
-      const rawStatus = opStatusByColorCode[colorCode];
-
-      const s = (rawStatus || '').trim();
-      const normalized = s.replace(/\s+/g, '').replace(/[()]/g, '');
-
-      let cls = 'op-status-dot ';
-
-      if (!rawStatus) cls += 'op-status-dot--unk';
-      else if (normalized.startsWith('운영')) cls += 'op-status-dot--on';
-      else if (normalized.startsWith('소진후종료')) cls += 'op-status-dot--end';
-      else if (normalized.startsWith('단종')) cls += 'op-status-dot--stop';
-      else if (normalized.startsWith('일시중단')) cls += 'op-status-dot--pause';
-      else cls += 'op-status-dot--pause';
-
-      return `<span class="${cls}" data-product-code="${escapeHtml(productCode || '')}"></span>`;
-    }
-
-    // ✅✅ 운영 시트가 나중에 로드되더라도, 이미 렌더된 테이블 dot를 갱신
-    function refreshOperationDotsInTable(){
-      if (!resultEl) return;
-      const dots = resultEl.querySelectorAll('.op-status-dot');
-      if (!dots || !dots.length) return;
-
-      dots.forEach(dot => {
-        const cell = dot.closest('.product-name-cell');
-        if (!cell) return;
-        const colorCode = (cell.dataset.colorCode || '').trim();
-        if (!colorCode) return;
-
-        const rawStatus = opStatusByColorCode[colorCode];
-        const s = (rawStatus || '').trim();
-        const normalized = s.replace(/\s+/g, '').replace(/[()]/g, '');
-
-        dot.classList.remove(
-          'op-status-dot--on',
-          'op-status-dot--end',
-          'op-status-dot--stop',
-          'op-status-dot--pause',
-          'op-status-dot--unk'
-        );
-
-        if (!rawStatus) dot.classList.add('op-status-dot--unk');
-        else if (normalized.startsWith('운영')) dot.classList.add('op-status-dot--on');
-        else if (normalized.startsWith('소진후종료')) dot.classList.add('op-status-dot--end');
-        else if (normalized.startsWith('단종')) dot.classList.add('op-status-dot--stop');
-        else if (normalized.startsWith('일시중단')) dot.classList.add('op-status-dot--pause');
-        else dot.classList.add('op-status-dot--pause');
-      });
-
-      updateLegendVisibility();
-    }
-
-    function escapeRegExp(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    function highlightText(text, keyword) {
-      const base = escapeHtml(text || '');
-      if (!keyword) return base;
-
-      const kw = keyword.trim();
-      if (!kw) return base;
-
-      const pattern = new RegExp(escapeRegExp(kw), 'gi');
-      return base.replace(pattern, match => `<mark class="kw-mark">${match}</mark>`);
-    }
-
-    function buildHeaderCell(label, key, extraClass = '', textAlignCenter = false) {
-      const isActive = sortKey === key;
-      const arrow = isActive ? (sortDir === 'asc' ? '▲' : '▼') : '';
-      const classes = [
-        'sortable',
-        isActive ? 'sortable-active' : '',
-        extraClass || '',
-        textAlignCenter ? 'text-center' : ''
-      ].filter(Boolean).join(' ');
-
-      return `
-        <th class="${classes}" data-sort-key="${key}">
-          <span class="th-label">${escapeHtml(label)}${
-            arrow ? `<span class="sort-indicator">${arrow}</span>` : ''
-          }</span>
-          <span class="resize-handle"></span>
-        </th>
-      `;
-    }
-
-    function compareRows(a, b) {
-      const direction = sortDir === 'desc' ? -1 : 1;
-      const key = sortKey;
-
-      function cmpString(sa, sb) {
-        return sa.localeCompare(sb, 'ko-KR');
-      }
-
-      function tieBreak(a, b) {
-        const nCmp = cmpString(a.productName || '', b.productName || '');
-        if (nCmp !== 0) return nCmp;
-        const cCmp = cmpString(a.colorName || '', b.colorName || '');
-        if (cCmp !== 0) return cCmp;
-        return cmpString(a.colorCode || '', b.colorCode || '');
-      }
-
-      if (key === 'stock') {
-        const aNum = (typeof a.stockNum === 'number') ? a.stockNum : -1;
-        const bNum = (typeof b.stockNum === 'number') ? b.stockNum : -1;
-        if (aNum !== bNum) {
-          return (aNum < bNum ? -1 : 1) * direction;
-        }
-        return tieBreak(a, b);
-      }
-
-      let valA = '';
-      let valB = '';
-
-      switch (key) {
-        case 'productName': valA = a.productName || ''; valB = b.productName || ''; break;
-        case 'colorName':   valA = a.colorName || '';   valB = b.colorName || '';   break;
-        case 'barcode':     valA = a.barcode || '';     valB = b.barcode || '';     break;
-        case 'productCode': valA = a.productCode || ''; valB = b.productCode || ''; break;
-        case 'colorCode':   valA = a.colorCode || '';   valB = b.colorCode || '';   break;
-        case 'size':        valA = a.size || '';        valB = b.size || '';        break;
-        case 'material':    valA = a.material || '';    valB = b.material || '';    break;
-        case 'warehouse':   valA = a.warehouse || '';   valB = b.warehouse || '';   break;
-        default: return tieBreak(a, b);
-      }
-
-      const primary = cmpString(valA, valB);
-      if (primary !== 0) return primary * direction;
-      return tieBreak(a, b);
-    }
-
-    // ===========================
-    // fallback(기존 유지)
-    // ===========================
-    const detailUrlCache = new Map();
-    const CACHE_KEY = 'ws_detail_cache_v2';
-    let inflightCtrl = null;
-
-    try {
-      const saved = localStorage.getItem(CACHE_KEY);
-      if (saved) {
-        const obj = JSON.parse(saved);
-        Object.entries(obj).forEach(([k, v]) => detailUrlCache.set(k, v));
-      }
-    } catch {}
-
-    function persistCache(){
-      try{
-        const obj = Object.fromEntries(detailUrlCache.entries());
-        localStorage.setItem(CACHE_KEY, JSON.stringify(obj));
-      }catch{}
-    }
-
-    function extractFirstProductHref(html){
-      if (!html) return '';
-      let m = html.match(/href\s*=\s*["']([^"']*product\/detail\.html\?product_no=\d+[^"']*)["']/i);
-      if (m && m[1]) return decodeHtmlEntities(m[1]);
-      m = html.match(/href\s*=\s*["'](\/product\/[^"']+\/\d+\/[^"']*)["']/i);
-      if (m && m[1]) return decodeHtmlEntities(m[1]);
-      m = html.match(/href\s*=\s*["'](\/product\/[^"']+)["']/i);
-      if (m && m[1]) return decodeHtmlEntities(m[1]);
-      return '';
-    }
-
-    function decodeHtmlEntities(str){
-      if (!str) return '';
-      const ta = document.createElement('textarea');
-      ta.innerHTML = str;
-      return ta.value;
-    }
-
-    async function fetchAndCacheFirstDetailUrl(keyword){
-      const searchUrl = `https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(keyword)}`;
-      const proxyUrl  = `https://r.jina.ai/${searchUrl}`;
-
-      const cached = detailUrlCache.get(keyword);
-      if (cached) return cached;
-
-      const res = await fetch(proxyUrl, {
-        headers: { 'x-cache-tolerance': '21600' }
-      });
-      if (!res.ok) throw new Error('검색 페이지 로드 실패: ' + res.status);
-
-      const html = await res.text();
-      const firstHref = extractFirstProductHref(html);
-      if (!firstHref) return '';
-
-      const detailUrl = firstHref.startsWith('http')
-        ? firstHref
-        : `https://whitesands.co.kr${firstHref.startsWith('/') ? '' : '/'}${firstHref}`;
-
-      detailUrlCache.set(keyword, detailUrl);
-      persistCache();
-      return detailUrl;
-    }
-
-    async function openFirstProductDetailWithFallback(candidates){
-      for (const kw of candidates) {
-        const cached = detailUrlCache.get(kw);
-        if (cached){
-          window.open(cached, '_blank', 'noopener');
-          showToast(`상세(캐시)로 이동!`);
-          return;
-        }
-      }
-
-      if (inflightCtrl) inflightCtrl.abort();
-      inflightCtrl = new AbortController();
+    /* ===================== 재고 로드 ===================== */
+    let stockLoaded = false;
+
+    async function loadStockOnly(){
+      setLoadingUI_(true, "재고 로딩 중…");
+      clearStockUI();
+      hideExistPanel();
+      hideDupBanner_();
+      setPanel("manual", false);
+      setPanel("change", false);
+      copyBlocked_ = true;
+      wireColorSelect_();
 
       try{
-        showToast('첫 상품 찾는 중...');
+        const cached = loadStockCache_();
+        if(cached){
+          buildStockFromCsvText_(cached);
+          stockLoaded = true;
+          rebuildColorSelectOptions_();
+          setLoadingUI_(false, "재고 로딩 완료 (캐시)");
+        }
 
-        const makeTimeoutAbort = (ms) => setTimeout(() => {
-          try{ inflightCtrl?.abort(); } catch {}
-        }, ms);
+        const stockCsv = await fetchCsvSmart(STOCK_CSV_BASE);
+        if(!looksLikeBadCsv(stockCsv)){
+          saveStockCache_(stockCsv);
+          buildStockFromCsvText_(stockCsv);
+          stockLoaded = true;
+          rebuildColorSelectOptions_();
+          setLoadingUI_(false, "재고 로딩 완료");
+        }else{
+          if(!stockLoaded) setLoadingUI_(false, "재고 로드 실패: 시트 공개(보기 가능) 확인");
+        }
+      }catch(e){
+        console.error(e);
+        if(!stockLoaded) setLoadingUI_(false, "재고 로드 실패: 시트 공개(보기 가능) 확인");
+      }
+    }
 
-        for (const kw of candidates) {
-          if (inflightCtrl) inflightCtrl.abort();
-          inflightCtrl = new AbortController();
+    function buildStockFromCsvText_(csvText){
+      stockMap = new Map();
+      stockInfoMap = new Map();
 
-          const timeoutId = makeTimeoutAbort(4000);
+      let header = null;
+      parseCsvStream_(csvText, {
+        onHeader: (h)=>{ header = h; },
+        onRow: (r)=>{
+          const code = normColorCode(r[0]);
+          if(!code) return;
+          const name = normalizeKey(r[5]);
+          const colorName = normalizeKey(r[8]);
+          const qty = toNumber(r[10]);
+          stockMap.set(code, qty);
+          stockInfoMap.set(code, { qty, name, colorName });
+        }
+      });
+    }
 
-          try {
-            const url = await fetchAndCacheFirstDetailUrl(kw);
-            clearTimeout(timeoutId);
+    /* ===================== 발주 데이터 ===================== */
+    let orderLoaded = false;
+    let orderHeaderMap = new Map();
 
-            if (url) {
-              window.open(url, '_blank', 'noopener');
-              showToast('첫 상품 상세로 이동!');
-              inflightCtrl = null;
-              return;
+    let orderIndexByMall = new Map();
+    let orderIndexBySabang = new Map();
+    let orderIndexByTracking = new Map();
+    let orderIndexByPhone = new Map();
+    let orderAllForRecipientScan = [];
+
+    function compactOrderRow_(rawRow, headerMap){
+      const hm = headerMap || orderHeaderMap;
+      const o = {};
+      o["__B"] = rawRow[1] ?? "";
+      o["__C"] = rawRow[2] ?? "";
+      o["__D"] = rawRow[3] ?? "";
+
+      for(const h of OUTPUT_HEADERS){
+        if(h === "배송수단"){ o[h] = "택배"; continue; }
+        if(h === "상품명"){
+          o[h] = rawRow[11] || safeGetByHeader_(rawRow, h, hm) || "";
+          continue;
+        }
+        o[h] = safeGetByHeader_(rawRow, h, hm) || "";
+      }
+
+      o["재고"] = stockQtyLabel_(o["상품컬러코드"]);
+      o["요청일"] = attachStockToRequestDate_(o["요청일"], o["상품컬러코드"]);
+      return o;
+    }
+
+    function safeGetByHeader_(row, headerName, hm){
+      const map = hm || orderHeaderMap;
+      const idx = map.get(headerName);
+      if(idx == null || idx < 0) return "";
+      return row[idx] ?? "";
+    }
+
+    function pushIndex_(map, key, item){
+      if(!key) return;
+      if(!map.has(key)) map.set(key, []);
+      map.get(key).push(item);
+    }
+
+    function parseOrderCsvStream_(csvText){
+      return new Promise((resolve, reject)=>{
+        orderIndexByMall = new Map();
+        orderIndexBySabang = new Map();
+        orderIndexByTracking = new Map();
+        orderIndexByPhone = new Map();
+        orderAllForRecipientScan = [];
+        orderHeaderMap = new Map();
+
+        let idxMall = 2;
+        let idxSabang = 1;
+        let idxTracking = null;
+        let idxPhone = null;
+        let idxRecipient = null;
+
+        parseCsvStream_(csvText, {
+          onHeader: (header)=>{
+            header.forEach((h, i)=>{ if(h) orderHeaderMap.set(h, i); });
+
+            const m1 = orderHeaderMap.get("쇼핑몰 주문번호(필수)");
+            const m2 = orderHeaderMap.get("쇼핑몰 주문번호");
+            idxMall = (m1 != null) ? m1 : (m2 != null ? m2 : 2);
+
+            idxTracking  = orderHeaderMap.get("운송장 번호");
+            idxPhone     = orderHeaderMap.get("받는분연락처");
+            idxRecipient = orderHeaderMap.get("수령인");
+          },
+          onRow: (rawRow)=>{
+            if(!rawRow || rawRow.length < 3) return;
+
+            const compact = compactOrderRow_(rawRow, orderHeaderMap);
+
+            const mall = normalizeOrderNo(rawRow[idxMall]);
+            const sabang = normalizeKey(rawRow[idxSabang]);
+            const trk = (idxTracking != null) ? normLoose_(rawRow[idxTracking]) : "";
+            const ph  = (idxPhone != null) ? normDigits_(rawRow[idxPhone]) : "";
+
+            if(mall) pushIndex_(orderIndexByMall, mall, compact);
+            if(sabang) pushIndex_(orderIndexBySabang, sabang, compact);
+            if(trk) pushIndex_(orderIndexByTracking, trk, compact);
+            if(ph) pushIndex_(orderIndexByPhone, ph, compact);
+
+            if(idxRecipient != null){
+              compact.__RECIP = String(rawRow[idxRecipient] ?? "");
+            }else{
+              compact.__RECIP = String(compact["수령인"] ?? "");
             }
-          } catch (err) {
-            clearTimeout(timeoutId);
-            continue;
-          }
-        }
-
-        const last = candidates[candidates.length - 1];
-        window.open(`https://whitesands.co.kr/product/search.html?keyword=${encodeURIComponent(last)}`, '_blank', 'noopener');
-        showToast('상세를 못 찾아서 검색페이지로 열었어요.');
-      } finally {
-        inflightCtrl = null;
-      }
-    }
-
-    function prefetchDetailUrlsFromCurrentTable(limit = 8){
-      const cells = Array.from(resultEl.querySelectorAll('.product-name-cell'));
-      if (!cells.length) return;
-
-      const keys = [];
-      for (const cell of cells) {
-        const colorCode = (cell.dataset.colorCode || '').trim();
-        if (colorCode && !productNoByColorCode[colorCode] && !detailUrlCache.get(colorCode)) keys.push(colorCode);
-        if (keys.length >= limit) break;
-      }
-      if (!keys.length) return;
-
-      const run = async () => {
-        for (const k of keys) {
-          try { await fetchAndCacheFirstDetailUrl(k); } catch {}
-        }
-      };
-
-      if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 1500 });
-      else setTimeout(run, 50);
-    }
-
-    // ===========================
-    // 검색
-    // ===========================
-    function search() {
-      const kw = keywordInput.value.trim();
-      lastKeyword = kw;
-
-      if (!products.length) {
-        statusEl.textContent = '데이터가 아직 로드되지 않았습니다.';
-        return;
-      }
-      if (!kw) {
-        statusEl.textContent = '검색 키워드를 입력해주세요.';
-        resultEl.innerHTML = '<div class="no-result">검색 키워드를 입력한 후 다시 시도해주세요.</div>';
-        if (resultInfoEl) resultInfoEl.textContent = '검색 전 입니다.';
-        return;
-      }
-
-      const lowerKw = kw.toLowerCase();
-      const filteredProducts = products.filter(p => {
-        const name      = (p.productName || '').toLowerCase();
-        const code      = (p.productCode || '').toLowerCase();
-        const colorCode = (p.colorCode   || '').toLowerCase();
-
-        return (
-          name.includes(lowerKw) ||
-          code.includes(lowerKw) ||
-          colorCode.includes(lowerKw)
-        );
-      });
-
-      if (!filteredProducts.length) {
-        statusEl.textContent = `"${kw}" 검색 결과: 0개`;
-        resultEl.innerHTML = '<div class="no-result">검색 결과 없음</div>';
-        if (resultInfoEl) resultInfoEl.textContent = `검색어 "${kw}" 결과 0개`;
-        return;
-      }
-
-      const rows = [];
-
-      filteredProducts.forEach(p => {
-        const entries = stockEntriesByColorCode[p.colorCode] || [];
-        const pno = productNoByColorCode[p.colorCode] || '';
-
-        let useEntries;
-        if (showWarehouse) {
-          useEntries = entries;
-        } else {
-          useEntries = entries.filter(e => e.warehouse === '주희물류');
-        }
-
-        if (!useEntries.length) {
-          rows.push({
-            productName: p.productName || '',
-            colorName:   p.colorName   || '',
-            barcode:     p.barcode     || '',
-            productCode: p.productCode || '',
-            colorCode:   p.colorCode   || '',
-            size:        sizeByColorCode[p.colorCode] || '',
-            material:    p.material    || '',
-            warehouse:   '',
-            stockNum:    null,
-            stockStr:    '',
-            stockClass:  '',
-            rawName:     p.rawName     || '',
-            colorCodeKey: p.colorCode  || '',
-            productNo:   pno
-          });
-          return;
-        }
-
-        let sortedEntries = useEntries;
-        if (showWarehouse) {
-          sortedEntries = [...useEntries].sort((a, b) => {
-            const aw = a.warehouse || '';
-            const bw = b.warehouse || '';
-            if (aw === '주희물류' && bw !== '주희물류') return -1;
-            if (bw === '주희물류' && aw !== '주희물류') return 1;
-            return aw.localeCompare(bw, 'ko-KR');
-          });
-        }
-
-        sortedEntries.forEach(entry => {
-          const stockNum = entry.qty;
-          const stockStr = String(stockNum);
-          let stockClass = 'stock-pill stock-pill-green';
-          if (!isNaN(stockNum)) {
-            if (stockNum >= 100) stockClass = 'stock-pill stock-pill-green';
-            else if (stockNum >= 10) stockClass = 'stock-pill stock-pill-yellow';
-            else if (stockNum >= 0) stockClass = 'stock-pill stock-pill-red';
-          }
-
-          rows.push({
-            productName: p.productName || '',
-            colorName:   p.colorName   || '',
-            barcode:     p.barcode     || '',
-            productCode: p.productCode || '',
-            colorCode:   p.colorCode   || '',
-            size:        entry.size || sizeByColorCode[p.colorCode] || '',
-            material:    p.material    || '',
-            warehouse:   showWarehouse ? (entry.warehouse || '') : '',
-            stockNum,
-            stockStr,
-            stockClass,
-            rawName:     p.rawName     || '',
-            colorCodeKey: p.colorCode  || '',
-            productNo:   pno
-          });
+            orderAllForRecipientScan.push(compact);
+          },
+          onDone: ()=>{
+            orderLoaded = true;
+            resolve();
+          },
+          onError: (e)=> reject(e)
         });
       });
+    }
 
-      let usedRows = rows;
-      if (inStockOnly) {
-        usedRows = rows.filter(r => typeof r.stockNum === 'number' && r.stockNum > 0);
+    /* ===================== 출고 시트 검색용 인덱스 ===================== */
+    let existOrderIndexByMall = new Map();
+    let existOrderIndexBySabang = new Map();
+    let existOrderIndexByTracking = new Map();
+    let existOrderIndexByPhone = new Map();
+    let existOrderAllForScan = [];
+
+    function parseExistAsOrderCsvStream_(csvText, sheetTag){
+      return new Promise((resolve, reject)=>{
+        const localHeaderMap = new Map();
+        let idxMall = 2, idxSabang = 1, idxTracking = null, idxPhone = null, idxRecipient = null;
+
+        parseCsvStream_(csvText, {
+          onHeader: (header)=>{
+            header.forEach((h, i)=>{ if(h) localHeaderMap.set(h, i); });
+
+            const m1 = localHeaderMap.get("쇼핑몰 주문번호(필수)");
+            const m2 = localHeaderMap.get("쇼핑몰 주문번호");
+            idxMall = (m1 != null) ? m1 : (m2 != null ? m2 : 2);
+            idxTracking  = localHeaderMap.get("운송장 번호");
+            idxPhone     = localHeaderMap.get("받는분연락처");
+            idxRecipient = localHeaderMap.get("수령인");
+          },
+          onRow: (rawRow)=>{
+            if(!rawRow || rawRow.length < 3) return;
+
+            const compact = compactOrderRow_(rawRow, localHeaderMap);
+            compact.__SHEET_TAG = sheetTag;
+
+            const mall    = normalizeOrderNo(rawRow[idxMall]);
+            const sabang  = normalizeKey(rawRow[idxSabang]);
+            const trk     = (idxTracking != null) ? normLoose_(rawRow[idxTracking]) : "";
+            const ph      = (idxPhone != null) ? normDigits_(rawRow[idxPhone]) : "";
+
+            if(mall)   pushIndex_(existOrderIndexByMall, mall, compact);
+            if(sabang) pushIndex_(existOrderIndexBySabang, sabang, compact);
+            if(trk)    pushIndex_(existOrderIndexByTracking, trk, compact);
+            if(ph)     pushIndex_(existOrderIndexByPhone, ph, compact);
+
+            compact.__RECIP = (idxRecipient != null)
+              ? String(rawRow[idxRecipient] ?? "")
+              : String(compact["수령인"] ?? "");
+            existOrderAllForScan.push(compact);
+          },
+          onDone: ()=> resolve(),
+          onError: (e)=> reject(e)
+        });
+      });
+    }
+
+    /* ===================== 출고 데이터 (dup용) ===================== */
+    let existLoaded = false;
+
+    let existRows = [];
+    let existIndexBySabang = new Map();
+    let existIndexByMall = new Map();
+
+    function parseExistCsvStream_(csvText, sheetTag){
+      return new Promise((resolve, reject)=>{
+        let headerMap = new Map();
+        let sabangIdx = null, mallIdx = null, dateIdx = null;
+        let reqDateIdx = 0;
+        let purposeIdx = 3;
+        let methodIdx = 4;
+        let colorIdx = 13;
+
+        parseCsvStream_(csvText, {
+          onHeader: (header)=>{
+            header.forEach((h, i)=>{ if(h) headerMap.set(h, i); });
+
+            sabangIdx = headerMap.get("사방넷주문번호") ?? headerMap.get("사방넷 주문번호") ?? null;
+            mallIdx   = headerMap.get("쇼핑몰 주문번호(필수)") ?? headerMap.get("쇼핑몰 주문번호") ?? null;
+            dateIdx   = headerMap.get("기록일") ?? headerMap.get("등록일") ?? headerMap.get("작성일") ?? null;
+
+            colorIdx = headerMap.get("상품컬러명(플레이엠디)") ?? headerMap.get("상품컬러명") ?? 13;
+          },
+          onRow: (r)=>{
+            const sabang = normalizeKey(sabangIdx != null ? r[sabangIdx] : "");
+            const mall   = normalizeOrderNo(mallIdx != null ? r[mallIdx] : "");
+            const reqDate = String(r[reqDateIdx] ?? "").trim();
+            const purpose = String(r[purposeIdx] ?? "").trim();
+            const method  = String(r[methodIdx] ?? "").trim();
+            const colorNm = String(r[colorIdx] ?? "").trim();
+            const dt = String(dateIdx != null ? (r[dateIdx] ?? "") : "").trim();
+
+            const item = { sheetTag, reqDate, sabang, mall, purpose, method, colorNm, dateText: dt };
+            existRows.push(item);
+
+            if(sabang){
+              if(!existIndexBySabang.has(sabang)) existIndexBySabang.set(sabang, []);
+              existIndexBySabang.get(sabang).push(item);
+            }
+            if(mall){
+              if(!existIndexByMall.has(mall)) existIndexByMall.set(mall, []);
+              existIndexByMall.get(mall).push(item);
+            }
+          },
+          onDone: ()=>{
+            existLoaded = true;
+            resolve();
+          },
+          onError: (e)=> reject(e)
+        });
+      });
+    }
+
+    /* ===================== 통합 로더 ===================== */
+    let orderExistLoadingPromise = null;
+    let orderExistRefreshingPromise = null;
+
+    async function refreshOrderExistInBackground_(){
+      if(orderExistRefreshingPromise) return orderExistRefreshingPromise;
+
+      orderExistRefreshingPromise = (async ()=>{
+        try{
+          const [orderCsv, existCsv2025, existCsv2026] = await Promise.all([
+            fetchCsvSmart(ORDER_CSV_BASE),
+            fetchCsvSmart(EXIST_CSV_BASE_2025),
+            fetchCsvSmart(EXIST_CSV_BASE_2026),
+          ]);
+
+          if(!looksLikeBadCsv(orderCsv)){
+            saveCache_(ORDER_CACHE_KEY, orderCsv);
+            await parseOrderCsvStream_(orderCsv);
+          }
+
+          if(!looksLikeBadCsv(existCsv2025) || !looksLikeBadCsv(existCsv2026)){
+            existRows = [];
+            existIndexBySabang = new Map();
+            existIndexByMall = new Map();
+            existOrderIndexByMall = new Map();
+            existOrderIndexBySabang = new Map();
+            existOrderIndexByTracking = new Map();
+            existOrderIndexByPhone = new Map();
+            existOrderAllForScan = [];
+          }
+
+          if(!looksLikeBadCsv(existCsv2025)){
+            saveCache_(EXIST_CACHE_KEY_2025, existCsv2025);
+            await parseExistCsvStream_(existCsv2025, "2025");
+            await parseExistAsOrderCsvStream_(existCsv2025, "2025");
+          }
+          if(!looksLikeBadCsv(existCsv2026)){
+            saveCache_(EXIST_CACHE_KEY_2026, existCsv2026);
+            await parseExistCsvStream_(existCsv2026, "2026");
+            await parseExistAsOrderCsvStream_(existCsv2026, "2026");
+          }
+        }catch(e){
+          console.warn("background refresh failed", e);
+        }finally{
+          orderExistRefreshingPromise = null;
+        }
+      })();
+
+      return orderExistRefreshingPromise;
+    }
+
+    async function ensureOrderAndExistLoaded_(){
+      if(orderLoaded && existLoaded) return;
+      if(orderExistLoadingPromise) return orderExistLoadingPromise;
+
+      orderExistLoadingPromise = (async ()=>{
+        setLoadingUI_(true, "발주/출고 데이터 불러오는 중…");
+
+        try{
+          const cachedOrder = loadCache_(ORDER_CACHE_KEY, ORDEREXIST_CACHE_TTL_MS);
+          const cachedExist2025 = loadCache_(EXIST_CACHE_KEY_2025, ORDEREXIST_CACHE_TTL_MS);
+          const cachedExist2026 = loadCache_(EXIST_CACHE_KEY_2026, ORDEREXIST_CACHE_TTL_MS);
+
+          if(cachedOrder && !orderLoaded) await parseOrderCsvStream_(cachedOrder);
+
+          if((cachedExist2025 || cachedExist2026) && !existLoaded){
+            existRows = [];
+            existIndexBySabang = new Map();
+            existIndexByMall = new Map();
+            existOrderIndexByMall = new Map();
+            existOrderIndexBySabang = new Map();
+            existOrderIndexByTracking = new Map();
+            existOrderIndexByPhone = new Map();
+            existOrderAllForScan = [];
+          }
+
+          if(cachedExist2025 && !existLoaded){
+            await parseExistCsvStream_(cachedExist2025, "2025");
+            await parseExistAsOrderCsvStream_(cachedExist2025, "2025");
+          }
+          if(cachedExist2026){
+            await parseExistCsvStream_(cachedExist2026, "2026");
+            await parseExistAsOrderCsvStream_(cachedExist2026, "2026");
+          }
+
+          if(orderLoaded && existLoaded){
+            setLoadingUI_(false, "로딩 완료 (캐시)");
+            orderExistLoadingPromise = null;
+            refreshOrderExistInBackground_();
+            return;
+          }
+
+          const [orderCsv, existCsv2025, existCsv2026] = await Promise.all([
+            fetchCsvSmart(ORDER_CSV_BASE),
+            fetchCsvSmart(EXIST_CSV_BASE_2025),
+            fetchCsvSmart(EXIST_CSV_BASE_2026),
+          ]);
+
+          if(!looksLikeBadCsv(orderCsv)){
+            saveCache_(ORDER_CACHE_KEY, orderCsv);
+            await parseOrderCsvStream_(orderCsv);
+          }
+
+          existRows = [];
+          existIndexBySabang = new Map();
+          existIndexByMall = new Map();
+          existOrderIndexByMall = new Map();
+          existOrderIndexBySabang = new Map();
+          existOrderIndexByTracking = new Map();
+          existOrderIndexByPhone = new Map();
+          existOrderAllForScan = [];
+
+          if(!looksLikeBadCsv(existCsv2025)){
+            saveCache_(EXIST_CACHE_KEY_2025, existCsv2025);
+            await parseExistCsvStream_(existCsv2025, "2025");
+            await parseExistAsOrderCsvStream_(existCsv2025, "2025");
+          }
+          if(!looksLikeBadCsv(existCsv2026)){
+            saveCache_(EXIST_CACHE_KEY_2026, existCsv2026);
+            await parseExistCsvStream_(existCsv2026, "2026");
+            await parseExistAsOrderCsvStream_(existCsv2026, "2026");
+          }
+
+          setLoadingUI_(false, "로딩 완료");
+        }catch(e){
+          console.error(e);
+          setLoadingUI_(false, "로드 실패: 시트가 '보기 가능' 공개인지 확인하세요.");
+          throw e;
+        }finally{
+          orderExistLoadingPromise = null;
+        }
+      })();
+
+      return orderExistLoadingPromise;
+    }
+
+    /* ===================== 기존 등록 패널 ===================== */
+    function hideExistPanel(){
+      const p = $("existPanel");
+      if (!p) return;
+      p.style.display = "none";
+      $("existBody").style.display = "none";
+      $("btnExistToggle").textContent = "펼치기";
+      $("existTbody").innerHTML = "";
+    }
+
+    function showExistPanelByOrderNo_(orderNo){
+      const keyMall = normalizeOrderNo(orderNo);
+      const rowsByMall = existIndexByMall.get(keyMall) || [];
+
+      const sabangKeys = [];
+      if(lastSource === "order" && lastOutRows && lastOutRows.length){
+        for(const o of lastOutRows){
+          const v = normalizeKey(o["__B"]);
+          if(v) sabangKeys.push(v);
+        }
+      }
+      const rowsBySabang = sabangKeys.flatMap(k => existIndexBySabang.get(k) || []);
+      const merged = [...rowsByMall, ...rowsBySabang];
+
+      const uniq = [];
+      const seen = new Set();
+      for(const it of merged){
+        const sig = (it.sheetTag || "") + "::" + (it.mall || "") + "::" + (it.sabang || "") + "::" + (it.purpose||"") + "::" + (it.method||"") + "::" + (it.reqDate||"");
+        if(seen.has(sig)) continue;
+        seen.add(sig);
+        uniq.push(it);
       }
 
-      if (!usedRows.length) {
-        statusEl.innerHTML = `"${kw}" 검색 결과: <strong>0행</strong> (재고 있음만 필터 적용)`;
-        resultEl.innerHTML = '<div class="no-result">조건에 맞는 재고가 없습니다.</div>';
+      if(uniq.length === 0){
+        hideExistPanel();
         return;
       }
 
-      usedRows.sort(compareRows);
+      const panel = $("existPanel");
+      panel.style.display = "flex";
+      $("existBody").style.display = "none";
+      $("btnExistToggle").textContent = `펼치기 (${uniq.length}건)`;
 
-      statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>`;
-
-      let headerHtml = '<tr>';
-      headerHtml += buildHeaderCell('상품명', 'productName', 'col-product');
-      headerHtml += buildHeaderCell('칼라명', 'colorName', 'col-color');
-      headerHtml += buildHeaderCell('바코드', 'barcode');
-      headerHtml += buildHeaderCell('상품코드', 'productCode', 'col-pcode');
-      headerHtml += buildHeaderCell('상품칼라코드', 'colorCode');
-      headerHtml += buildHeaderCell('사이즈', 'size');
-
-      if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
-      if (showWarehouse) headerHtml += buildHeaderCell('창고', 'warehouse', 'col-warehouse');
-
-      headerHtml += buildHeaderCell('재고', 'stock', 'stock-header', true);
-      headerHtml += '</tr>';
-
-      let bodyHtml = '';
-
-      usedRows.forEach(r => {
-        const opIndicatorHtml = buildOperationIndicator(r.colorCode, r.productCode);
-
-        const rawNameEsc = escapeHtml(r.rawName || '');
-        const hasRaw = r.rawName && r.rawName !== r.productName;
-        const titleAttr = hasRaw ? ` title="${rawNameEsc}"` : '';
-
-        const hasStock = r.stockStr && r.stockClass;
-
-        const stockCellInner = hasStock ? `
-          <span class="stock-cell"
-                data-product-no="${escapeHtml(r.productNo || '')}"
-                data-product-name="${escapeHtml(r.productName)}"
-                data-product-code="${escapeHtml(r.productCode)}"
-                data-color-code="${escapeHtml(r.colorCodeKey || '')}">
-            <span class="${r.stockClass}">
-              <span class="stock-pill-dot"></span>${escapeHtml(r.stockStr)}
-            </span>
-          </span>
-        ` : '';
-
-        bodyHtml += `
+      $("existTbody").innerHTML = uniq.map(it=>{
+        const sheetTag = it.sheetTag ? ` (${it.sheetTag})` : "";
+        return `
           <tr>
-            <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
-              ${opIndicatorHtml}${highlightText(r.productName || '', lastKeyword)}
-            </td>
-            <td class="col-color">${highlightText(r.colorName || '', lastKeyword)}</td>
-            <td>${highlightText(r.barcode || '', lastKeyword)}</td>
-            <td class="col-pcode">${highlightText(r.productCode || '', lastKeyword)}</td>
-            <td>${highlightText(r.colorCode || '', lastKeyword)}</td>
-            <td>${highlightText(r.size || '', lastKeyword)}</td>
-            ${showMaterial ? `<td>${highlightText(r.material || '', lastKeyword)}</td>` : ''}
-            ${showWarehouse ? `<td class="col-warehouse">${highlightText(r.warehouse || '', lastKeyword)}</td>` : ''}
-            <td class="text-right">${stockCellInner}</td>
+            <td>${escapeHtml(it.sabang || "")}</td>
+            <td>${escapeHtml(it.mall || "")}</td>
+            <td>${escapeHtml(it.purpose || "")}</td>
+            <td>${escapeHtml(it.method || "")}</td>
+            <td>${escapeHtml(it.dateText || it.reqDate || "")}${escapeHtml(sheetTag)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* ===================== DUP 매칭 ===================== */
+    function computeDupMatchesForTable_(needleRaw){
+      dupMatchesForTable_ = [];
+      const q0 = normalizeForContains_(needleRaw);
+      if(!q0) return;
+      if(!existLoaded || !existRows || existRows.length === 0) return;
+
+      for(const it of existRows){
+        const dNorm = normalizeForContains_(it.purpose || "");
+        const eNorm = normalizeForContains_(it.method || "");
+        if(dNorm.includes(q0) || eNorm.includes(q0)){
+          dupMatchesForTable_.push({
+            reqDate: it.reqDate || "",
+            mallNo: it.mall || "",
+            colorNm: it.colorNm || "",
+            dText: it.purpose || "",
+            eText: it.method || "",
+            sheetTag: it.sheetTag || ""
+          });
+        }
+      }
+    }
+
+    /* ===================== 결과/복사/렌더 ===================== */
+    let lastOutRows = [];       // 발주서 결과 (변경 패널 기준)
+    let lastExistOutRows = [];  // 출고 시트 결과
+    let lastStockTypes = [];
+    let originalOutRows = [];
+    let lastSource = "none";   // "order" | "exist_only" | "manual" | "none"
+    let copyBlocked_ = true;
+
+    function clearResult_(){
+      setPanel("manual", false);
+      setPanel("change", false);
+      clearStockUI();
+      hideExistPanel();
+      hideDupBanner_();
+      lastOutRows = [];
+      lastExistOutRows = [];
+      lastStockTypes = [];
+      originalOutRows = [];
+      lastSource = "none";
+      copyBlocked_ = true;
+      updateToolbar_();
+      hideHoverTip_();
+
+      // 두 섹션 모두 숨기고 fallback 보이기
+      $("orderResultSection").style.display = "none";
+      $("existResultSection").style.display = "none";
+      $("noResultWrap").style.display = "block";
+      $("tableWrap").innerHTML = `<div class="no-data">검색 결과가 없습니다.</div>`;
+      $("existTableWrap").innerHTML = `<div class="no-data">검색 결과가 없습니다.</div>`;
+      $("tableWrapFallback").innerHTML = `<div class="no-data">검색 결과가 없습니다.</div>`;
+    }
+
+    function getCheckedIndexes_(){
+      const wrap = $("tableWrap");
+      const chks = wrap.querySelectorAll("input.rowChk:checked");
+      return Array.from(chks).map(c => Number(c.dataset.idx)).filter(n => !Number.isNaN(n));
+    }
+
+    function updateToolbar_(){
+      const tb = $("tableToolbar");
+      if(!tb) return;
+
+      const hasRows = lastOutRows && lastOutRows.length > 0;
+      tb.style.display = hasRows ? "flex" : "none";
+
+      const showBulk = hasRows && lastOutRows.length > 1;
+      $("btnSelectAll").style.display = showBulk ? "" : "none";
+      $("btnSelectNone").style.display = showBulk ? "" : "none";
+
+      const checked = getCheckedIndexes_().length;
+      const selBadge = $("selCount");
+      if(selBadge){
+        selBadge.style.display = showBulk ? "" : "none";
+        selBadge.textContent = `선택 ${checked}건`;
+        selBadge.className = checked ? "badge ok" : "badge na";
+      }
+    }
+
+    $("btnSelectAll")?.addEventListener("click", ()=>{
+      const wrap = $("tableWrap");
+      wrap.querySelectorAll("input.rowChk").forEach(c => c.checked = true);
+      wrap.querySelectorAll("tbody tr").forEach(tr => tr.classList.add("is-selected"));
+      refreshColorDropdownByCurrentRows_();
+      updateToolbar_();
+      updateCopyGateBySelection_();
+    });
+
+    $("btnSelectNone")?.addEventListener("click", ()=>{
+      const wrap = $("tableWrap");
+      wrap.querySelectorAll("input.rowChk").forEach(c => c.checked = false);
+      wrap.querySelectorAll("tbody tr").forEach(tr => tr.classList.remove("is-selected"));
+      refreshColorDropdownByCurrentRows_();
+      updateToolbar_();
+      updateCopyGateBySelection_();
+    });
+
+    /* hover tip */
+    let hoverTipEl = null;
+    let hoverTipActive = false;
+    function initHoverTip_(){ hoverTipEl = $("hoverTip"); }
+    function showHoverTip_(text, clientX, clientY){
+      if(!hoverTipEl) return;
+      const t = String(text ?? "").trim();
+      if(!t) return;
+      hoverTipEl.textContent = t;
+      hoverTipEl.classList.add("show");
+      hoverTipActive = true;
+      moveHoverTip_(clientX, clientY);
+    }
+    function moveHoverTip_(clientX, clientY){
+      if(!hoverTipEl || !hoverTipActive) return;
+      const pad = 14, offset = 14;
+      hoverTipEl.style.left = "0px"; hoverTipEl.style.top = "0px";
+      const rect = hoverTipEl.getBoundingClientRect();
+      let x = clientX + offset;
+      let y = clientY + offset;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      if(x + rect.width + pad > vw) x = Math.max(pad, vw - rect.width - pad);
+      if(y + rect.height + pad > vh) y = Math.max(pad, clientY - rect.height - offset);
+      hoverTipEl.style.left = `${x}px`;
+      hoverTipEl.style.top = `${y}px`;
+    }
+    function hideHoverTip_(){
+      if(!hoverTipEl) return;
+      hoverTipEl.classList.remove("show");
+      hoverTipActive = false;
+    }
+
+    /* ===================== 공통 테이블 HTML 빌더 ===================== */
+    function buildTableHtml_(outRows, stockTypes, wrapId){
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:34px; max-width:34px; width:34px;">#</th>
+              <th style="min-width:44px; max-width:44px; width:44px;">선택</th>
+              ${TABLE_COLS_VIEW.map(c=>{
+                const w = COL_WIDTH[c.label] || COL_WIDTH["_default"];
+                return `<th style="min-width:${w}px; max-width:${w}px;">${escapeHtml(c.label)}</th>`;
+              }).join("")}
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      outRows.forEach((o, i)=>{
+        const t = stockTypes[i] || "na";
+        const trClass = t === "low" ? "low" : t === "out" ? "out" : t === "na" ? "na" : "";
+        html += `
+          <tr class="${trClass}" data-idx="${i}">
+            <td class="copy" data-copy="${i+1}">${i+1}</td>
+            <td class="chkcell"><input type="checkbox" class="rowChk" data-idx="${i}" data-wrap="${wrapId}"></td>
+            ${TABLE_COLS_VIEW.map(c=>{
+              const v = o[c.key] ?? "";
+              const w = COL_WIDTH[c.label] || COL_WIDTH["_default"];
+              const raw = String(v ?? "");
+              return `
+                <td class="copy"
+                    style="min-width:${w}px; max-width:${w}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                    data-copy="${escapeHtml(raw)}">
+                  ${escapeHtml(raw)}
+                </td>
+              `;
+            }).join("")}
           </tr>
         `;
       });
 
-      const html = `
-        <div class="result-table-wrap">
-          <div class="result-scroll">
-            <table>
-              <thead>${headerHtml}</thead>
-              <tbody>${bodyHtml}</tbody>
-            </table>
-          </div>
-        </div>
-      `;
-      resultEl.innerHTML = html;
-
-      // 운영 데이터가 이미 로드된 상태라면 dot를 정확히 반영
-      if (operLoaded) refreshOperationDotsInTable();
-      else updateLegendVisibility();
-
-      attachTableHeaderEvents();
-      prefetchDetailUrlsFromCurrentTable(8);
+      html += `</tbody></table>`;
+      return html;
     }
 
-    function attachTableHeaderEvents() {
-      const table = resultEl.querySelector('table');
-      if (!table) return;
+    /* ===================== 발주서 테이블 렌더 ===================== */
+    function renderOrderTable_(outRows, stockTypes){
+      lastOutRows = outRows || [];
+      lastStockTypes = stockTypes || [];
 
-      const thead = table.querySelector('thead');
-      const ths = thead ? Array.from(thead.querySelectorAll('th')) : [];
+      const wrap = $("tableWrap");
+      const section = $("orderResultSection");
+      const cntBadge = $("orderResultCnt");
 
-      ths.forEach((th, index) => {
-        const key = th.dataset.sortKey;
+      if(!outRows || outRows.length === 0){
+        section.style.display = "none";
+        return;
+      }
 
-        if (key) {
-          th.addEventListener('click', (e) => {
-            if (e.target.classList.contains('resize-handle') || e.target.closest('.resize-handle')) return;
-            if (sortKey === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
-            else { sortKey = key; sortDir = 'asc'; }
-            search();
-          });
+      cntBadge.textContent = `${outRows.length}건`;
+      wrap.innerHTML = buildTableHtml_(outRows, stockTypes, "order");
+      section.style.display = "block";
+
+      // 체크박스 이벤트
+      wrap.querySelectorAll("input.rowChk").forEach(chk=>{
+        chk.addEventListener("change", ()=>{
+          const tr = chk.closest("tr");
+          if(tr) tr.classList.toggle("is-selected", chk.checked);
+          refreshColorDropdownByCurrentRows_();
+          updateToolbar_();
+          updateCopyGateBySelection_();
+        });
+      });
+
+      // 셀 클릭/호버
+      attachCellEvents_(wrap);
+      enableExcelLikeResize_(wrap, "order");
+
+      refreshColorDropdownByCurrentRows_();
+      updateToolbar_();
+      updateCopyGateBySelection_();
+    }
+
+    /* ===================== 출고 시트 테이블 렌더 ===================== */
+    function renderExistTable_(outRows, stockTypes){
+      lastExistOutRows = outRows || [];
+
+      const wrap = $("existTableWrap");
+      const section = $("existResultSection");
+      const cntBadge = $("existResultCnt");
+
+      if(!outRows || outRows.length === 0){
+        section.style.display = "none";
+        return;
+      }
+
+      cntBadge.textContent = `${outRows.length}건`;
+      wrap.innerHTML = buildTableHtml_(outRows, stockTypes, "exist");
+      section.style.display = "block";
+
+      // 체크박스는 출고 시트 결과에서도 동작하도록 (단순 선택 표시)
+      wrap.querySelectorAll("input.rowChk").forEach(chk=>{
+        chk.addEventListener("change", ()=>{
+          const tr = chk.closest("tr");
+          if(tr) tr.classList.toggle("is-selected", chk.checked);
+        });
+      });
+
+      attachCellEvents_(wrap);
+      enableExcelLikeResize_(wrap, "exist");
+    }
+
+    /* 셀 클릭/호버 이벤트 공통 */
+    function attachCellEvents_(wrap){
+      wrap.querySelectorAll(".copy").forEach(td=>{
+        td.addEventListener("click", async ()=>{
+          const text = (td.getAttribute("data-copy") || td.textContent || "").trim();
+          try{
+            await navigator.clipboard.writeText(text);
+            showToast("복사됨");
+          }catch{
+            showToast("복사 실패");
+          }
+        });
+
+        td.addEventListener("mouseenter", (e)=>{
+          const text = (td.getAttribute("data-copy") || td.textContent || "").trim();
+          const t = text.length > 4000 ? (text.slice(0, 4000) + " …") : text;
+          showHoverTip_(t, e.clientX, e.clientY);
+        });
+        td.addEventListener("mousemove", (e)=> moveHoverTip_(e.clientX, e.clientY));
+        td.addEventListener("mouseleave", hideHoverTip_);
+      });
+    }
+
+    function buildTSV(outRows){
+      const lines = [];
+      outRows.forEach(o=>{
+        const vals = TABLE_COLS_COPY.map(c => {
+          const v = (c.key === "운송장 번호") ? "" : String(o[c.key] ?? "");
+          return v.replace(/\t/g," ").replace(/\r?\n/g," ");
+        });
+        lines.push(vals.join("\t"));
+      });
+      return lines.join("\n");
+    }
+
+    function buildHTMLTable(outRows){
+      const tdStyle = "border:1px solid #eee;padding:6px 8px;text-align:center;vertical-align:middle;";
+      const tbody = outRows.map(o => {
+        const tds = TABLE_COLS_COPY.map(c => {
+          const v = (c.key === "운송장 번호") ? "" : String(o[c.key] ?? "");
+          return `<td style="${tdStyle}">${escapeHtml(v)}</td>`;
+        }).join("");
+        return `<tr>${tds}</tr>`;
+      }).join("");
+      return `<table style="border-collapse:collapse;"><tbody>${tbody}</tbody></table>`.trim();
+    }
+
+    async function writeClipboardRows_(rowsToCopy){
+      const tsv = buildTSV(rowsToCopy);
+      const html = buildHTMLTable(rowsToCopy);
+      try{
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/plain": new Blob([tsv], { type: "text/plain" }),
+            "text/html": new Blob([html], { type: "text/html" }),
+          })
+        ]);
+        showToast(`통째로 복사됨 (${rowsToCopy.length}건)`);
+      }catch(e){
+        try{
+          await navigator.clipboard.writeText(tsv);
+          showToast(`복사됨 (${rowsToCopy.length}건, 서식 제외)`);
+        }catch{
+          showToast("복사 실패");
         }
+      }
+    }
 
-        let handle = th.querySelector('.resize-handle');
-        if (!handle) {
-          handle = document.createElement('span');
-          handle.className = 'resize-handle';
-          th.appendChild(handle);
+    function getSelectedRowIndexesByDrag_(){
+      const wrap = $("tableWrap");
+      const sel = window.getSelection?.();
+      if(!wrap || !sel || sel.rangeCount === 0) return [];
+      const anchorNode = sel.anchorNode;
+      const focusNode = sel.focusNode;
+      const inWrap = (n)=> n && (wrap === n || wrap.contains(n));
+      if(!inWrap(anchorNode) && !inWrap(focusNode)) return [];
+      const range = sel.getRangeAt(0);
+      const rows = Array.from(wrap.querySelectorAll("tbody tr[data-idx]"));
+      const idxs = [];
+      for(const tr of rows){
+        try{
+          if(range.intersectsNode(tr)){
+            const i = Number(tr.dataset.idx);
+            if(!Number.isNaN(i)) idxs.push(i);
+          }
+        }catch{}
+      }
+      return Array.from(new Set(idxs)).sort((a,b)=>a-b);
+    }
+
+    function isTypingTarget_(el){
+      if(!el) return false;
+      const tag = (el.tagName || "").toLowerCase();
+      if(tag === "input" && (el.type || "").toLowerCase() === "checkbox") return false;
+      if(tag === "input" || tag === "textarea" || tag === "select") return true;
+      if(el.isContentEditable) return true;
+      return false;
+    }
+
+    function getCopyTargetIndexes_(){
+      if(!lastOutRows || lastOutRows.length === 0) return [];
+      const checked = getCheckedIndexes_();
+      return (checked && checked.length) ? checked : lastOutRows.map((_, i)=>i);
+    }
+
+    function gateCopyByTypes(types){
+      let out=0, low=0, na=0, ok=0;
+      for(const t of types){
+        if(t === "out") out++;
+        else if(t === "low") low++;
+        else if(t === "na") na++;
+        else ok++;
+      }
+      copyBlocked_ = (out > 0 || low > 0 || na > 0);
+    }
+
+    function updateCopyGateBySelection_(){
+      if(!lastOutRows || lastOutRows.length === 0){
+        copyBlocked_ = true;
+        return;
+      }
+      const idxs = getCopyTargetIndexes_();
+      const types = idxs.map(i => stockStatusByColorCode(lastOutRows[i]["상품컬러코드"]).type);
+      gateCopyByTypes(types);
+    }
+
+    async function shortcutCopy_(){
+      if(!lastOutRows || lastOutRows.length === 0){
+        showToast("복사할 결과 없음");
+        return;
+      }
+      updateCopyGateBySelection_();
+      if(copyBlocked_){
+        showToast("재고 경고로 복사 차단됨");
+        return;
+      }
+
+      let idxs = getCheckedIndexes_();
+      if(!idxs.length){
+        const dragIdxs = getSelectedRowIndexesByDrag_();
+        if(dragIdxs.length) idxs = dragIdxs;
+      }
+      if(!idxs.length){
+        idxs = lastOutRows.map((_, i)=>i);
+      }
+
+      const rowsToCopy = idxs.map(i => lastOutRows[i]).filter(Boolean);
+      await writeClipboardRows_(rowsToCopy);
+    }
+
+    /* ===================== 수동 입력 ===================== */
+    function buildOutManual(colorCode, qty){
+      const o = {};
+      for(const c of EXTRA_COLS) o[c.key] = "";
+      for(const h of OUTPUT_HEADERS) o[h] = "";
+      o["배송수단"] = "택배";
+      o["운송장 번호"] = "";
+      o["상품컬러코드"] = colorCode || "";
+      o["수량"] = qty || "";
+      o["상품명"] = nameFromStock_(o["상품컬러코드"]);
+      o["재고"] = stockQtyLabel_(o["상품컬러코드"]);
+      o["옵션(수집)"] = colorNameFromStock_(o["상품컬러코드"]);
+      return o;
+    }
+
+    function applyManual(){
+      const color = normalizeKey($("manualColor").value);
+      const qty = normalizeKey($("manualQty").value);
+
+      if(!color){ showToast(""); return; }
+      if(!stockLoaded){ showToast("재고 로딩 중…"); return; }
+
+      const out = buildOutManual(color, qty);
+      const st = stockStatusByColorCode(out["상품컬러코드"]);
+      lastSource = "manual";
+      originalOutRows = JSON.parse(JSON.stringify([out]));
+      $("status").textContent = "수동 입력 결과: 1건";
+
+      // 수동 입력은 발주서 섹션에 표시
+      $("noResultWrap").style.display = "none";
+      $("existResultSection").style.display = "none";
+      renderOrderTable_([out], [st.type]);
+    }
+
+    /* ===================== 상품 변경 ===================== */
+    function applyChange(){
+      if(!lastOutRows || lastOutRows.length === 0){
+        showToast("변경할 검색 결과가 없습니다");
+        return;
+      }
+      const newColor = normalizeKey($("changeColor").value);
+      const newQty = normalizeKey($("changeQty").value);
+
+      if(!newColor){
+        showToast("변경 컬러코드를 입력해주세요");
+        return;
+      }
+
+      let targets = [];
+      if(lastOutRows.length > 1){
+        targets = getCheckedIndexes_();
+        if(targets.length === 0){
+          showToast("행을 체크해주세요");
+          return;
         }
+      }else{
+        targets = [0];
+      }
 
-        handle.addEventListener('mousedown', (e) => {
+      const targetSet = new Set(targets);
+      const updated = lastOutRows.map((o, idx)=>{
+        const copy = { ...o };
+        if(targetSet.has(idx)){
+          copy["상품컬러코드"] = newColor;
+          if(newQty !== "") copy["수량"] = newQty;
+          copy["상품명"] = nameFromStock_(newColor);
+          copy["요청일"] = attachStockToRequestDate_(copy["요청일"], newColor);
+          copy["옵션(수집)"] = colorNameFromStock_(newColor);
+        }
+        return copy;
+      });
+
+      const types = updated.map(o => stockStatusByColorCode(o["상품컬러코드"]).type);
+      renderOrderTable_(updated, types);
+      showToast(`선택 ${targets.length}건에만 적용됨`);
+    }
+
+    function resetChange(){
+      if(!originalOutRows || originalOutRows.length === 0){
+        showToast("되돌릴 데이터가 없습니다");
+        return;
+      }
+      const restored = JSON.parse(JSON.stringify(originalOutRows));
+      const types = restored.map(o => stockStatusByColorCode(o["상품컬러코드"]).type);
+      renderOrderTable_(restored, types);
+      showToast("변경 취소됨");
+    }
+
+    /* ===================== 검색 ===================== */
+    function rowMatchesPartial_(o, qKey, qLoose, qDigits){
+      if(!o) return false;
+
+      const fields = [
+        o["__B"], o["__C"],
+        o["운송장 번호"], o["받는분연락처"], o["받는분 기타연락처"],
+        o["수령인"], o["상품명"], o["상품컬러코드"], o["옵션(수집)"], o["주소"],
+      ];
+
+      if(qKey){
+        const q = String(qKey);
+        for(const f of fields){
+          if(String(f ?? "").includes(q)) return true;
+        }
+      }
+      if(qLoose){
+        const q = String(qLoose);
+        for(const f of fields){
+          if(normLoose_(String(f ?? "")).includes(q)) return true;
+        }
+      }
+      if(qDigits){
+        const q = String(qDigits);
+        for(const f of fields){
+          const d = normDigits_(String(f ?? ""));
+          if(d && d.includes(q)) return true;
+        }
+      }
+
+      return false;
+    }
+
+    function deduplicateRows_(rows){
+      const seen = new Set();
+      const out = [];
+      for(const o of rows){
+        const sig = (o["__B"]||"") + "|" + (o["__C"]||"") + "|" + (o["상품컬러코드"]||"") + "|" + (o["요청일"]||"") + "|" + (o["수량"]||"");
+        if(seen.has(sig)) continue;
+        seen.add(sig);
+        out.push(o);
+      }
+      return out;
+    }
+
+    async function search(){
+      const inputRaw = $("orderInput").value;
+      const qKey = normalizeKey(inputRaw);
+      const qMall = normalizeOrderNo(inputRaw);
+      const qLoose = normLoose_(inputRaw);
+      const qDigits = normDigits_(inputRaw);
+
+      clearResult_();
+
+      if(!qKey){
+        $("noResultWrap").style.display = "block";
+        $("tableWrapFallback").innerHTML = `<div class="no-data">검색어를 입력해주세요.</div>`;
+        updateToolbar_();
+        hideHoverTip_();
+        return;
+      }
+      if(!stockLoaded){
+        $("status").textContent = "재고 로딩 중…";
+        return;
+      }
+
+      if(!orderLoaded || !existLoaded){
+        try{
+          await ensureOrderAndExistLoaded_();
+        }catch{
+          $("status").textContent = "발주/출고 로드 실패 (수동 입력 가능)";
+          setPanel("manual", true);
+          $("noResultWrap").style.display = "block";
+          $("tableWrapFallback").innerHTML =
+            `<div class="no-data">발주서/출고 시트를 불러오지 못했습니다.<br/>아래에서 <strong>상품컬러코드</strong>를 입력하면 재고 확인 후 결과 테이블을 만들 수 있어요.</div>`;
+          updateToolbar_();
+          hideHoverTip_();
+          return;
+        }
+      }
+
+      const allowTextContains = qKey && qKey.length >= 2;
+      const allowDigitContains = qDigits && qDigits.length >= 3;
+
+      /* ── 1. 발주서 검색 ── */
+      let orderPicked = [];
+      orderPicked = orderPicked.concat(orderIndexByMall.get(qMall) || []);
+      orderPicked = orderPicked.concat(orderIndexBySabang.get(qKey) || []);
+      orderPicked = orderPicked.concat(orderIndexByTracking.get(qLoose) || []);
+      if(qDigits) orderPicked = orderPicked.concat(orderIndexByPhone.get(qDigits) || []);
+
+      if(allowTextContains || allowDigitContains){
+        const partialHits = orderAllForRecipientScan.filter(o =>
+          rowMatchesPartial_(o,
+            allowTextContains ? qKey : "",
+            allowTextContains ? qLoose : "",
+            allowDigitContains ? qDigits : ""
+          )
+        );
+        orderPicked = orderPicked.concat(partialHits);
+      }
+      const orderOutRows = deduplicateRows_(orderPicked);
+
+      /* ── 2. 출고 시트 검색 (항상 수행) ── */
+      let existPicked = [];
+      existPicked = existPicked.concat(existOrderIndexByMall.get(qMall) || []);
+      existPicked = existPicked.concat(existOrderIndexBySabang.get(qKey) || []);
+      existPicked = existPicked.concat(existOrderIndexByTracking.get(qLoose) || []);
+      if(qDigits) existPicked = existPicked.concat(existOrderIndexByPhone.get(qDigits) || []);
+
+      if(allowTextContains || allowDigitContains){
+        const partialHits = existOrderAllForScan.filter(o =>
+          rowMatchesPartial_(o,
+            allowTextContains ? qKey : "",
+            allowTextContains ? qLoose : "",
+            allowDigitContains ? qDigits : ""
+          )
+        );
+        existPicked = existPicked.concat(partialHits);
+      }
+      const existOutRows = deduplicateRows_(existPicked);
+
+      /* ── 3. 결과 표시 ── */
+      const hasOrder = orderOutRows.length > 0;
+      const hasExist = existOutRows.length > 0;
+
+      if(!hasOrder && !hasExist){
+        $("status").textContent = "검색 결과 없음 (수동 입력 가능)";
+        setPanel("manual", true);
+        $("noResultWrap").style.display = "block";
+        $("tableWrapFallback").innerHTML =
+          `<div class="no-data">발주서와 출고 시트 모두에서 일치 항목을 찾지 못했습니다.<br/>아래에서 <strong>상품컬러코드</strong>를 입력하면 재고 확인 후 결과 테이블을 만들 수 있어요.</div>`;
+        updateToolbar_();
+        hideHoverTip_();
+        return;
+      }
+
+      $("noResultWrap").style.display = "none";
+
+      // 상태 텍스트
+      const parts = [];
+      if(hasOrder) parts.push(`발주서 ${orderOutRows.length}건`);
+      if(hasExist) parts.push(`출고 시트 ${existOutRows.length}건`);
+      $("status").textContent = `검색 결과: ${parts.join(" / ")}`;
+
+      // 발주서 결과 렌더
+      if(hasOrder){
+        lastSource = "order";
+        const orderStockTypes = orderOutRows.map(o => stockStatusByColorCode(o["상품컬러코드"]).type);
+        originalOutRows = JSON.parse(JSON.stringify(orderOutRows));
+        renderOrderTable_(orderOutRows, orderStockTypes);
+
+        setPanel("change", true);
+        $("changeColor").value = normalizeKey(orderOutRows[0]["상품컬러코드"] || "");
+        $("changeQty").value = normalizeKey(orderOutRows[0]["수량"] || "");
+        refreshColorDropdownByCurrentRows_();
+      }
+
+      // 출고 시트 결과 렌더
+      if(hasExist){
+        const existStockTypes = existOutRows.map(o => stockStatusByColorCode(o["상품컬러코드"]).type);
+        renderExistTable_(existOutRows, existStockTypes);
+
+        // 발주서 결과가 없으면 변경 패널은 출고 시트 기준으로
+        if(!hasOrder){
+          lastSource = "order"; // 변경 패널 동작을 위해
+          lastOutRows = existOutRows;
+          originalOutRows = JSON.parse(JSON.stringify(existOutRows));
+          setPanel("change", true);
+          $("changeColor").value = normalizeKey(existOutRows[0]["상품컬러코드"] || "");
+          $("changeQty").value = normalizeKey(existOutRows[0]["수량"] || "");
+          refreshColorDropdownByCurrentRows_();
+        }
+      }
+
+      setTimeout(()=>{
+        try{ computeDupMatchesForTable_(inputRaw); renderDupBanner_(); }catch(e){ console.warn(e); }
+        try{ showExistPanelByOrderNo_(qMall); }catch(e){ console.warn(e); }
+      }, 0);
+    }
+
+    /* ===================== EXIST 토글 ===================== */
+    $("btnExistToggle").addEventListener("click", ()=>{
+      const body = $("existBody");
+      const isOpen = body.style.display !== "none";
+      body.style.display = isOpen ? "none" : "block";
+      $("btnExistToggle").textContent = isOpen ? "펼치기" : "접기";
+    });
+
+    /* ===================== Ctrl+C ===================== */
+    document.addEventListener("keydown", async (e)=>{
+      const key = (e.key || "").toLowerCase();
+      if(!e.ctrlKey || e.altKey || e.metaKey) return;
+      if(key !== "c") return;
+      if(isTypingTarget_(e.target)) return;
+
+      if(lastOutRows && lastOutRows.length > 0){
+        e.preventDefault();
+        await shortcutCopy_();
+      }
+    });
+
+    /* ===================== 초기화 ===================== */
+    function resetAll_(){
+      $("orderInput").value = "";
+      $("manualColor").value = "";
+      $("manualQty").value = "";
+      $("changeColor").value = "";
+      $("changeQty").value = "";
+      const sel = $("changeColorSelect");
+      if(sel) sel.value = "";
+
+      $("status").textContent = "초기화됨";
+      clearStockUI();
+      hideExistPanel();
+      hideDupBanner_();
+      setPanel("manual", false);
+      setPanel("change", false);
+
+      lastOutRows = [];
+      lastExistOutRows = [];
+      lastStockTypes = [];
+      originalOutRows = [];
+      lastSource = "none";
+      copyBlocked_ = true;
+
+      $("orderResultSection").style.display = "none";
+      $("existResultSection").style.display = "none";
+      $("noResultWrap").style.display = "block";
+      $("tableWrap").innerHTML = `<div class="no-data">검색 결과가 없습니다.</div>`;
+      $("existTableWrap").innerHTML = `<div class="no-data">검색 결과가 없습니다.</div>`;
+      $("tableWrapFallback").innerHTML = `<div class="no-data">검색 결과가 없습니다.</div>`;
+
+      updateToolbar_();
+      hideHoverTip_();
+    }
+
+    /* ===================== 엑셀식 열 리사이즈 ===================== */
+    let colWidthOverrideOrder = {};
+    let colWidthOverrideExist = {};
+    const COL_MIN_W = 40;
+    const COL_MAX_W = 600;
+
+    function getColWidth_(label, source){
+      const override = source === "exist" ? colWidthOverrideExist : colWidthOverrideOrder;
+      const saved = override[label];
+      if(saved != null) return saved;
+      return COL_WIDTH[label] || COL_WIDTH["_default"] || 60;
+    }
+
+    function applyColWidthToTable_(tableEl, colIndex, px){
+      const w = Math.max(COL_MIN_W, Math.min(COL_MAX_W, px));
+
+      const ths = tableEl.querySelectorAll("thead th");
+      if(ths[colIndex]){
+        ths[colIndex].style.minWidth = w + "px";
+        ths[colIndex].style.maxWidth = w + "px";
+        ths[colIndex].style.width = w + "px";
+      }
+
+      tableEl.querySelectorAll("tbody tr").forEach(tr=>{
+        const tds = tr.querySelectorAll("td");
+        if(tds[colIndex]){
+          tds[colIndex].style.minWidth = w + "px";
+          tds[colIndex].style.maxWidth = w + "px";
+          tds[colIndex].style.width = w + "px";
+        }
+      });
+    }
+
+    function enableExcelLikeResize_(wrapEl, source){
+      const table = wrapEl?.querySelector("table");
+      if(!table) return;
+
+      const override = source === "exist" ? colWidthOverrideExist : colWidthOverrideOrder;
+      const ths = table.querySelectorAll("thead th");
+      const labels = ["#", "선택", ...TABLE_COLS_VIEW.map(c=>c.label)];
+
+      labels.forEach((label, idx)=>{
+        const saved = override[label];
+        const w = (saved != null) ? saved : (COL_WIDTH[label] || COL_WIDTH["_default"] || 60);
+        applyColWidthToTable_(table, idx, w);
+      });
+
+      ths.forEach((th, idx)=>{
+        if(th.querySelector(".col-resizer")) return;
+        th.style.position = "sticky";
+        th.style.top = "0";
+
+        const handle = document.createElement("div");
+        handle.className = "col-resizer";
+        th.appendChild(handle);
+
+        let startX = 0;
+        let startW = 0;
+        let isResizing = false;
+
+        const onMove = (e)=>{
+          if(!isResizing) return;
+          const dx = e.clientX - startX;
+          const nextW = startW + dx;
+          applyColWidthToTable_(table, idx, nextW);
+
+          const label = labels[idx] || `COL_${idx}`;
+          override[label] = Math.max(COL_MIN_W, Math.min(COL_MAX_W, nextW));
+        };
+
+        const onUp = ()=>{
+          if(!isResizing) return;
+          isResizing = false;
+          document.body.classList.remove("col-resize-active");
+          th.classList.remove("resizing");
+          window.removeEventListener("mousemove", onMove);
+          window.removeEventListener("mouseup", onUp);
+        };
+
+        handle.addEventListener("mousedown", (e)=>{
+          e.preventDefault();
           e.stopPropagation();
-          startColumnResize(e, table, th, index);
+          isResizing = true;
+          startX = e.clientX;
+          startW = th.getBoundingClientRect().width;
+
+          document.body.classList.add("col-resize-active");
+          th.classList.add("resizing");
+          window.addEventListener("mousemove", onMove);
+          window.addEventListener("mouseup", onUp);
         });
       });
     }
 
-    function startColumnResize(e, table, th, colIndex) {
-      const startX = e.pageX;
-      const startWidth = th.offsetWidth;
-
-      const bodyRows = table.tBodies[0] ? Array.from(table.tBodies[0].rows) : [];
-      const thead = table.tHead;
-      const headCells = thead ? Array.from(thead.rows[0].cells) : [];
-
-      function onMouseMove(ev) {
-        const dx = ev.pageX - startX;
-        const newWidth = Math.max(60, startWidth + dx);
-
-        if (headCells[colIndex]) headCells[colIndex].style.width = newWidth + 'px';
-        bodyRows.forEach(row => {
-          if (row.cells[colIndex]) row.cells[colIndex].style.width = newWidth + 'px';
-        });
-      }
-
-      function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-      }
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-    }
-
-    // 엔터 검색
-    keywordInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        search();
-      }
+    /* ===================== 이벤트 ===================== */
+    $("orderInput").addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") search();
     });
+    $("btnManualApply").addEventListener("click", applyManual);
+    $("btnChangeApply").addEventListener("click", applyChange);
+    $("btnChangeReset").addEventListener("click", resetChange);
 
-    // 칩 토글 변경 시 바로 재검색 (키워드 있을 때만)
-    toggleMaterialInput.addEventListener('change', () => {
-      showMaterial = toggleMaterialInput.checked;
-      if (keywordInput.value.trim()) search();
-    });
-    toggleWarehouseInput.addEventListener('change', () => {
-      showWarehouse = toggleWarehouseInput.checked;
-      if (keywordInput.value.trim()) search();
-    });
-    toggleInStockOnlyInput.addEventListener('change', () => {
-      inStockOnly = toggleInStockOnlyInput.checked;
-      if (keywordInput.value.trim()) search();
-    });
-
-    // 상품명 클릭 → 원래 상품명 복사 (단, 운영 점 클릭은 제외)
-    resultEl.addEventListener('click', e => {
-      if (e.target.closest('.op-status-dot')) return;
-
-      const cell = e.target.closest('.product-name-cell');
-      if (!cell) return;
-
-      const colorCode = cell.dataset.colorCode;
-      if (!colorCode) return;
-
-      const prod = products.find(p => p.colorCode === colorCode);
-      if (!prod || !prod.rawName) return;
-
-      const textToCopy = prod.rawName;
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(textToCopy)
-          .then(() => showToast('원래 상품명을 복사했어요.'))
-          .catch(() => showToast('복사에 실패했어요. 브라우저 권한을 확인해주세요.'));
-      } else {
-        const ta = document.createElement('textarea');
-        ta.value = textToCopy;
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand('copy');
-          showToast('원래 상품명을 복사했어요.');
-        } catch (err) {
-          showToast('복사에 실패했어요.');
-        }
-        document.body.removeChild(ta);
-      }
-    });
-
-    // 타이틀 클릭 → 사이트 검색 페이지
-    document.addEventListener('DOMContentLoaded', () => {
-      const titleEl = document.querySelector('.title-wrap h1');
-      if (titleEl) {
-        titleEl.addEventListener('click', () => {
-          window.open('https://whitesands.co.kr/product/search.html?keyword=', '_blank', 'noopener');
-        });
-      }
-    });
-
-    // ✅✅ 재고 pill 클릭 → 상품번호(product_no) 찾기 우선순위
-    // 0) 재고시트 J열(productNoByColorCode) -> 이미 data-product-no에 들어옴
-    // 1) 미리보기 매칭 시트(AH->BL) productCode -> productNo
-    // 2) 키워드 포함 검색(미리보기 매칭 시트 행 전체 텍스트) -> productNo
-    // 3) 기존 fallback(느림)
-    function findProductNoByKeywordFallback(keyword){
-      const kw = (keyword || '').toString().trim().toLowerCase();
-      if (!kw) return '';
-      if (kw.length < 2) return '';
-
-      for (const row of extraRowsTextIndex) {
-        if (row.text.includes(kw)) {
-          const pno = normalizeProductNo(row.productNo);
-          if (pno) return pno;
-        }
-      }
-      return '';
-    }
-
-    document.addEventListener("click", async (e) => {
-      const cell = e.target.closest(".stock-cell");
-      if (!cell) return;
-
-      // ✅ 미리보기 매핑은 "클릭할 때" lazy 로드
-      if (!previewMapLoaded) {
-        previewMapLoaded = true;
-        try { await loadPreviewMap(); } catch {}
-      }
-
-      // 0) 재고 시트 product_no
-      let productNo = normalizeProductNo((cell.dataset.productNo || "").trim());
-
-      // 1) AH -> BL (미리보기 매칭 시트)
-      if (!productNo) {
-        const productCode = (cell.dataset.productCode || "").trim();
-        const mapped = productCode ? productNoByCode_AH[productCode] : '';
-        productNo = normalizeProductNo(mapped);
-      }
-
-      // 2) 키워드 포함 검색 -> BL
-      if (!productNo) {
-        productNo = findProductNoByKeywordFallback(keywordInput.value);
-      }
-
-      if (productNo) {
-        openPreviewByProductNo(productNo);
-        return;
-      }
-
-      // 3) 기존 fallback
-      const colorCode   = (cell.dataset.colorCode || "").trim();
-      const productCode = (cell.dataset.productCode || "").trim();
-      const productName = (cell.dataset.productName || "").trim();
-
-      const candidates = [colorCode, productCode, productName].filter(Boolean);
-      if (!candidates.length) return;
-
-      await openFirstProductDetailWithFallback(candidates);
-    });
-
-    // 단축키: Ctrl+K / Cmd+K / /
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-        e.preventDefault();
-        keywordInput.focus();
-        keywordInput.select();
-        return;
-      }
-      if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const tag = document.activeElement && document.activeElement.tagName;
-        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
-          e.preventDefault();
-          keywordInput.focus();
-          keywordInput.select();
-        }
-      }
-    });
-
-    // 검색어 X 버튼
-    function updateClearBtn(){
-      if (!clearBtn) return;
-      clearBtn.style.display = keywordInput.value.trim() ? 'inline-flex' : 'none';
-    }
-    keywordInput.addEventListener('input', updateClearBtn);
-    clearBtn.addEventListener('click', () => {
-      keywordInput.value = '';
-      updateClearBtn();
-      keywordInput.focus();
-      statusEl.textContent = '검색 키워드를 입력해주세요.';
-      resultEl.innerHTML = '<div class="no-result">검색 키워드를 입력한 후 다시 시도해주세요.</div>';
-    });
-
-    function syncPillActiveByInput(inputEl){
-      const label = inputEl.closest('.type-pill');
-      if (!label) return;
-      label.classList.toggle('active', inputEl.checked);
-    }
-    [ toggleWarehouseInput, toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
-      if (!inp) return;
-      syncPillActiveByInput(inp);
-      inp.addEventListener('change', () => syncPillActiveByInput(inp));
-    });
-
-    // ===========================
-    // 운영 점 Hover → 부가정보 툴팁 (예쁜 UI)
-    // ===========================
-    function showExtraTooltip(x, y, html){
-      if (!extraTooltipEl) return;
-      extraTooltipEl.innerHTML = html;
-      extraTooltipEl.style.display = 'block';
-      extraTooltipEl.setAttribute('aria-hidden', 'false');
-
-      const pad = 12;
-      const rect = extraTooltipEl.getBoundingClientRect();
-      let left = x + 14;
-      let top  = y + 14;
-
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-
-      if (left + rect.width + pad > vw) left = x - rect.width - 14;
-      if (top + rect.height + pad > vh) top = y - rect.height - 14;
-
-      extraTooltipEl.style.left = `${Math.max(pad, left)}px`;
-      extraTooltipEl.style.top  = `${Math.max(pad, top)}px`;
-    }
-
-    function hideExtraTooltip(){
-      if (!extraTooltipEl) return;
-      extraTooltipEl.style.display = 'none';
-      extraTooltipEl.setAttribute('aria-hidden', 'true');
-      extraTooltipEl.innerHTML = '';
-    }
-
-    function buildExtraTooltipHTML(productCode, info){
-      const safe = info || {};
-      const html = `
-        <div class="t-title">
-          <span>부가정보</span>
-          <span class="badge">${escapeHtml(productCode || 'NO-CODE')}</span>
-        </div>
-        <div class="t-list">
-          <div class="t-item"><div class="t-k">사이즈조절</div><div class="t-v">${escapeHtml(safe.sizeAdjust || '정보 없음')}</div></div>
-          <div class="t-item"><div class="t-k">부자재</div><div class="t-v">${escapeHtml(safe.trim || '정보 없음')}</div></div>
-          <div class="t-item"><div class="t-k">제조국</div><div class="t-v">${escapeHtml(safe.madeIn || '정보 없음')}</div></div>
-          <div class="t-item"><div class="t-k">케어라벨</div><div class="t-v">${escapeHtml(safe.careLabel || '정보 없음')}</div></div>
-          <div class="t-item"><div class="t-k">제품특징</div><div class="t-v">${escapeHtml(safe.feature || '정보 없음')}</div></div>
-        </div>
-        <div class="t-hint">※ 운영 점(●) 위에 올리면 표시됩니다</div>
-      `;
-      return html;
-    }
-
-    let activeDot = null;
-
-    document.addEventListener('mousemove', async (e) => {
-      const dot = e.target.closest('.op-status-dot');
-
-      if (!dot) {
-        if (activeDot) {
-          activeDot = null;
-          hideExtraTooltip();
-        }
-        return;
-      }
-
-      // ✅ 부가정보는 hover할 때 lazy 로드
-      if (!extraInfoLoaded) {
-        extraInfoLoaded = true;
-        try { await loadExtraTooltipInfo(); } catch {}
-      }
-
-      const code = (dot.dataset.productCode || '').trim();
-      const info = code ? extraInfoByProductCode[code] : null;
-
-      if (activeDot !== dot || extraTooltipEl.style.display !== 'block') {
-        activeDot = dot;
-        const html = buildExtraTooltipHTML(code, info);
-        showExtraTooltip(e.clientX, e.clientY, html);
-      } else {
-        // 위치만 따라가기
-        const rect = extraTooltipEl.getBoundingClientRect();
-        const pad = 12;
-        let left = e.clientX + 14;
-        let top  = e.clientY + 14;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-
-        if (left + rect.width + pad > vw) left = e.clientX - rect.width - 14;
-        if (top + rect.height + pad > vh) top = e.clientY - rect.height - 14;
-
-        extraTooltipEl.style.left = `${Math.max(pad, left)}px`;
-        extraTooltipEl.style.top  = `${Math.max(pad, top)}px`;
-      }
-    });
-
-    window.addEventListener('scroll', () => { activeDot = null; hideExtraTooltip(); }, { passive: true });
-    window.addEventListener('resize', () => { activeDot = null; hideExtraTooltip(); });
-
-    // ===========================
-    // 드래그 복사: 바코드/상품코드/상품칼라코드 → TSV로 클립보드 변환
-    // (Google Sheets에 붙여넣으면 A/C/E에 들어가게: B,D는 빈칸)
-    // ===========================
-    function isInsideResultTable(sel){
-      if(!sel) return false;
-      const node = sel.anchorNode || sel.focusNode;
-      const el = node?.nodeType === 1 ? node : node?.parentElement;
-      return !!el?.closest?.('#result table');
-    }
-
-    function getSelectedText(){
-      const sel = window.getSelection();
-      if(!sel) return "";
-      return sel.toString();
-    }
-
-    function selectionToTSV(selectedText){
-      const s = (selectedText || "")
-        .replace(/\r\n/g, "\n")
-        .replace(/[ \t]+\n/g, "\n")
-        .trim();
-
-      if(!s) return "";
-
-      const tokens = s
-        .split(/\t|\n/g)
-        .map(x => x.replace(/\s+/g, " ").trim());
-
-      const barcode   = tokens[0] ?? "";
-      const prodCode  = tokens[1] ?? "";
-      const colorCode = tokens[2] ?? "";
-
-      // ✅ A=바코드, C=상품코드, E=상품컬러코드 (B,D는 빈칸)
-      return `${barcode}\t\t${prodCode}\t\t${colorCode}`;
-    }
-
-    document.addEventListener("copy", (e) => {
-      const sel = window.getSelection();
-      if(!sel || sel.isCollapsed) return;
-      if(!isInsideResultTable(sel)) return;
-
-      const raw = getSelectedText();
-      const tsv = selectionToTSV(raw);
-      if(!tsv) return;
-
-      e.preventDefault();
-      e.clipboardData.setData("text/plain", tsv);
-    });
-
-    // ===========================
-  // ✅ 위젯에서 ?q= 로 들어오면 자동으로 검색 실행
-  // ===========================
-  const URL_QS_KEY = "q"; // 어드민 위젯이 쓰는 키와 동일해야 함
-
-  function getInitialQueryFromUrl() {
-    try {
-      const u = new URL(location.href);
-      return (u.searchParams.get(URL_QS_KEY) || "").trim();
-    } catch {
-      return "";
-    }
-  }
-
-  // init() 보다 먼저 읽어두기
-  const __initialQuery = getInitialQueryFromUrl();
-
-  // ✅ keywordInput/clearBtn가 이미 선언된 상태(너 코드 구조상 그럼)에서 값 주입
-  if (typeof keywordInput !== "undefined" && keywordInput && __initialQuery) {
-    keywordInput.value = __initialQuery;
-
-    // X 버튼 표시 갱신(너 코드에 있는 함수)
-    try { updateClearBtn(); } catch {}
-  }
-
-  // ✅ init() 끝나고(데이터 로드 후) 자동 검색
-  const __origInit = init;
-  init = async function () {
-    await __origInit();
-
-    // 데이터 로드 끝나서 입력 활성화된 뒤 실행
-    if (__initialQuery && keywordInput && !keywordInput.disabled) {
-      try { search(); } catch {}
-    }
-  };
-// ✅ embed=1 이면 iframe용(검색창 숨김) 모드
-(function(){
-  try{
-    const u = new URL(location.href);
-    const isEmbed = u.searchParams.get("embed") === "1";
-    if(isEmbed) document.body.classList.add("embed");
-  }catch{}
-})();
-
-    
-
-    init();
+    /* ===================== 시작 ===================== */
+    initHoverTip_();
+    loadStockOnly();
   </script>
 </body>
 </html>
-
-
-
