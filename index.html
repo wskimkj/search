@@ -230,6 +230,8 @@ th{
 }
 tr:nth-child(even) td{background:#faf9fe;}
 tr:hover td{background:rgba(255,143,188,.18);}
+/* ✅ 결과 셀 텍스트는 드래그 선택/복사 가능 */
+td{ user-select:text; -webkit-user-select:text; }
 
 /* ===== column resize ===== */
 th{ position:sticky; }
@@ -617,6 +619,11 @@ body.embed .inner-shell{ padding-top:14px !important; }
                 소재
               </label>
 
+              <label class="type-pill" for="size">
+                <input type="checkbox" id="size">
+                사이즈
+              </label>
+
               <label class="type-pill" for="stock">
                 <input type="checkbox" id="stock">
                 재고
@@ -724,6 +731,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
     let stockUpdatedAt = '';
 
     let showMaterial = false;
+    let showSize = false;
     let inStockOnly = false;
     let opStatusByColorCode = {};
 
@@ -750,6 +758,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
     const clearBtn = document.getElementById('clearKeyword');
 
     const toggleMaterialInput = document.getElementById('material');
+    const toggleSizeInput = document.getElementById('size');
     const toggleInStockOnlyInput = document.getElementById('stock');
 
     const toastEl = document.getElementById('toast');
@@ -907,7 +916,11 @@ body.embed .inner-shell{ padding-top:14px !important; }
     if (pvCloseEl) pvCloseEl.addEventListener('click', closePreview);
     if (pvBackdropEl) pvBackdropEl.addEventListener('click', closePreview);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePreview();
+      if (e.key === 'Escape') {
+        closePreview();
+        activeDot = null;
+        hideExtraTooltip();
+      }
     });
 
     async function loadProducts() {
@@ -1405,6 +1418,9 @@ body.embed .inner-shell{ padding-top:14px !important; }
     }
 
     function search() {
+      activeDot = null;
+      hideExtraTooltip();
+
       const kw = keywordInput.value.trim();
       lastKeyword = kw;
 
@@ -1530,7 +1546,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
       headerHtml += buildHeaderCell('상품코드', 'productCode', 'col-pcode');
       headerHtml += buildHeaderCell('상품칼라코드', 'colorCode');
       headerHtml += buildHeaderCell('칼라명', 'colorName', 'col-color');
-      headerHtml += buildHeaderCell('사이즈', 'size');
+      if (showSize) headerHtml += buildHeaderCell('사이즈', 'size');
 
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
 
@@ -1570,7 +1586,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
             <td class="col-pcode">${highlightText(r.productCode || '', lastKeyword)}</td>
             <td>${highlightText(r.colorCode || '', lastKeyword)}</td>
             <td class="col-color">${highlightText(r.colorName || '', lastKeyword)}</td>
-            <td>${highlightText(r.size || '', lastKeyword)}</td>
+            ${showSize ? `<td>${highlightText(r.size || '', lastKeyword)}</td>` : ''}
             ${showMaterial ? `<td>${highlightText(r.material || '', lastKeyword)}</td>` : ''}
             <td class="text-right"><span class="stock-cell stock-pill-clickable" ${previewAttrs}>${buildQtyPill(r.jooheeQty, 'stock-pill-joohee')}</span></td>
             <td class="text-right"><span class="stock-cell stock-pill-clickable" ${previewAttrs}>${buildQtyPill(r.separateQty, 'stock-pill-separate')}</span></td>
@@ -1676,6 +1692,10 @@ body.embed .inner-shell{ padding-top:14px !important; }
       showMaterial = toggleMaterialInput.checked;
       if (keywordInput.value.trim()) search();
     });
+    toggleSizeInput.addEventListener('change', () => {
+      showSize = toggleSizeInput.checked;
+      if (keywordInput.value.trim()) search();
+    });
     toggleInStockOnlyInput.addEventListener('change', () => {
       inStockOnly = toggleInStockOnlyInput.checked;
       if (keywordInput.value.trim()) search();
@@ -1728,7 +1748,16 @@ body.embed .inner-shell{ padding-top:14px !important; }
     // ✅ 기타 pill 클릭 → 주희/분리 제외 나머지 창고 상세 보기
     document.addEventListener('click', (e) => {
       const pill = e.target.closest('.etc-pill');
-      if (!pill) return;
+
+      // ✅ 기타 팝업은 다른 곳을 클릭하면 바로 닫기
+      if (!pill) {
+        if (!e.target.closest('#extraTooltip')) {
+          activeDot = null;
+          hideExtraTooltip();
+        }
+        return;
+      }
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -1758,7 +1787,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
           <span class="badge">총 ${escapeHtml(String(total))}</span>
         </div>
         <div class="t-list">${rowsHtml}</div>
-        <div class="t-hint">※ 주희물류 / 주희물류(분리보관)를 제외한 창고입니다</div>
+        <div class="t-hint">※ 다른 곳을 클릭하거나 스크롤하면 닫힙니다</div>
       `;
 
       const rect = pill.getBoundingClientRect();
@@ -1852,6 +1881,8 @@ body.embed .inner-shell{ padding-top:14px !important; }
     clearBtn.addEventListener('click', () => {
       keywordInput.value = '';
       updateClearBtn();
+      activeDot = null;
+      hideExtraTooltip();
       keywordInput.focus();
       statusEl.textContent = '검색 키워드를 입력해주세요.';
       resultEl.innerHTML = '<div class="no-result">검색 키워드를 입력한 후 다시 시도해주세요.</div>';
@@ -1862,7 +1893,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
       if (!label) return;
       label.classList.toggle('active', inputEl.checked);
     }
-    [ toggleMaterialInput, toggleInStockOnlyInput ].forEach(inp => {
+    [ toggleMaterialInput, toggleSizeInput, toggleInStockOnlyInput ].forEach(inp => {
       if (!inp) return;
       syncPillActiveByInput(inp);
       inp.addEventListener('change', () => syncPillActiveByInput(inp));
@@ -1962,6 +1993,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
     });
 
     window.addEventListener('scroll', () => { activeDot = null; hideExtraTooltip(); }, { passive: true });
+    document.addEventListener('scroll', () => { activeDot = null; hideExtraTooltip(); }, true);
     window.addEventListener('resize', () => { activeDot = null; hideExtraTooltip(); });
 
     // ===========================
@@ -1996,9 +2028,10 @@ body.embed .inner-shell{ padding-top:14px !important; }
       const barcode   = tokens[0] ?? "";
       const prodCode  = tokens[1] ?? "";
       const colorCode = tokens[2] ?? "";
+      const colorName = tokens[3] ?? "";
 
-      // ✅ A=바코드, C=상품코드, E=상품컬러코드 (B,D는 빈칸)
-      return `${barcode}\t\t${prodCode}\t\t${colorCode}`;
+      // ✅ A=바코드, C=상품코드, E=상품컬러코드, G=칼라명 (B,D,F는 빈칸)
+      return `${barcode}\t\t${prodCode}\t\t${colorCode}\t\t${colorName}`;
     }
 
     document.addEventListener("copy", (e) => {
