@@ -326,6 +326,110 @@ th.sortable{cursor:pointer; position:relative;}
 .stock-pill-clickable{cursor:pointer;}
 .stock-pill-clickable:hover{filter:brightness(.98);}
 
+
+/* ===== reorder sheet manager ===== */
+.reorder-manager{
+  border:1px solid rgba(170,150,230,.18);
+  border-radius:16px;
+  background:rgba(245,243,251,.55);
+  padding:10px 12px;
+}
+.reorder-manager summary{
+  cursor:pointer;
+  font-size:12px;
+  font-weight:800;
+  color:var(--text-main);
+  user-select:none;
+}
+.reorder-manager-body{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.reorder-input-row{
+  display:grid;
+  grid-template-columns: minmax(120px, 180px) 1fr auto auto;
+  gap:8px;
+  align-items:center;
+}
+.reorder-input-row input{
+  height:34px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.22);
+  background:#fff;
+  padding:0 12px;
+  font-size:12px;
+}
+.reorder-btn{
+  height:34px;
+  padding:0 12px;
+  border-radius:999px;
+  border:1px solid rgba(170,150,230,.22);
+  background:#fff;
+  font-size:12px;
+  cursor:pointer;
+}
+.reorder-btn:hover{
+  background:rgba(255,143,188,.12);
+  border-color:rgba(255,143,188,.22);
+}
+.reorder-source-list{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.reorder-source-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid rgba(170,150,230,.18);
+  font-size:11px;
+}
+.reorder-source-chip button{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  color:rgba(110,106,130,.75);
+}
+.reorder-helper{
+  font-size:11px;
+  color:var(--text-muted);
+  line-height:1.35;
+}
+.reorder-badge{
+  margin-left:8px;
+  padding:3px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,143,188,.35);
+  background:rgba(255,143,188,.18);
+  color:#9a315c;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.reorder-badge:hover{
+  background:rgba(255,143,188,.28);
+}
+.reorder-summary-cell{
+  min-width:160px;
+  font-size:12px;
+  line-height:1.35;
+}
+.reorder-date-line{
+  white-space:nowrap;
+}
+.reorder-date-line strong{
+  color:var(--text-main);
+}
+@media(max-width:860px){
+  .reorder-input-row{ grid-template-columns:1fr; }
+}
+
 /* ===== misc ===== */
 .kw-mark{background:yellow;padding:0 2px;}
 #toast{
@@ -628,7 +732,26 @@ body.embed .inner-shell{ padding-top:14px !important; }
                 <input type="checkbox" id="stock">
                 재고
               </label>
+
+              <label class="type-pill" for="reorder">
+                <input type="checkbox" id="reorder">
+                리오더
+              </label>
             </div>
+
+            <details class="reorder-manager" id="reorderManager">
+              <summary>리오더 시트 관리</summary>
+              <div class="reorder-manager-body">
+                <div class="reorder-input-row">
+                  <input type="text" id="reorderSheetName" placeholder="시트 별명 (예: 26SS 샌들)">
+                  <input type="text" id="reorderSheetUrl" placeholder="구글시트 URL 붙여넣기 (gid 포함)">
+                  <button type="button" id="addReorderSheet" class="reorder-btn">추가</button>
+                  <button type="button" id="reloadReorderSheets" class="reorder-btn">새로고침</button>
+                </div>
+                <div class="reorder-helper">상품번호/품번(J열) 기준으로 매칭합니다. A=오더일, C=담당자, E=JS 입고예정, F=주희물류 입고예정, I=상품명, J=품번, K=바코드, L=칼라, M~Q=수량으로 읽습니다.</div>
+                <div id="reorderSourceList" class="reorder-source-list"></div>
+              </div>
+            </details>
 
             <div class="status" id="status">
               데이터 불러오는 중...
@@ -732,6 +855,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
 
     let showMaterial = false;
     let showSize = false;
+    let showReorder = false;
     let inStockOnly = false;
     let opStatusByColorCode = {};
 
@@ -744,6 +868,11 @@ body.embed .inner-shell{ padding-top:14px !important; }
     // ✅ (B) 미리보기 매칭용: productCode(AH) -> productNo(BL)
     let productNoByCode_AH = {};
     let extraRowsTextIndex = []; // [{ text, productNo }]
+
+    const REORDER_SOURCES_KEY = 'ws_reorder_sheet_sources_v1';
+    let reorderSheetSources = [];
+    let reorderRecordsByProductCode = {}; // normalized productCode -> [records]
+    let reorderLoadedAtText = '';
 
     let sortKey = 'productName';
     let sortDir = 'asc';
@@ -760,6 +889,13 @@ body.embed .inner-shell{ padding-top:14px !important; }
     const toggleMaterialInput = document.getElementById('material');
     const toggleSizeInput = document.getElementById('size');
     const toggleInStockOnlyInput = document.getElementById('stock');
+    const toggleReorderInput = document.getElementById('reorder');
+
+    const reorderSheetNameInput = document.getElementById('reorderSheetName');
+    const reorderSheetUrlInput = document.getElementById('reorderSheetUrl');
+    const addReorderSheetBtn = document.getElementById('addReorderSheet');
+    const reloadReorderSheetsBtn = document.getElementById('reloadReorderSheets');
+    const reorderSourceListEl = document.getElementById('reorderSourceList');
 
     const toastEl = document.getElementById('toast');
     const opLegendEl = document.getElementById('opLegend');
@@ -1076,6 +1212,290 @@ body.embed .inner-shell{ padding-top:14px !important; }
       }
     }
 
+    // ===========================
+    // 리오더 시트 관리 / 일정 파싱
+    // ===========================
+    function normalizeProductKey(v){
+      return (v || '')
+        .toString()
+        .toUpperCase()
+        .replace(/\s+/g, '')
+        .replace(/[\-_]/g, '')
+        .trim();
+    }
+
+    function normalizeDateText(v){
+      return (v || '')
+        .toString()
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function parseLooseDate(v){
+      const s0 = normalizeDateText(v);
+      if (!s0) return null;
+      const s = s0.replace(/[년월]/g, '.').replace(/[일]/g, '').replace(/[\/\-]/g, '.');
+      let m = s.match(/(20\d{2}|\d{2})\s*\.\s*(\d{1,2})\s*\.\s*(\d{1,2})/);
+      if (!m) return null;
+      let y = Number(m[1]);
+      if (y < 100) y += 2000;
+      const mo = Number(m[2]);
+      const d = Number(m[3]);
+      if (!y || !mo || !d) return null;
+      const dt = new Date(y, mo - 1, d);
+      if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+      return dt;
+    }
+
+    function formatLooseDate(v){
+      const dt = parseLooseDate(v);
+      if (!dt) return normalizeDateText(v);
+      return `${dt.getFullYear()}. ${dt.getMonth()+1}. ${dt.getDate()}`;
+    }
+
+    function getScheduleDate(record){
+      return parseLooseDate(record.jooheeDue) || parseLooseDate(record.jsDue) || parseLooseDate(record.orderDate);
+    }
+
+    function parseQty(v){
+      const n = Number((v || '').toString().replace(/,/g, '').trim());
+      return isNaN(n) ? 0 : n;
+    }
+
+    function parseGoogleSheetUrl(url){
+      const s = (url || '').trim();
+      const sheetIdMatch = s.match(/\/spreadsheets\/d\/([^/]+)/);
+      const gidMatch = s.match(/[?#&]gid=(\d+)/) || s.match(/#gid=(\d+)/);
+      return {
+        sheetId: sheetIdMatch ? sheetIdMatch[1] : '',
+        gid: gidMatch ? gidMatch[1] : '0'
+      };
+    }
+
+    function buildReorderCsvUrl(source){
+      return `https://docs.google.com/spreadsheets/d/${source.sheetId}/export?format=csv&gid=${source.gid || '0'}`;
+    }
+
+    function loadReorderSourcesFromStorage(){
+      try {
+        reorderSheetSources = JSON.parse(localStorage.getItem(REORDER_SOURCES_KEY) || '[]') || [];
+      } catch {
+        reorderSheetSources = [];
+      }
+    }
+
+    function saveReorderSourcesToStorage(){
+      try { localStorage.setItem(REORDER_SOURCES_KEY, JSON.stringify(reorderSheetSources)); } catch {}
+    }
+
+    function renderReorderSourceList(){
+      if (!reorderSourceListEl) return;
+      if (!reorderSheetSources.length) {
+        reorderSourceListEl.innerHTML = '<span class="reorder-helper">등록된 리오더 시트가 없습니다.</span>';
+        return;
+      }
+      reorderSourceListEl.innerHTML = reorderSheetSources.map((src, idx) => `
+        <span class="reorder-source-chip" title="${escapeHtml(src.sheetId)} / gid=${escapeHtml(src.gid)}">
+          <span>${escapeHtml(src.name || ('시트 ' + (idx+1)))}</span>
+          <button type="button" class="remove-reorder-source" data-index="${idx}" aria-label="삭제">×</button>
+        </span>
+      `).join('');
+    }
+
+    function addReorderSourceFromInputs(){
+      const url = reorderSheetUrlInput ? reorderSheetUrlInput.value.trim() : '';
+      const name = reorderSheetNameInput ? reorderSheetNameInput.value.trim() : '';
+      const parsed = parseGoogleSheetUrl(url);
+      if (!parsed.sheetId) {
+        showToast('구글시트 URL을 확인해주세요.');
+        return;
+      }
+      const exists = reorderSheetSources.some(s => s.sheetId === parsed.sheetId && String(s.gid || '0') === String(parsed.gid || '0'));
+      if (exists) {
+        showToast('이미 추가된 시트예요.');
+        return;
+      }
+      reorderSheetSources.push({
+        name: name || `리오더 ${reorderSheetSources.length + 1}`,
+        sheetId: parsed.sheetId,
+        gid: parsed.gid || '0'
+      });
+      saveReorderSourcesToStorage();
+      renderReorderSourceList();
+      if (reorderSheetNameInput) reorderSheetNameInput.value = '';
+      if (reorderSheetUrlInput) reorderSheetUrlInput.value = '';
+      loadAllReorderSheets(true);
+    }
+
+    function parseReorderRows(rows, sourceName){
+      if (!rows || !rows.length) return 0;
+      let added = 0;
+
+      rows.forEach((r, idx) => {
+        if (!r || !r.length) return;
+
+        // 생산팀 리오더 시트 고정 열 기준
+        // A 오더일 / C 담당자 / E JS입고예정 / F 주희물류입고예정 / I 상품명 / J 품번 / K 바코드 / L 칼라 / M~Q 수량
+        const productCode = (r[9] || '').toString().trim();
+        const key = normalizeProductKey(productCode);
+        if (!key) return;
+
+        // 헤더/합계/설명 행 제외
+        const joined = r.map(x => (x || '').toString()).join(' ');
+        if (/품번|상품명|오더수량|입고예정|합계|TOTAL/i.test(joined) && idx < 20) return;
+        if (!/[A-Za-z0-9]/.test(key)) return;
+
+        const record = {
+          sourceName,
+          orderDate: normalizeDateText(r[0]),
+          manager: normalizeDateText(r[2]),
+          jsDue: normalizeDateText(r[4]),
+          jooheeDue: normalizeDateText(r[5]),
+          productName: normalizeDateText(r[8]),
+          productCode,
+          barcode: normalizeDateText(r[10]),
+          color: normalizeDateText(r[11]),
+          orderQty: normalizeDateText(r[12]),
+          firstInQty: normalizeDateText(r[13]),
+          secondInQty: normalizeDateText(r[14]),
+          thirdInQty: normalizeDateText(r[15]),
+          remainingQty: normalizeDateText(r[16]),
+          rowNo: idx + 1
+        };
+
+        // 일정 또는 수량이 하나도 없는 행은 제외
+        if (!record.orderDate && !record.jsDue && !record.jooheeDue && !record.orderQty && !record.remainingQty) return;
+
+        if (!reorderRecordsByProductCode[key]) reorderRecordsByProductCode[key] = [];
+        reorderRecordsByProductCode[key].push(record);
+        added++;
+      });
+      return added;
+    }
+
+    async function loadAllReorderSheets(showDoneToast = false){
+      loadReorderSourcesFromStorage();
+      reorderRecordsByProductCode = {};
+
+      if (!reorderSheetSources.length) {
+        reorderLoadedAtText = '';
+        renderReorderSourceList();
+        if (showDoneToast) showToast('등록된 리오더 시트가 없어요.');
+        if (keywordInput.value.trim()) search();
+        return;
+      }
+
+      let ok = 0;
+      let fail = 0;
+      let rowCount = 0;
+
+      for (const src of reorderSheetSources) {
+        try {
+          const rows = await parseCSVFromUrl(buildReorderCsvUrl(src), 15000);
+          rowCount += parseReorderRows(rows, src.name || '리오더');
+          ok++;
+        } catch (err) {
+          console.warn('[reorder load fail]', src, err);
+          fail++;
+        }
+      }
+
+      reorderLoadedAtText = `${ok}개 시트 / ${rowCount}건` + (fail ? ` / 실패 ${fail}개` : '');
+      renderReorderSourceList();
+      if (showDoneToast) showToast(`리오더 로드: ${reorderLoadedAtText}`);
+      if (keywordInput.value.trim()) search();
+    }
+
+    function getReorderRecordsForProductCode(productCode){
+      const key = normalizeProductKey(productCode);
+      if (!key) return [];
+      return reorderRecordsByProductCode[key] || [];
+    }
+
+    function summarizeReorderRecords(records){
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const dated = (records || [])
+        .map(r => ({ ...r, _date: getScheduleDate(r) }))
+        .filter(r => r._date)
+        .sort((a,b) => a._date - b._date);
+
+      const past = dated.filter(r => r._date < today);
+      const future = dated.filter(r => r._date >= today);
+      const recent = past.length ? past[past.length - 1] : null;
+      return { recent, future, dated };
+    }
+
+    function buildReorderBadge(records){
+      if (!records || !records.length) return '';
+      const summary = summarizeReorderRecords(records);
+      const next = summary.future[0];
+      const label = next ? `리오더 ${formatLooseDate(next.jooheeDue || next.jsDue)}` : '리오더';
+      const encoded = encodeURIComponent(JSON.stringify(records));
+      return `<span class="reorder-badge" data-reorder-records="${escapeHtml(encoded)}">${escapeHtml(label)}</span>`;
+    }
+
+    function buildReorderSummaryCell(records){
+      if (!records || !records.length) return '<span style="color:rgba(110,106,130,.55);">-</span>';
+      const summary = summarizeReorderRecords(records);
+      const lines = [];
+      if (summary.recent) {
+        lines.push(`<div class="reorder-date-line">최근 <strong>${escapeHtml(formatLooseDate(summary.recent.jooheeDue || summary.recent.jsDue))}</strong> ${escapeHtml(summary.recent.color || '')}</div>`);
+      }
+      if (summary.future.length) {
+        summary.future.slice(0, 3).forEach(r => {
+          lines.push(`<div class="reorder-date-line">예정 <strong>${escapeHtml(formatLooseDate(r.jooheeDue || r.jsDue))}</strong> ${escapeHtml(r.color || '')} ${escapeHtml(r.remainingQty ? '미입고 ' + r.remainingQty : '')}</div>`);
+        });
+        if (summary.future.length > 3) lines.push(`<div class="reorder-date-line">외 ${summary.future.length - 3}건</div>`);
+      }
+      if (!lines.length) lines.push(`<div class="reorder-date-line">리오더 ${records.length}건</div>`);
+      return `<div class="reorder-summary-cell">${lines.join('')}</div>`;
+    }
+
+    function buildReorderTooltipHTML(records){
+      const safeRecords = (records || [])
+        .map(r => ({ ...r, _date: getScheduleDate(r) }))
+        .sort((a,b) => {
+          if (a._date && b._date) return a._date - b._date;
+          if (a._date) return -1;
+          if (b._date) return 1;
+          return 0;
+        });
+
+      const summary = summarizeReorderRecords(safeRecords);
+      const recentHtml = summary.recent
+        ? `<div class="t-item"><div class="t-k">최근입고</div><div class="t-v">${escapeHtml(formatLooseDate(summary.recent.jooheeDue || summary.recent.jsDue))} · ${escapeHtml(summary.recent.color || '색상 미기재')} · ${escapeHtml(summary.recent.sourceName || '')}</div></div>`
+        : `<div class="t-item"><div class="t-k">최근입고</div><div class="t-v">확인된 지난 일정 없음</div></div>`;
+
+      const futureRows = summary.future.length
+        ? summary.future.map(r => `
+          <div class="t-item">
+            <div class="t-k">${escapeHtml(formatLooseDate(r.jooheeDue || r.jsDue) || '일정없음')}</div>
+            <div class="t-v">
+              <strong>${escapeHtml(r.color || '색상 미기재')}</strong><br>
+              JS ${escapeHtml(formatLooseDate(r.jsDue) || '-')} / 주희 ${escapeHtml(formatLooseDate(r.jooheeDue) || '-')}<br>
+              오더 ${escapeHtml(formatLooseDate(r.orderDate) || '-')} · 수량 ${escapeHtml(r.orderQty || '-')} · 미입고 ${escapeHtml(r.remainingQty || '-')}<br>
+              1차 ${escapeHtml(r.firstInQty || '-')} / 2차 ${escapeHtml(r.secondInQty || '-')} / 3차 ${escapeHtml(r.thirdInQty || '-')}<br>
+              담당 ${escapeHtml(r.manager || '-')} · ${escapeHtml(r.sourceName || '')}
+            </div>
+          </div>
+        `).join('')
+        : `<div class="t-item"><div class="t-k">예정</div><div class="t-v">앞으로 예정된 날짜 없음</div></div>`;
+
+      return `
+        <div class="t-title">
+          <span>리오더 일정</span>
+          <span class="badge">총 ${escapeHtml(String(safeRecords.length))}건</span>
+        </div>
+        <div class="t-list">
+          ${recentHtml}
+          ${futureRows}
+        </div>
+        <div class="t-hint">※ 품번/상품코드(J열) 기준 매칭 · 날짜 기준은 주희물류 입고예정일(F열), 없으면 JS 입고예정일(E열)</div>
+      `;
+    }
+
     // ✅✅ init: 1) 상품+재고만 먼저 → 검색창 빨리 활성화  2) 운영은 유휴시간 로드  3) 나머지는 진짜 lazy
     async function init() {
       try {
@@ -1088,18 +1508,22 @@ body.embed .inner-shell{ padding-top:14px !important; }
           loadStock()
         ]);
 
-        statusEl.innerHTML = `<strong>상품 ${products.length}개</strong> (운영 정보 로딩 중...)`;
+        loadReorderSourcesFromStorage();
+        renderReorderSourceList();
+        statusEl.innerHTML = `<strong>상품 ${products.length}개</strong> (운영/리오더 정보 로딩 중...)`;
         keywordInput.disabled = false;
 
-        // 2) 운영 상태는 유휴시간 로드 (검색 체감 우선)
+        // 2) 운영/리오더 상태는 유휴시간 로드 (검색 체감 우선)
         const idle = (fn) => ('requestIdleCallback' in window)
           ? requestIdleCallback(fn, { timeout: 2000 })
           : setTimeout(fn, 0);
 
         idle(async () => {
           try { await loadOperationStatus(); } catch {}
+          try { await loadAllReorderSheets(false); } catch {}
           // 부가정보/미리보기 매핑은 아래에서 "hover/click 시" lazy 로드
-          statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>`;
+          const reorderText = reorderLoadedAtText ? ` / 리오더 ${reorderLoadedAtText}` : '';
+          statusEl.innerHTML = `<strong>상품 ${products.length}개</strong>${reorderText}`;
         });
 
     } catch (err) {
@@ -1241,6 +1665,10 @@ body.embed .inner-shell{ padding-top:14px !important; }
         case 'colorCode':   valA = a.colorCode || '';   valB = b.colorCode || '';   break;
         case 'size':        valA = a.size || '';        valB = b.size || '';        break;
         case 'material':    valA = a.material || '';    valB = b.material || '';    break;
+        case 'reorder':
+          valA = (summarizeReorderRecords(a.reorderRecords || []).future[0]?.jooheeDue || summarizeReorderRecords(a.reorderRecords || []).future[0]?.jsDue || '');
+          valB = (summarizeReorderRecords(b.reorderRecords || []).future[0]?.jooheeDue || summarizeReorderRecords(b.reorderRecords || []).future[0]?.jsDue || '');
+          break;
         default: return tieBreak(a, b);
       }
 
@@ -1505,6 +1933,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
 
         Object.values(groupedBySize).forEach(group => {
           const totalStock = group.jooheeQty + group.separateQty + group.etcQty;
+          const reorderRecords = getReorderRecordsForProductCode(p.productCode || '');
           rows.push({
             productName: p.productName || '',
             colorName:   p.colorName   || '',
@@ -1518,6 +1947,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
             etcQty:      group.etcQty,
             totalStock,
             etcDetail:   buildEtcDetailPayload(group.etcDetail),
+            reorderRecords,
             rawName:     p.rawName     || '',
             colorCodeKey: p.colorCode  || '',
             productNo:   pno
@@ -1538,7 +1968,8 @@ body.embed .inner-shell{ padding-top:14px !important; }
 
       usedRows.sort(compareRows);
 
-      statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>`;
+      const reorderText = reorderLoadedAtText ? ` / 리오더 ${reorderLoadedAtText}` : '';
+      statusEl.innerHTML = `"${kw}" 검색 결과: <strong>${usedRows.length}행</strong>${reorderText}`;
 
       let headerHtml = '<tr>';
       headerHtml += buildHeaderCell('상품명', 'productName', 'col-product');
@@ -1549,6 +1980,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
       if (showSize) headerHtml += buildHeaderCell('사이즈', 'size');
 
       if (showMaterial) headerHtml += buildHeaderCell('소재', 'material');
+      if (showReorder) headerHtml += buildHeaderCell('리오더 일정', 'reorder', 'col-reorder');
 
       headerHtml += buildHeaderCell('주희', 'jooheeQty', 'stock-header', true);
       headerHtml += buildHeaderCell('분리', 'separateQty', 'stock-header', true);
@@ -1576,11 +2008,13 @@ body.embed .inner-shell{ padding-top:14px !important; }
           data-etc-detail="${escapeHtml(etcDetailEncoded)}"
           data-etc-total="${escapeHtml(String(r.etcQty || 0))}"
         `;
+        const reorderBadgeHtml = buildReorderBadge(r.reorderRecords || []);
+        const reorderSummaryHtml = buildReorderSummaryCell(r.reorderRecords || []);
 
         bodyHtml += `
           <tr>
             <td class="product-name-cell col-product"${titleAttr} data-color-code="${escapeHtml(r.colorCodeKey || '')}">
-              ${opIndicatorHtml}${highlightText(r.productName || '', lastKeyword)}
+              ${opIndicatorHtml}${highlightText(r.productName || '', lastKeyword)}${reorderBadgeHtml}
             </td>
             <td>${highlightText(r.barcode || '', lastKeyword)}</td>
             <td class="col-pcode">${highlightText(r.productCode || '', lastKeyword)}</td>
@@ -1588,6 +2022,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
             <td class="col-color">${highlightText(r.colorName || '', lastKeyword)}</td>
             ${showSize ? `<td>${highlightText(r.size || '', lastKeyword)}</td>` : ''}
             ${showMaterial ? `<td>${highlightText(r.material || '', lastKeyword)}</td>` : ''}
+            ${showReorder ? `<td>${reorderSummaryHtml}</td>` : ''}
             <td class="text-right"><span class="stock-cell stock-pill-clickable" ${previewAttrs}>${buildQtyPill(r.jooheeQty, 'stock-pill-joohee')}</span></td>
             <td class="text-right"><span class="stock-cell stock-pill-clickable" ${previewAttrs}>${buildQtyPill(r.separateQty, 'stock-pill-separate')}</span></td>
             <td class="text-right">${buildQtyPill(r.etcQty, 'stock-pill-etc etc-pill', etcAttrs)}</td>
@@ -1700,10 +2135,15 @@ body.embed .inner-shell{ padding-top:14px !important; }
       inStockOnly = toggleInStockOnlyInput.checked;
       if (keywordInput.value.trim()) search();
     });
+    toggleReorderInput.addEventListener('change', () => {
+      showReorder = toggleReorderInput.checked;
+      if (keywordInput.value.trim()) search();
+    });
 
     // 상품명 클릭 → 원래 상품명 복사 (단, 운영 점 클릭은 제외)
     resultEl.addEventListener('click', e => {
       if (e.target.closest('.op-status-dot')) return;
+      if (e.target.closest('.reorder-badge')) return;
 
       const cell = e.target.closest('.product-name-cell');
       if (!cell) return;
@@ -1792,6 +2232,49 @@ body.embed .inner-shell{ padding-top:14px !important; }
 
       const rect = pill.getBoundingClientRect();
       showExtraTooltip(rect.left, rect.bottom, html);
+    });
+
+    // ✅ 리오더 시트 추가/삭제/새로고침
+    if (addReorderSheetBtn) addReorderSheetBtn.addEventListener('click', addReorderSourceFromInputs);
+    if (reloadReorderSheetsBtn) reloadReorderSheetsBtn.addEventListener('click', () => loadAllReorderSheets(true));
+    if (reorderSheetUrlInput) {
+      reorderSheetUrlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addReorderSourceFromInputs();
+        }
+      });
+    }
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.remove-reorder-source');
+      if (!btn) return;
+      const idx = Number(btn.dataset.index);
+      if (isNaN(idx)) return;
+      reorderSheetSources.splice(idx, 1);
+      saveReorderSourcesToStorage();
+      renderReorderSourceList();
+      loadAllReorderSheets(true);
+    });
+
+    // ✅ 리오더 뱃지 클릭 → 최근 입고/앞으로 일정 팝업
+    document.addEventListener('click', (e) => {
+      const badge = e.target.closest('.reorder-badge');
+      if (!badge) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      let records = [];
+      try {
+        records = JSON.parse(decodeURIComponent(badge.dataset.reorderRecords || '%5B%5D'));
+      } catch {
+        records = [];
+      }
+      if (!records.length) {
+        showToast('리오더 일정이 없어요.');
+        return;
+      }
+      const rect = badge.getBoundingClientRect();
+      showExtraTooltip(rect.left, rect.bottom, buildReorderTooltipHTML(records));
     });
 
     // ✅✅ 재고 pill 클릭 → 상품번호(product_no) 찾기 우선순위
@@ -1893,7 +2376,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
       if (!label) return;
       label.classList.toggle('active', inputEl.checked);
     }
-    [ toggleMaterialInput, toggleSizeInput, toggleInStockOnlyInput ].forEach(inp => {
+    [ toggleMaterialInput, toggleSizeInput, toggleInStockOnlyInput, toggleReorderInput ].forEach(inp => {
       if (!inp) return;
       syncPillActiveByInput(inp);
       inp.addEventListener('change', () => syncPillActiveByInput(inp));
