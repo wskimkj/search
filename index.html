@@ -748,7 +748,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
                   <button type="button" id="addReorderSheet" class="reorder-btn">추가</button>
                   <button type="button" id="reloadReorderSheets" class="reorder-btn">새로고침</button>
                 </div>
-                <div class="reorder-helper">상품번호/품번(J열) 기준으로 매칭합니다. A=오더일, C=담당자, E=JS 입고예정, F=주희물류 입고예정, I=상품명, J=품번, K=바코드, L=칼라, M~Q=수량으로 읽습니다.</div>
+                <div class="reorder-helper">J열 품번/상품번호를 기준으로 매칭합니다. 값이 섞여 있어도 GKM6179 같은 품번 후보를 자동 추출해서 맞춥니다. A=오더일, C=담당자, E=JS 입고예정, F=주희물류 입고예정, I=상품명, J=품번, K=바코드, L=칼라, M~Q=수량으로 읽습니다.</div>
                 <div id="reorderSourceList" class="reorder-source-list"></div>
               </div>
             </details>
@@ -870,6 +870,13 @@ body.embed .inner-shell{ padding-top:14px !important; }
     let extraRowsTextIndex = []; // [{ text, productNo }]
 
     const REORDER_SOURCES_KEY = 'ws_reorder_sheet_sources_v1';
+    const DEFAULT_REORDER_SOURCES = [
+      {
+        name: '리오더 341718898',
+        sheetId: '1zzqZGk8C30LZo3BXxhzFSNpe_GzgBVeDw4X5eIVystc',
+        gid: '341718898'
+      }
+    ];
     let reorderSheetSources = [];
     let reorderRecordsByProductCode = {}; // normalized productCode -> [records]
     let reorderLoadedAtText = '';
@@ -1219,9 +1226,46 @@ body.embed .inner-shell{ padding-top:14px !important; }
       return (v || '')
         .toString()
         .toUpperCase()
+        .replace(/\u00A0/g, ' ')
         .replace(/\s+/g, '')
         .replace(/[\-_]/g, '')
+        .replace(/[^A-Z0-9]/g, '')
         .trim();
+    }
+
+    // ✅ 리오더 시트 J열 값이 "25SS ... GKM6179"처럼 섞여 있어도
+    // 현재 상품코드/상품번호와 매칭될 수 있게 후보 키를 여러 개 뽑는다.
+    function extractProductKeyCandidates(v){
+      const raw = (v || '').toString().toUpperCase().replace(/\u00A0/g, ' ');
+      const keys = new Set();
+      const whole = normalizeProductKey(raw);
+      if (whole) keys.add(whole);
+
+      // GKM6179, GLM3479, 25SSGKM6179 같은 영문+숫자 품번 후보
+      const alphaNumMatches = raw.match(/[A-Z]{2,}[A-Z0-9]*\d[A-Z0-9]*/g) || [];
+      alphaNumMatches.forEach(x => {
+        const k = normalizeProductKey(x);
+        if (k && k.length >= 4) keys.add(k);
+      });
+
+      // product_no처럼 숫자만 있는 상품번호 후보
+      const numMatches = raw.match(/\b\d{4,}\b/g) || [];
+      numMatches.forEach(x => {
+        const k = normalizeProductKey(x);
+        if (k) keys.add(k);
+      });
+
+      return Array.from(keys);
+    }
+
+    function uniqueRecords(records){
+      const seen = new Set();
+      return (records || []).filter(r => {
+        const key = [r.sourceName, r.rowNo, r.productCode, r.color, r.jooheeDue, r.jsDue, r.orderQty].join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
 
     function normalizeDateText(v){
@@ -1279,9 +1323,15 @@ body.embed .inner-shell{ padding-top:14px !important; }
 
     function loadReorderSourcesFromStorage(){
       try {
-        reorderSheetSources = JSON.parse(localStorage.getItem(REORDER_SOURCES_KEY) || '[]') || [];
+        const raw = localStorage.getItem(REORDER_SOURCES_KEY);
+        if (raw === null) {
+          reorderSheetSources = DEFAULT_REORDER_SOURCES.map(x => ({ ...x }));
+          localStorage.setItem(REORDER_SOURCES_KEY, JSON.stringify(reorderSheetSources));
+          return;
+        }
+        reorderSheetSources = JSON.parse(raw || '[]') || [];
       } catch {
-        reorderSheetSources = [];
+        reorderSheetSources = DEFAULT_REORDER_SOURCES.map(x => ({ ...x }));
       }
     }
 
@@ -1338,13 +1388,13 @@ body.embed .inner-shell{ padding-top:14px !important; }
         // 생산팀 리오더 시트 고정 열 기준
         // A 오더일 / C 담당자 / E JS입고예정 / F 주희물류입고예정 / I 상품명 / J 품번 / K 바코드 / L 칼라 / M~Q 수량
         const productCode = (r[9] || '').toString().trim();
-        const key = normalizeProductKey(productCode);
-        if (!key) return;
 
         // 헤더/합계/설명 행 제외
         const joined = r.map(x => (x || '').toString()).join(' ');
-        if (/품번|상품명|오더수량|입고예정|합계|TOTAL/i.test(joined) && idx < 20) return;
-        if (!/[A-Za-z0-9]/.test(key)) return;
+        if (/품번|상품명|오더수량|입고예정|합계|TOTAL/i.test(joined) && idx < 30) return;
+
+        const keyCandidates = extractProductKeyCandidates(productCode);
+        if (!keyCandidates.length) return;
 
         const record = {
           sourceName,
@@ -1367,8 +1417,10 @@ body.embed .inner-shell{ padding-top:14px !important; }
         // 일정 또는 수량이 하나도 없는 행은 제외
         if (!record.orderDate && !record.jsDue && !record.jooheeDue && !record.orderQty && !record.remainingQty) return;
 
-        if (!reorderRecordsByProductCode[key]) reorderRecordsByProductCode[key] = [];
-        reorderRecordsByProductCode[key].push(record);
+        keyCandidates.forEach(key => {
+          if (!reorderRecordsByProductCode[key]) reorderRecordsByProductCode[key] = [];
+          reorderRecordsByProductCode[key].push(record);
+        });
         added++;
       });
       return added;
@@ -1401,16 +1453,25 @@ body.embed .inner-shell{ padding-top:14px !important; }
         }
       }
 
-      reorderLoadedAtText = `${ok}개 시트 / ${rowCount}건` + (fail ? ` / 실패 ${fail}개` : '');
+      const keyCount = Object.keys(reorderRecordsByProductCode).length;
+      reorderLoadedAtText = `${ok}개 시트 / ${rowCount}건 / 매칭키 ${keyCount}개` + (fail ? ` / 실패 ${fail}개` : '');
       renderReorderSourceList();
       if (showDoneToast) showToast(`리오더 로드: ${reorderLoadedAtText}`);
       if (keywordInput.value.trim()) search();
     }
 
-    function getReorderRecordsForProductCode(productCode){
-      const key = normalizeProductKey(productCode);
-      if (!key) return [];
-      return reorderRecordsByProductCode[key] || [];
+    function getReorderRecordsForProductCode(productCode, productNo, barcode){
+      const keys = new Set([
+        ...extractProductKeyCandidates(productCode),
+        ...extractProductKeyCandidates(productNo),
+        ...extractProductKeyCandidates(barcode)
+      ]);
+
+      let records = [];
+      keys.forEach(key => {
+        if (reorderRecordsByProductCode[key]) records = records.concat(reorderRecordsByProductCode[key]);
+      });
+      return uniqueRecords(records);
     }
 
     function summarizeReorderRecords(records){
@@ -1933,7 +1994,7 @@ body.embed .inner-shell{ padding-top:14px !important; }
 
         Object.values(groupedBySize).forEach(group => {
           const totalStock = group.jooheeQty + group.separateQty + group.etcQty;
-          const reorderRecords = getReorderRecordsForProductCode(p.productCode || '');
+          const reorderRecords = getReorderRecordsForProductCode(p.productCode || '', pno || '', p.barcode || '');
           rows.push({
             productName: p.productName || '',
             colorName:   p.colorName   || '',
